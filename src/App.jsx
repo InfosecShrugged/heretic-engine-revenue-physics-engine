@@ -90,23 +90,33 @@ const SegmentToggle=({options,value,onChange})=>(
   </div>
 );
 
-const NAV=[
-  {id:"dashboard",label:"Command Center",icon:Gauge},
-  {id:"targets",label:"Target Tracker",icon:Target},
-  {id:"funnelHealth",label:"Funnel Health",icon:Heart},
-  {id:"sales",label:"Sales Model",icon:Users},
-  {id:"marketing",label:"Marketing Funnel",icon:Megaphone},
-  {id:"channels",label:"Channel Mix",icon:Layers},
-  {id:"mktgBudget",label:"Mktg Budget",icon:DollarSign},
-  {id:"sandmBudget",label:"S&M Budget",icon:DollarSign},
-  {id:"cacBreakdown",label:"CAC Breakdown",icon:PieIcon},
-  {id:"pipeline",label:"Pipeline",icon:GitBranch},
-  {id:"velocity",label:"Velocity",icon:Clock},
-  {id:"sellerRamp",label:"Seller Ramp",icon:TrendingUp},
-  {id:"pnl",label:"P&L",icon:DollarSign},
-  {id:"glideslope",label:"Glideslope",icon:Target},
-  {id:"qbr",label:"QBR Metrics",icon:BarChart3},
-  {id:"weekly",label:"Weekly Tracker",icon:Calendar},
+const NAV_SECTIONS=[
+  { section: null, items: [
+    {id:"dashboard",label:"Command Center",icon:Gauge},
+  ]},
+  { section: "Revenue", items: [
+    {id:"targets",label:"Target Tracker",icon:Target},
+    {id:"glideslope",label:"Glideslope",icon:Target},
+    {id:"qbr",label:"QBR Metrics",icon:BarChart3},
+    {id:"weekly",label:"Weekly Tracker",icon:Calendar},
+  ]},
+  { section: "Pipeline", items: [
+    {id:"funnelHealth",label:"Funnel Health",icon:Heart},
+    {id:"pipeline",label:"Pipeline",icon:GitBranch},
+    {id:"marketing",label:"Marketing Funnel",icon:Megaphone},
+    {id:"velocity",label:"Velocity",icon:Clock},
+  ]},
+  { section: "GTM Economics", items: [
+    {id:"sandmBudget",label:"S&M Budget",icon:DollarSign},
+    {id:"mktgBudget",label:"Mktg Budget",icon:DollarSign},
+    {id:"channels",label:"Channel Mix",icon:Layers},
+    {id:"cacBreakdown",label:"CAC Breakdown",icon:PieIcon},
+    {id:"sales",label:"Sales Model",icon:Users},
+    {id:"sellerRamp",label:"Seller Ramp",icon:TrendingUp},
+  ]},
+  { section: "Finance", items: [
+    {id:"pnl",label:"P&L",icon:DollarSign},
+  ]},
 ];
 
 const LOGO_URL = "https://images.squarespace-cdn.com/content/v1/63d155fa93aba8529a061c8c/14b364ab-fc95-4c2d-ba6c-bca81e58a50f/HERETICS-LO.png?format=300w";
@@ -428,6 +438,85 @@ function SandMBudgetPage({model,inputs,setInputs}){
             <div style={{fontSize:8,color:C.dim,marginTop:4,lineHeight:1.2}}>{bar.label}</div>
           </div>);
         })}
+      </div>
+    </Card>
+
+    {/* Leadership Cost Layer */}
+    <Card style={{marginBottom:18}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+        <div>
+          <h3 style={{fontSize:11,fontWeight:700,color:C.rose,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Leadership Cost Layer</h3>
+          <div style={{fontSize:10,color:C.muted}}>Step function — driven by funding stage, not revenue. Board-mandated comp bands.</div>
+        </div>
+        <div style={{padding:"6px 12px",borderRadius:6,background:`${C.rose}12`,border:`1px solid ${C.rose}30`}}>
+          <div style={{fontSize:14,fontWeight:700,color:C.rose,fontFamily:"'DM Mono',monospace"}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</div>
+          <div style={{fontSize:8,color:C.dim}}>of revenue</div>
+        </div>
+      </div>
+
+      {/* Funding stage selector */}
+      <div style={{display:"flex",gap:6,marginBottom:14,flexWrap:"wrap"}}>
+        {["bootstrapped","seed","seriesA","seriesB","seriesC"].map(fs=>{
+          const isActive = (inputs.fundingStage||"seriesB") === fs;
+          const labels = {bootstrapped:"Bootstrapped",seed:"Seed",seriesA:"Series A",seriesB:"Series B",seriesC:"Series C+"};
+          return(<button key={fs} onClick={()=>setInputs(prev=>({...prev,fundingStage:fs}))}
+            style={{padding:"6px 14px",borderRadius:6,border:`1px solid ${isActive?C.accent:C.border}`,
+              background:isActive?C.accentD:"transparent",color:isActive?C.accent:C.muted,
+              cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
+            {labels[fs]}
+          </button>);
+        })}
+      </div>
+
+      {/* Leadership table */}
+      <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <thead><tr>{["Role","OTE","Loaded","Sits In","% of Rev","Status"].map(h=>
+          <th key={h} style={{textAlign:"right",padding:"8px 10px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",borderBottom:`2px solid ${C.border}`}}>{h}</th>
+        )}</tr></thead>
+        <tbody>
+          {(p.leadershipDetail||[]).map(l=>{
+            const pctRev = p.totalRevenue > 0 ? l.loaded / p.totalRevenue * 100 : 0;
+            const sitsColor = l.sitsIn==="Sales"?C.accent:l.sitsIn==="Marketing"?C.violet:l.sitsIn==="R&D"?C.blue:C.dim;
+            return(<tr key={l.role} style={{opacity:l.enabled?1:0.35}}>
+              <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:l.enabled?C.text:C.dim}}>{l.role}</td>
+              <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(l.ote)}</td>
+              <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:l.enabled?C.text:C.dim}}>{fmt(l.loaded)}</td>
+              <td style={{padding:"10px",textAlign:"right"}}><span style={{padding:"2px 8px",borderRadius:4,background:`${sitsColor}15`,color:sitsColor,fontSize:9,fontWeight:600}}>{l.sitsIn}</span></td>
+              <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:pctRev>5?C.rose:C.text}}>{l.enabled?pctRev.toFixed(1)+"%":"—"}</td>
+              <td style={{padding:"10px",textAlign:"right"}}>
+                <button onClick={()=>setInputs(prev=>{
+                  const roles = {...(prev.leadershipRoles||{vpSales:true,vpMarketing:true,vpCS:true,vpOps:false,vpProduct:false})};
+                  const key = l.role.includes("Sales")?"vpSales":l.role.includes("Marketing")?"vpMarketing":l.role.includes("CS")?"vpCS":l.role.includes("Ops")?"vpOps":"vpProduct";
+                  roles[key] = !roles[key];
+                  return {...prev, leadershipRoles: roles};
+                })} style={{padding:"3px 10px",borderRadius:4,border:`1px solid ${l.enabled?C.green:C.border}`,
+                  background:l.enabled?`${C.green}15`:"transparent",color:l.enabled?C.green:C.dim,
+                  cursor:"pointer",fontSize:9,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
+                  {l.enabled?"Active":"Add"}
+                </button>
+              </td>
+            </tr>);
+          })}
+          <tr style={{borderTop:`2px solid ${C.border}`}}>
+            <td style={{padding:"10px",textAlign:"right",fontWeight:700,color:C.text}}>Total Leadership</td>
+            <td style={{padding:"10px"}}/>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:C.rose}}>{fmt(p.totalLeadershipCost)}</td>
+            <td style={{padding:"10px"}}/>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:(p.leadershipPctOfRev||0)>15?C.rose:C.text}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</td>
+            <td style={{padding:"10px"}}/>
+          </tr>
+        </tbody>
+      </table></div>
+      <div style={{marginTop:10,display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+        {[
+          {label:"In Sales", value:p.leadershipInSales, color:C.accent},
+          {label:"In Marketing", value:p.leadershipInMktg, color:C.violet},
+          {label:"In G&A", value:p.leadershipInGA, color:C.dim},
+          {label:"In R&D", value:p.leadershipInRD, color:C.blue},
+        ].map(b=>(<div key={b.label} style={{padding:8,background:C.bg,borderRadius:6,textAlign:"center"}}>
+          <div style={{fontSize:9,color:C.dim}}>{b.label}</div>
+          <div style={{fontSize:14,fontWeight:700,color:b.color,fontFamily:"'DM Mono',monospace"}}>{fmt(b.value)}</div>
+        </div>))}
       </div>
     </Card>
 
@@ -788,7 +877,7 @@ function MarketingBudgetPage({model,inputs,setInputs}){
               <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
                 Headcount floor ({fmt(p.floorTotal)}) exceeds the formula-based overhead ({fmt(p.fixedMktg > p.floorTotal ? p.fixedMktg : Math.round(variableBudget * (inputs.fixedMktgPct / 100) / (1 - inputs.fixedMktgPct / 100)))}).
                 At {fmt(s.targetARR)} ARR, fixed marketing consumes <strong style={{color:C.rose}}>{p.floorPctOfRev?.toFixed(1)}% of revenue</strong> — 
-                the VP alone is {(425000 / p.totalRevenue * 100).toFixed(1)}%.
+                the VP alone is {((p.leadershipInMktg||455000) / p.totalRevenue * 100).toFixed(1)}%.
                 Effective fixed overhead is {p.effectiveFixedMktgPct?.toFixed(0)}%, not the {inputs.fixedMktgPct}% set in the stress mode.
               </div>
               <div style={{marginTop:8,fontSize:10,color:C.muted}}>
@@ -801,13 +890,15 @@ function MarketingBudgetPage({model,inputs,setInputs}){
 
       {/* Scaling curve */}
       <div style={{marginBottom:16}}>
-        <div style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>VP Marketing as % of Revenue (Step Function)</div>
+        <div style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>VP Marketing as % of Revenue — Fully Loaded ({fmt(p.leadershipInMktg||455000)})</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
-          {[{arr:3,pct:(425000/3000000*100).toFixed(1)},{arr:5,pct:(425000/5000000*100).toFixed(1)},{arr:10,pct:(425000/10000000*100).toFixed(1)},{arr:20,pct:(425000/20000000*100).toFixed(1)},{arr:40,pct:(425000/40000000*100).toFixed(1)}].map(pt=>{
+          {[{arr:3},{arr:5},{arr:10},{arr:20},{arr:40}].map(pt=>{
+            const vpLoaded = p.leadershipInMktg || 455000;
+            const pct = (vpLoaded / (pt.arr * 1000000) * 100).toFixed(1);
             const isClose = Math.abs(s.targetARR / 1000000 - pt.arr) < pt.arr * 0.3;
             return(<div key={pt.arr} style={{padding:8,background:isClose?`${C.accent}12`:C.bg,borderRadius:6,textAlign:"center",border:isClose?`1px solid ${C.accent}30`:"1px solid transparent"}}>
               <div style={{fontSize:9,color:C.dim}}>${pt.arr}M ARR</div>
-              <div style={{fontSize:16,fontWeight:700,color:parseFloat(pt.pct)>5?C.rose:parseFloat(pt.pct)>2?C.amber:C.green,fontFamily:"'DM Mono',monospace"}}>{pt.pct}%</div>
+              <div style={{fontSize:16,fontWeight:700,color:parseFloat(pct)>5?C.rose:parseFloat(pct)>2?C.amber:C.green,fontFamily:"'DM Mono',monospace"}}>{pct}%</div>
               <div style={{fontSize:8,color:C.dim}}>of revenue</div>
             </div>);
           })}
@@ -1112,7 +1203,7 @@ function PipelinePage({model,inputs}){
         <div style={{marginTop:10,padding:8,background:`${C.amber}08`,borderRadius:6,border:`1px solid ${C.amber}15`}}>
           <span style={{fontSize:10,color:C.amber,fontWeight:600}}>⚠ Floor-bound:</span>
           <span style={{fontSize:10,color:C.muted,marginLeft:6}}>
-            Headcount floor ({fmt(p.floorTotal)}) exceeds formula overhead. VP alone = {(425000/p.totalRevenue*100).toFixed(1)}% of revenue. 
+            Headcount floor ({fmt(p.floorTotal)}) exceeds formula overhead. VP alone = {((p.leadershipInMktg||455000)/p.totalRevenue*100).toFixed(1)}% of revenue. 
             Only {fmt(p.programmaticBudget)} reaches channel spend — {(p.programmaticBudget/p.totalMktgBudget*100).toFixed(0)}% of total marketing budget actually buys pipeline.
           </span>
         </div>
@@ -1456,6 +1547,41 @@ function WeeklyPage({model}){const w=model.weeklySimplified;return(<div><Header 
 // ════════════════════════════════════════════════════════════
 // MAIN APP
 // ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+// NAV SECTION (collapsible sidebar group)
+// ════════════════════════════════════════════════════════════
+function NavSection({section,items,page,setPage}){
+  const hasActive = items.some(n=>n.id===page);
+  const[open,setOpen]=useState(hasActive || !section); // auto-open if contains active page or is top-level
+
+  // Auto-open when user navigates to an item in this section
+  const prevActive = items.some(n=>n.id===page);
+  if(prevActive && !open) setOpen(true);
+
+  return(<div style={{marginBottom:section?4:0}}>
+    {section && (
+      <button onClick={()=>setOpen(!open)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",
+        padding:"6px 10px",marginTop:8,border:"none",background:"transparent",cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+        <span style={{fontSize:9,fontWeight:700,color:hasActive?C.accent:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>{section}</span>
+        <span style={{fontSize:10,color:C.dim,transform:open?"rotate(0deg)":"rotate(-90deg)",transition:"transform 0.15s"}}>▾</span>
+      </button>
+    )}
+    {(open || !section) && items.map(n=>{
+      const I=n.icon, a=page===n.id;
+      return(
+        <button key={n.id} onClick={()=>setPage(n.id)} style={{display:"flex",alignItems:"center",gap:9,width:"100%",
+          padding:section?"7px 10px 7px 18px":"8px 10px",marginBottom:1,border:"none",borderRadius:7,
+          background:a?C.accentD:"transparent",color:a?C.accent:C.muted,cursor:"pointer",fontSize:12,
+          fontWeight:a?600:400,textAlign:"left",transition:"all 0.15s",fontFamily:"'DM Sans',sans-serif"}}
+          onMouseEnter={e=>{if(!a){e.currentTarget.style.background=C.card;e.currentTarget.style.color=C.text}}}
+          onMouseLeave={e=>{if(!a){e.currentTarget.style.background="transparent";e.currentTarget.style.color=C.muted}}}>
+          <I size={13}/>{n.label}
+        </button>
+      );
+    })}
+  </div>);
+}
+
 export default function App(){
   const[page,setPage]=useState("dashboard");
   const[drivers,setDrivers]=useState(false);
@@ -1473,11 +1599,9 @@ export default function App(){
         <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>Revenue Physics Engine</div>
       </div>
       <nav style={{flex:1,padding:"0 6px",overflowY:"auto"}}>
-        {NAV.map(n=>{const I=n.icon,a=page===n.id;return(
-          <button key={n.id} onClick={()=>setPage(n.id)} style={{display:"flex",alignItems:"center",gap:9,width:"100%",padding:"8px 10px",marginBottom:1,border:"none",borderRadius:7,background:a?C.accentD:"transparent",color:a?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:a?600:400,textAlign:"left",transition:"all 0.15s",fontFamily:"'DM Sans',sans-serif"}}
-            onMouseEnter={e=>{if(!a){e.currentTarget.style.background=C.card;e.currentTarget.style.color=C.text}}} onMouseLeave={e=>{if(!a){e.currentTarget.style.background="transparent";e.currentTarget.style.color=C.muted}}}>
-            <I size={14}/>{n.label}
-          </button>);})}
+        {NAV_SECTIONS.map((sec,si)=>(
+          <NavSection key={si} section={sec.section} items={sec.items} page={page} setPage={setPage}/>
+        ))}
       </nav>
       <div style={{padding:"8px 6px",borderTop:`1px solid ${C.border}`}}>
         <button onClick={()=>setDrivers(!drivers)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:7,background:drivers?C.violetD:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>

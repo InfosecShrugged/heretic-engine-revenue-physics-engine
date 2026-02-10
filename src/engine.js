@@ -75,6 +75,18 @@ export const DEFAULT_INPUTS = {
   sdrOTE: 95000,             // SDR OTE ($85-110K)
   sdrBenefitsLoad: 1.22,     // SDR benefits load
 
+  // ── Leadership Cost Layer (all execs, not just marketing)
+  // Funding stage drives comp expectations: VC-backed demands market-rate "proven operators"
+  fundingStage: "seriesB",   // seed | seriesA | seriesB | seriesC | bootstrapped
+  // Leadership roles present (toggle on/off)
+  leadershipRoles: {
+    vpSales: true,           // VP Sales / CRO
+    vpMarketing: true,       // VP Marketing / CMO
+    vpCS: true,              // VP CS / CCO
+    vpOps: false,            // VP Ops / COO (often not hired until $15M+)
+    vpProduct: false,        // VP Product (often under R&D, not S&M — but board wants it)
+  },
+
   // Benchmark ranges for delta display (not editable, reference only)
   costBenchmarks: {
     gAndAPct: { low: 8, mid: 10, high: 12, label: "G&A" },
@@ -132,6 +144,7 @@ export function computeModel(inputs) {
     salesVariablePct, fixedMktgPct, martechPctOfVariable, fixedMktgBreakdown,
     cpSqoBenchmark, cacPaybackTarget, costBenchmarks,
     salesBudgetBreakdown, aeOTE, aeBenefitsLoad, sdrOTE, sdrBenefitsLoad,
+    fundingStage, leadershipRoles,
     nrrPercent, churnRate, pipelineCoverage, stage1MinPct,
     coverageGreen, coverageYellow, coverageRed,
     velStage1to2, velStage2to3, velStage3to4, velStage4to5, velStage5toClose,
@@ -459,16 +472,52 @@ export function computeModel(inputs) {
   const totalSalesVariableComp = aeTotalVariable + sdrTotalVariable;
 
   // Marketing: total = variable demand gen + fixed marketing overhead
-  // Variable marketing is a % of revenue; fixed marketing is a % of total mktg budget
-  // We solve: totalMktg = variableMktg / (1 - fixedMktgPct/100)
   const variableMktg = totalRevenue * (variableMktgPct / 100);
   const formulaFixedMktg = fixedMktgPct > 0 ? variableMktg / (1 - fixedMktgPct / 100) - variableMktg : 0;
 
+  // ══ LEADERSHIP COST LAYER ══
+  // Comp is a step function of funding stage, NOT revenue.
+  // VC-backed at Series B demands market-rate "proven operators" even at $5M ARR.
+  // Bootstrapped can defer hiring or use fractional/Sr Dir instead of VP.
+  const stage = fundingStage || "seriesB";
+  const lr = leadershipRoles || { vpSales: true, vpMarketing: true, vpCS: true, vpOps: false, vpProduct: false };
+  
+  // OTE bands by funding stage (mid-market cyber, fully loaded = OTE × 1.3 for benefits+equity)
+  const LEADERSHIP_COMP = {
+    bootstrapped: { vpSales: 275000, vpMarketing: 250000, vpCS: 200000, vpOps: 220000, vpProduct: 230000, load: 1.15 },
+    seed:         { vpSales: 300000, vpMarketing: 275000, vpCS: 220000, vpOps: 240000, vpProduct: 250000, load: 1.20 },
+    seriesA:      { vpSales: 340000, vpMarketing: 310000, vpCS: 260000, vpOps: 270000, vpProduct: 280000, load: 1.25 },
+    seriesB:      { vpSales: 380000, vpMarketing: 350000, vpCS: 290000, vpOps: 300000, vpProduct: 310000, load: 1.30 },
+    seriesC:      { vpSales: 420000, vpMarketing: 380000, vpCS: 320000, vpOps: 340000, vpProduct: 350000, load: 1.35 },
+  };
+  const compTable = LEADERSHIP_COMP[stage] || LEADERSHIP_COMP.seriesB;
+  const loadFactor = compTable.load;
+
+  const leadershipDetail = [
+    { role: "VP Sales / CRO", enabled: lr.vpSales, ote: compTable.vpSales, loaded: Math.round(compTable.vpSales * loadFactor), 
+      sitsIn: "Sales", desc: "Carries team quota, owns pipeline" },
+    { role: "VP Marketing / CMO", enabled: lr.vpMarketing, ote: compTable.vpMarketing, loaded: Math.round(compTable.vpMarketing * loadFactor),
+      sitsIn: "Marketing", desc: "Owns demand gen, brand, pipeline sourcing" },
+    { role: "VP CS / CCO", enabled: lr.vpCS, ote: compTable.vpCS, loaded: Math.round(compTable.vpCS * loadFactor),
+      sitsIn: "G&A", desc: "Owns NRR, expansion, churn" },
+    { role: "VP Ops / COO", enabled: lr.vpOps, ote: compTable.vpOps, loaded: Math.round(compTable.vpOps * loadFactor),
+      sitsIn: "G&A", desc: "RevOps, systems, process" },
+    { role: "VP Product", enabled: lr.vpProduct, ote: compTable.vpProduct, loaded: Math.round(compTable.vpProduct * loadFactor),
+      sitsIn: "R&D", desc: "Roadmap, threat landscape, compliance" },
+  ];
+
+  const activeLeadership = leadershipDetail.filter(l => l.enabled);
+  const totalLeadershipCost = activeLeadership.reduce((s, l) => s + l.loaded, 0);
+  const leadershipPctOfRev = totalRevenue > 0 ? totalLeadershipCost / totalRevenue * 100 : 0;
+  // Where leadership sits in the P&L
+  const leadershipInSales = activeLeadership.filter(l => l.sitsIn === "Sales").reduce((s, l) => s + l.loaded, 0);
+  const leadershipInMktg = activeLeadership.filter(l => l.sitsIn === "Marketing").reduce((s, l) => s + l.loaded, 0);
+  const leadershipInGA = activeLeadership.filter(l => l.sitsIn === "G&A").reduce((s, l) => s + l.loaded, 0);
+  const leadershipInRD = activeLeadership.filter(l => l.sitsIn === "R&D").reduce((s, l) => s + l.loaded, 0);
+
   // ── Fixed Marketing Floor: headcount-based minimum
-  // VP Marketing comp is a step function, not a curve.
-  // At $3M ARR the VP alone is 13% of revenue; at $40M it's 1%.
-  // Model the actual cost floor based on team composition at each stage.
-  const mktgLeadershipComp = 425000;  // VP Mktg all-in (OTE $350K + benefits + equity ~$75K)
+  // Now uses the leadership layer for VP Marketing comp instead of hardcoded
+  const mktgLeadershipComp = leadershipInMktg > 0 ? leadershipInMktg : Math.round(compTable.vpMarketing * loadFactor);
   const revopsComp = 165000;           // RevOps/MOps hire (fully loaded)
   const contentComp = 135000;          // Content/brand person (fully loaded)
   const baselineTooling = 85000;       // CRM/MAP/analytics baseline licenses
@@ -764,6 +813,10 @@ export function computeModel(inputs) {
       salesBudgetItems, salesBudgetActual, salesIsFloorBound, salesFloorDelta, salesHeadcountFloor,
       totalSalesFixedComp, totalSalesVariableComp, aeCompFloor, sdrCompFloor, seCompFloor,
       aeCount, sdrCount, seCount, aeFullyLoaded, sdrFullyLoaded, seFullyLoaded,
+      // Leadership layer
+      leadershipDetail, activeLeadership, totalLeadershipCost, leadershipPctOfRev,
+      leadershipInSales, leadershipInMktg, leadershipInGA, leadershipInRD,
+      fundingStage: stage, compTable, loadFactor,
       // Marketing-sourced split
       mktgSQOs, aeSelfSourcedSQOs, mktgMeetingsNeeded, mktgSqlsNeeded, mktgMqlsNeeded, mktgInquiriesNeeded, mktgPct,
       // Attrition
@@ -782,7 +835,10 @@ export function computeModel(inputs) {
       fixedMktgIsFloorBound, effectiveFixedMktgPct, mktgHeadcountFloor, floorTotal, floorPctOfRev,
       salesBudgetItems, salesBudgetActual, salesIsFloorBound, salesFloorDelta, salesHeadcountFloor,
       totalSalesFixedComp, totalSalesVariableComp, aeCompFloor, sdrCompFloor, seCompFloor,
-      aeCount: inputs.aeCount, sdrCount, seCount, aeFullyLoaded, sdrFullyLoaded, seFullyLoaded },
+      aeCount: inputs.aeCount, sdrCount, seCount, aeFullyLoaded, sdrFullyLoaded, seFullyLoaded,
+      leadershipDetail, activeLeadership, totalLeadershipCost, leadershipPctOfRev,
+      leadershipInSales, leadershipInMktg, leadershipInGA, leadershipInRD,
+      fundingStage: stage, compTable, loadFactor },
     glideslope, qbrData, weeklySimplified, velocityStages, quarterlyTargets,
     funnelHealth, cacBreakdown, monthWeights, seasonalityMode, phaseShiftedFunnel,
   };
