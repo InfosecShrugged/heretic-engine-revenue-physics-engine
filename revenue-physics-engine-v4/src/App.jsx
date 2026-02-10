@@ -520,9 +520,56 @@ function MarketingBudgetPage({model,inputs,setInputs}){
     </Card>
 
     {/* Fixed Marketing Overhead Detail */}
-    <Card>
-      <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:12,textTransform:"uppercase",letterSpacing:"0.04em"}}>Fixed Marketing Overhead (Not in G&A)</h3>
-      <div style={{fontSize:10,color:C.muted,marginBottom:14}}>Marketing-specific fixed costs — leadership, ops, staff, baseline tools. Separate from G&A (Finance, Legal, HR, IT).</div>
+    <Card style={{marginBottom:18}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+        <div>
+          <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Fixed Marketing Overhead (Not in G&A)</h3>
+          <div style={{fontSize:10,color:C.muted}}>Marketing-specific fixed costs — leadership, ops, staff, baseline tools. Separate from G&A (Finance, Legal, HR, IT).</div>
+        </div>
+        {p.fixedMktgIsFloorBound && (
+          <div style={{padding:"6px 12px",borderRadius:6,background:`${C.rose}12`,border:`1px solid ${C.rose}30`}}>
+            <div style={{fontSize:9,fontWeight:700,color:C.rose,textTransform:"uppercase"}}>Floor-Bound</div>
+            <div style={{fontSize:10,color:C.muted}}>{p.mktgHeadcountFloor?.label}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Compression warning */}
+      {p.fixedMktgIsFloorBound && (
+        <div style={{padding:14,background:`${C.amber}08`,borderRadius:10,border:`1px solid ${C.amber}20`,marginBottom:16}}>
+          <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+            <div style={{fontSize:20}}>⚠️</div>
+            <div>
+              <div style={{fontSize:12,fontWeight:700,color:C.amber,marginBottom:4}}>Fixed Cost Compression Active</div>
+              <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
+                Headcount floor ({fmt(p.floorTotal)}) exceeds the formula-based overhead ({fmt(p.fixedMktg > p.floorTotal ? p.fixedMktg : Math.round(variableBudget * (inputs.fixedMktgPct / 100) / (1 - inputs.fixedMktgPct / 100)))}).
+                At {fmt(s.targetARR)} ARR, fixed marketing consumes <strong style={{color:C.rose}}>{p.floorPctOfRev?.toFixed(1)}% of revenue</strong> — 
+                the VP alone is {(425000 / p.totalRevenue * 100).toFixed(1)}%.
+                Effective fixed overhead is {p.effectiveFixedMktgPct?.toFixed(0)}%, not the {inputs.fixedMktgPct}% set in the stress mode.
+              </div>
+              <div style={{marginTop:8,fontSize:10,color:C.muted}}>
+                This compression resolves around $15-20M ARR where leadership comp drops below 3% of revenue. Until then, every demand gen dollar carries disproportionate overhead burden.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scaling curve */}
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>VP Marketing as % of Revenue (Step Function)</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
+          {[{arr:3,pct:(425000/3000000*100).toFixed(1)},{arr:5,pct:(425000/5000000*100).toFixed(1)},{arr:10,pct:(425000/10000000*100).toFixed(1)},{arr:20,pct:(425000/20000000*100).toFixed(1)},{arr:40,pct:(425000/40000000*100).toFixed(1)}].map(pt=>{
+            const isClose = Math.abs(s.targetARR / 1000000 - pt.arr) < pt.arr * 0.3;
+            return(<div key={pt.arr} style={{padding:8,background:isClose?`${C.accent}12`:C.bg,borderRadius:6,textAlign:"center",border:isClose?`1px solid ${C.accent}30`:"1px solid transparent"}}>
+              <div style={{fontSize:9,color:C.dim}}>${pt.arr}M ARR</div>
+              <div style={{fontSize:16,fontWeight:700,color:parseFloat(pt.pct)>5?C.rose:parseFloat(pt.pct)>2?C.amber:C.green,fontFamily:"'DM Mono',monospace"}}>{pt.pct}%</div>
+              <div style={{fontSize:8,color:C.dim}}>of revenue</div>
+            </div>);
+          })}
+        </div>
+      </div>
+
       <div style={{display:"grid",gridTemplateColumns:`repeat(${fixedItems.length},1fr)`,gap:12}}>
         {fixedItems.map((fi,i)=>(
           <div key={fi.name} style={{padding:14,background:C.bg,borderRadius:10,borderLeft:`3px solid ${C.violet}`}}>
