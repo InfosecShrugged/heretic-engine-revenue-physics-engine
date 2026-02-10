@@ -98,6 +98,7 @@ const NAV=[
   {id:"marketing",label:"Marketing Funnel",icon:Megaphone},
   {id:"channels",label:"Channel Mix",icon:Layers},
   {id:"mktgBudget",label:"Mktg Budget",icon:DollarSign},
+  {id:"sandmBudget",label:"S&M Budget",icon:DollarSign},
   {id:"cacBreakdown",label:"CAC Breakdown",icon:PieIcon},
   {id:"pipeline",label:"Pipeline",icon:GitBranch},
   {id:"velocity",label:"Velocity",icon:Clock},
@@ -288,7 +289,250 @@ function CACBreakdownPage({model,inputs}){
 }
 
 // ════════════════════════════════════════════════════════════
-// MARKETING BUDGET
+// S&M BUDGET (CFO VIEW)
+// ════════════════════════════════════════════════════════════
+function SandMBudgetPage({model,inputs,setInputs}){
+  const{pnl:p,summary:s}=model;
+  const salesItems = p.salesBudgetItems || [];
+  const mktgItems = p.fixedMktgItems || [];
+
+  // Combined S&M
+  const totalSales = p.salesBudgetActual || p.salesOpex;
+  const totalMktg = p.totalMktgBudget;
+  const totalSandM = totalSales + totalMktg;
+  const sandMPctRev = p.totalRevenue > 0 ? totalSandM / p.totalRevenue * 100 : 0;
+  const salesPctRev = p.totalRevenue > 0 ? totalSales / p.totalRevenue * 100 : 0;
+  const mktgPctRev = p.totalRevenue > 0 ? totalMktg / p.totalRevenue * 100 : 0;
+
+  // Total headcount
+  const salesHeads = (p.aeCount||0) + (p.sdrCount||0) + (p.seCount||0);
+  const revPerSalesHead = salesHeads > 0 ? p.totalRevenue / salesHeads : 0;
+  const costPerDeal = s.dealsNeeded > 0 ? totalSandM / s.dealsNeeded : 0;
+
+  // Health
+  const healthColor = sandMPctRev > 60 ? C.rose : sandMPctRev < 30 ? C.amber : C.green;
+  const healthLabel = sandMPctRev > 60 ? "BURN RISK" : sandMPctRev < 30 ? "UNDERINVEST" : "HEALTHY";
+
+  // Pie data for S vs M split
+  const splitData = [
+    {name:"Sales", value:totalSales, fill:C.accent},
+    {name:"Marketing", value:totalMktg, fill:C.violet},
+  ];
+
+  return(<div>
+    <Header title="S&M Budget" sub="Combined Sales & Marketing — the CFO view" icon={DollarSign}/>
+
+    {/* Health banner */}
+    <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",borderRadius:10,marginBottom:20,
+      background:`${healthColor}08`,border:`1px solid ${healthColor}20`}}>
+      <div style={{padding:"6px 14px",borderRadius:6,background:healthColor,color:"#fff",fontSize:11,fontWeight:700}}>{healthLabel}</div>
+      <div style={{fontSize:13,color:C.text}}>Total S&M: <strong style={{fontFamily:"'DM Mono',monospace"}}>{fmt(totalSandM)}</strong> = <strong>{sandMPctRev.toFixed(1)}%</strong> of revenue</div>
+      <div style={{marginLeft:"auto",fontSize:10,color:C.dim}}>Benchmark: 35-55% growth stage • &gt;60% = burn risk</div>
+    </div>
+
+    {/* Top metrics */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:12,marginBottom:20}}>
+      <Metric label="Total S&M" value={fmt(totalSandM)} sub={`${sandMPctRev.toFixed(1)}% of rev`} color={healthColor}/>
+      <Metric label="Sales Budget" value={fmt(totalSales)} sub={`${salesPctRev.toFixed(1)}% of rev`} color={C.accent}/>
+      <Metric label="Mktg Budget" value={fmt(totalMktg)} sub={`${mktgPctRev.toFixed(1)}% of rev`} color={C.violet}/>
+      <Metric label="S&M per Deal" value={fmt(costPerDeal)} sub={`${fN(s.dealsNeeded)} deals`} color={C.amber}/>
+      <Metric label="Rev / Sales HC" value={fmt(revPerSalesHead)} sub={`${salesHeads} heads`} color={C.green}/>
+      <Metric label="Sales:Mktg Ratio" value={`${(totalSales/Math.max(totalMktg,1)).toFixed(1)}:1`} sub="spend ratio" color={C.blue}/>
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:18}}>
+      {/* Sales Budget Breakdown */}
+      <Card>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+          <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,textTransform:"uppercase",letterSpacing:"0.04em"}}>Sales Budget</h3>
+          {p.salesIsFloorBound && <div style={{padding:"3px 8px",borderRadius:4,background:`${C.rose}15`,fontSize:9,fontWeight:700,color:C.rose}}>FLOOR-BOUND +{fmt(p.salesFloorDelta)}</div>}
+        </div>
+        {salesItems.map((si,i)=>{
+          const barW = p.salesBudgetActual > 0 ? si.amount / p.salesBudgetActual * 100 : 0;
+          return(<div key={si.name} style={{marginBottom:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:12,fontWeight:600,color:C.text}}>{si.name}</span>
+                {si.isFloorBound && <span style={{fontSize:8,color:C.amber,fontWeight:700}}>▲ FLOOR</span>}
+                {si.headcount && <span style={{fontSize:9,color:C.dim}}>({si.headcount} × {fmt(si.perHead)})</span>}
+              </div>
+              <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{fmt(si.amount)}</span>
+            </div>
+            <div style={{height:16,background:C.bg,borderRadius:4,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${barW}%`,background:si.isFloorBound?`linear-gradient(90deg,${C.accent},${C.amber})`:C.accent,borderRadius:4,opacity:0.7}}/>
+            </div>
+            <div style={{fontSize:9,color:C.dim,marginTop:2}}>{si.desc}</div>
+          </div>);
+        })}
+        <div style={{height:1,background:C.border,margin:"10px 0"}}/>
+        <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}>
+          <span style={{fontSize:11,fontWeight:600,color:C.text}}>Total Sales</span>
+          <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{fmt(totalSales)}</span>
+        </div>
+        <div style={{fontSize:9,color:C.dim}}>Formula ({inputs.salesOpexPct}% of rev): {fmt(p.salesOpex)} • Actual: {fmt(totalSales)}{p.salesIsFloorBound?" — headcount exceeds formula":""}</div>
+      </Card>
+
+      {/* Marketing Budget Summary */}
+      <Card>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+          <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,textTransform:"uppercase",letterSpacing:"0.04em"}}>Marketing Budget</h3>
+          {p.fixedMktgIsFloorBound && <div style={{padding:"3px 8px",borderRadius:4,background:`${C.rose}15`,fontSize:9,fontWeight:700,color:C.rose}}>FLOOR-BOUND</div>}
+        </div>
+        {[
+          {name:"Programmatic (Channel)", amount:p.programmaticBudget, color:C.green, desc:"Paid media, events — buys inquiries"},
+          {name:"Martech (Variable)", amount:p.martechSpend, color:C.blue, desc:"Intent data, enrichment, MAP overage"},
+          ...mktgItems.map(fi=>({name:fi.name, amount:fi.amount, color:C.violet, desc:fi.desc, isFloor:fi.isFloorBound})),
+        ].map((item,i)=>{
+          const barW = totalMktg > 0 ? item.amount / totalMktg * 100 : 0;
+          return(<div key={item.name} style={{marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <div style={{width:6,height:6,borderRadius:"50%",background:item.color}}/>
+                <span style={{fontSize:11,fontWeight:600,color:C.text}}>{item.name}</span>
+                {item.isFloor && <span style={{fontSize:8,color:C.amber,fontWeight:700}}>▲ FLOOR</span>}
+              </div>
+              <span style={{fontSize:12,fontWeight:600,color:item.color,fontFamily:"'DM Mono',monospace"}}>{fmt(item.amount)}</span>
+            </div>
+            <div style={{height:12,background:C.bg,borderRadius:3,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:3,opacity:0.6}}/>
+            </div>
+          </div>);
+        })}
+        <div style={{height:1,background:C.border,margin:"10px 0"}}/>
+        <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}>
+          <span style={{fontSize:11,fontWeight:600,color:C.text}}>Total Marketing</span>
+          <span style={{fontSize:13,fontWeight:700,color:C.violet,fontFamily:"'DM Mono',monospace"}}>{fmt(totalMktg)}</span>
+        </div>
+      </Card>
+    </div>
+
+    {/* Combined S&M waterfall */}
+    <Card style={{marginBottom:18}}>
+      <h3 style={{fontSize:11,fontWeight:700,color:C.dim,margin:0,marginBottom:14,textTransform:"uppercase",letterSpacing:"0.04em"}}>S&M P&L Waterfall</h3>
+      <div style={{display:"flex",gap:4,alignItems:"flex-end",height:200,padding:"0 20px"}}>
+        {[
+          {label:"Revenue", value:p.totalRevenue, color:C.green, full:true},
+          {label:"COGS", value:p.cogsAmount, color:C.rose, neg:true},
+          {label:"Gross Profit", value:p.grossProfit, color:C.green, full:true},
+          {label:"Sales", value:totalSales, color:C.accent, neg:true},
+          {label:"Marketing", value:totalMktg, color:C.violet, neg:true},
+          {label:"G&A", value:p.gAndA, color:C.dim, neg:true},
+          {label:"R&D", value:p.rAndD, color:C.dim, neg:true},
+          {label:"Op Income", value:p.operatingIncome, color:p.operatingIncome>=0?C.green:C.rose, full:true},
+        ].map((bar,i)=>{
+          const maxVal = p.totalRevenue;
+          const h = maxVal > 0 ? Math.abs(bar.value) / maxVal * 160 : 0;
+          return(<div key={bar.label} style={{flex:1,textAlign:"center"}}>
+            <div style={{fontSize:10,fontWeight:700,color:bar.color,fontFamily:"'DM Mono',monospace",marginBottom:4}}>{fmt(bar.value)}</div>
+            <div style={{height:h,background:bar.neg?`${bar.color}40`:bar.color,borderRadius:"4px 4px 0 0",marginBottom:2,opacity:bar.full?1:0.7}}/>
+            <div style={{fontSize:8,color:C.dim,marginTop:4,lineHeight:1.2}}>{bar.label}</div>
+          </div>);
+        })}
+      </div>
+    </Card>
+
+    {/* Headcount & Comp Detail */}
+    <Card style={{marginBottom:18}}>
+      <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,marginBottom:14,textTransform:"uppercase",letterSpacing:"0.04em"}}>GTM Headcount & Comp</h3>
+      <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+        <thead><tr>{["Role","Count","Per Head","Total Comp","Base (Fixed)","Variable","% of Rev"].map(h=>
+          <th key={h} style={{textAlign:"right",padding:"8px 10px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",borderBottom:`2px solid ${C.border}`}}>{h}</th>
+        )}</tr></thead>
+        <tbody>
+          <tr>
+            <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:C.accent}}>AEs</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{p.aeCount}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(p.aeFullyLoaded)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700}}>{fmt(p.aeCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fmt(p.aeCompFloor * (1 - inputs.salesVariablePct/100))}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.amber}}>{fmt(p.aeCompFloor * (inputs.salesVariablePct/100))}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:p.aeCompFloor/p.totalRevenue>0.3?C.rose:C.text}}>{(p.aeCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
+          </tr>
+          <tr>
+            <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:C.blue}}>SDRs/BDRs</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{p.sdrCount}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(p.sdrFullyLoaded)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700}}>{fmt(p.sdrCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fmt(p.sdrCompFloor * 0.7)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.amber}}>{fmt(p.sdrCompFloor * 0.3)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{(p.sdrCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
+          </tr>
+          <tr>
+            <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:C.green}}>SEs</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{p.seCount}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(p.seFullyLoaded)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700}}>{fmt(p.seCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fmt(p.seCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.dim}}>—</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{(p.seCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
+          </tr>
+          <tr style={{borderTop:`2px solid ${C.border}`}}>
+            <td style={{padding:"10px",textAlign:"right",fontWeight:700,color:C.text}}>Total GTM</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700}}>{salesHeads}</td>
+            <td style={{padding:"10px"}}/>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:C.accent}}>{fmt(p.salesHeadcountFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700}}>{fmt(p.totalSalesFixedComp)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:C.amber}}>{fmt(p.totalSalesVariableComp)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:p.salesHeadcountFloor/p.totalRevenue>0.4?C.rose:C.text}}>{(p.salesHeadcountFloor/p.totalRevenue*100).toFixed(1)}%</td>
+          </tr>
+        </tbody>
+      </table></div>
+      {p.salesIsFloorBound && (
+        <div style={{marginTop:12,padding:10,background:`${C.amber}08`,borderRadius:6,border:`1px solid ${C.amber}15`}}>
+          <span style={{fontSize:10,color:C.amber,fontWeight:600}}>⚠ Headcount floor exceeds formula:</span>
+          <span style={{fontSize:10,color:C.muted,marginLeft:6}}>
+            {inputs.salesOpexPct}% of revenue = {fmt(p.salesOpex)}, but {salesHeads} heads cost {fmt(p.salesHeadcountFloor)} in comp alone before tools/enablement/travel.
+            Either raise salesOpexPct or reduce headcount.
+          </span>
+        </div>
+      )}
+    </Card>
+
+    {/* Fixed vs Variable Split */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+      <Card>
+        <h3 style={{fontSize:11,fontWeight:700,color:C.dim,margin:0,marginBottom:14,textTransform:"uppercase",letterSpacing:"0.04em"}}>Sales:Marketing Split</h3>
+        <ResponsiveContainer width="100%" height={180}>
+          <PieChart><Pie data={splitData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" paddingAngle={3}>
+            {splitData.map((d,i)=><Cell key={i} fill={d.fill}/>)}
+          </Pie><Tooltip formatter={v=>fmt(v)}/></PieChart>
+        </ResponsiveContainer>
+        <div style={{textAlign:"center",marginTop:8}}>
+          {splitData.map(d=>(
+            <span key={d.name} style={{fontSize:10,color:d.fill,fontWeight:600,marginRight:16}}>
+              <span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:d.fill,marginRight:4}}/>
+              {d.name}: {fmt(d.value)} ({(d.value/totalSandM*100).toFixed(0)}%)
+            </span>
+          ))}
+        </div>
+      </Card>
+      <Card>
+        <h3 style={{fontSize:11,fontWeight:700,color:C.dim,margin:0,marginBottom:14,textTransform:"uppercase",letterSpacing:"0.04em"}}>Fixed vs Variable (All S&M)</h3>
+        {[
+          {label:"Fixed Sales Comp", value:p.totalSalesFixedComp, color:C.accent},
+          {label:"Variable Sales Comp", value:p.totalSalesVariableComp, color:C.amber},
+          {label:"Sales Non-Comp", value:Math.max(0, totalSales - p.salesHeadcountFloor), color:C.dim},
+          {label:"Fixed Marketing", value:p.fixedMktg, color:C.violet},
+          {label:"Variable Marketing", value:p.variableMktg, color:C.green},
+        ].map(item=>{
+          const barW = totalSandM > 0 ? item.value / totalSandM * 100 : 0;
+          return(<div key={item.label} style={{marginBottom:8}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+              <span style={{fontSize:10,color:C.text}}>{item.label}</span>
+              <span style={{fontSize:11,fontWeight:600,color:item.color,fontFamily:"'DM Mono',monospace"}}>{fmt(item.value)}</span>
+            </div>
+            <div style={{height:10,background:C.bg,borderRadius:3,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:3,opacity:0.6}}/>
+            </div>
+          </div>);
+        })}
+      </Card>
+    </div>
+  </div>);
+}
+
+// ════════════════════════════════════════════════════════════
+// MARKETING BUDGET (DETAIL)
 // ════════════════════════════════════════════════════════════
 const STRESS_MODES = [
   { id:"lean", label:"Lean Execution", fixedPct:30, color:"#22c55e",
@@ -520,15 +764,63 @@ function MarketingBudgetPage({model,inputs,setInputs}){
     </Card>
 
     {/* Fixed Marketing Overhead Detail */}
-    <Card>
-      <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:12,textTransform:"uppercase",letterSpacing:"0.04em"}}>Fixed Marketing Overhead (Not in G&A)</h3>
-      <div style={{fontSize:10,color:C.muted,marginBottom:14}}>Marketing-specific fixed costs — leadership, ops, staff, baseline tools. Separate from G&A (Finance, Legal, HR, IT).</div>
+    <Card style={{marginBottom:18}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+        <div>
+          <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Fixed Marketing Overhead (Not in G&A)</h3>
+          <div style={{fontSize:10,color:C.muted}}>Marketing-specific fixed costs — leadership, ops, staff, baseline tools. Separate from G&A (Finance, Legal, HR, IT).</div>
+        </div>
+        {p.fixedMktgIsFloorBound && (
+          <div style={{padding:"6px 12px",borderRadius:6,background:`${C.rose}12`,border:`1px solid ${C.rose}30`}}>
+            <div style={{fontSize:9,fontWeight:700,color:C.rose,textTransform:"uppercase"}}>Floor-Bound</div>
+            <div style={{fontSize:10,color:C.muted}}>{p.mktgHeadcountFloor?.label}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Compression warning */}
+      {p.fixedMktgIsFloorBound && (
+        <div style={{padding:14,background:`${C.amber}08`,borderRadius:10,border:`1px solid ${C.amber}20`,marginBottom:16}}>
+          <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+            <div style={{fontSize:20}}>⚠️</div>
+            <div>
+              <div style={{fontSize:12,fontWeight:700,color:C.amber,marginBottom:4}}>Fixed Cost Compression Active</div>
+              <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
+                Headcount floor ({fmt(p.floorTotal)}) exceeds the formula-based overhead ({fmt(p.fixedMktg > p.floorTotal ? p.fixedMktg : Math.round(variableBudget * (inputs.fixedMktgPct / 100) / (1 - inputs.fixedMktgPct / 100)))}).
+                At {fmt(s.targetARR)} ARR, fixed marketing consumes <strong style={{color:C.rose}}>{p.floorPctOfRev?.toFixed(1)}% of revenue</strong> — 
+                the VP alone is {(425000 / p.totalRevenue * 100).toFixed(1)}%.
+                Effective fixed overhead is {p.effectiveFixedMktgPct?.toFixed(0)}%, not the {inputs.fixedMktgPct}% set in the stress mode.
+              </div>
+              <div style={{marginTop:8,fontSize:10,color:C.muted}}>
+                This compression resolves around $15-20M ARR where leadership comp drops below 3% of revenue. Until then, every demand gen dollar carries disproportionate overhead burden.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scaling curve */}
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>VP Marketing as % of Revenue (Step Function)</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
+          {[{arr:3,pct:(425000/3000000*100).toFixed(1)},{arr:5,pct:(425000/5000000*100).toFixed(1)},{arr:10,pct:(425000/10000000*100).toFixed(1)},{arr:20,pct:(425000/20000000*100).toFixed(1)},{arr:40,pct:(425000/40000000*100).toFixed(1)}].map(pt=>{
+            const isClose = Math.abs(s.targetARR / 1000000 - pt.arr) < pt.arr * 0.3;
+            return(<div key={pt.arr} style={{padding:8,background:isClose?`${C.accent}12`:C.bg,borderRadius:6,textAlign:"center",border:isClose?`1px solid ${C.accent}30`:"1px solid transparent"}}>
+              <div style={{fontSize:9,color:C.dim}}>${pt.arr}M ARR</div>
+              <div style={{fontSize:16,fontWeight:700,color:parseFloat(pt.pct)>5?C.rose:parseFloat(pt.pct)>2?C.amber:C.green,fontFamily:"'DM Mono',monospace"}}>{pt.pct}%</div>
+              <div style={{fontSize:8,color:C.dim}}>of revenue</div>
+            </div>);
+          })}
+        </div>
+      </div>
+
       <div style={{display:"grid",gridTemplateColumns:`repeat(${fixedItems.length},1fr)`,gap:12}}>
         {fixedItems.map((fi,i)=>(
           <div key={fi.name} style={{padding:14,background:C.bg,borderRadius:10,borderLeft:`3px solid ${C.violet}`}}>
             <div style={{fontSize:12,fontWeight:700,color:C.violet,marginBottom:4}}>{fi.name}</div>
             <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fmt(fi.amount)}</div>
             <div style={{fontSize:9,color:C.dim,marginTop:4}}>{fi.pct}% of fixed mktg • {fi.desc}</div>
+            {fi.isFloorBound && <div style={{marginTop:4,fontSize:8,color:C.amber,fontWeight:600}}>▲ FLOOR — comp doesn't compress</div>}
           </div>
         ))}
       </div>
@@ -771,8 +1063,144 @@ function ChannelsPage({model,inputs,setInputs}){
   </div>);
 }
 
-function PipelinePage({model}){const{stages}=model;return(<div><Header title="Pipeline" sub="Lifecycle waterfall with ownership and quality gates" icon={GitBranch}/><div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:20}}><Metric label="SQO Pipeline" value={fmt(model.summary.stage2Pipeline)} sub="Forecastable" color={C.green}/><Metric label="Stage 1 Pipeline" value={fmt(model.summary.stage1Pipeline)} sub="Non-forecastable" color={C.amber}/><Metric label="Funnel Yield" value={`${(model.summary.effectiveFunnelYield*100).toFixed(2)}%`} color={C.accent}/></div>
-  <Card>{stages.map((s,i)=>{const w=stages[0].count>0?(s.count/stages[0].count)*100:0;return(<div key={s.name} style={{marginBottom:10}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><div><span style={{fontSize:12,fontWeight:600,color:C.text}}>{s.name}</span><span style={{fontSize:9,color:C.dim,marginLeft:8}}>{s.question} • {s.owner}</span></div><span style={{fontSize:12,color:C.ch[i],fontFamily:"'DM Mono',monospace",fontWeight:700}}>{fN(s.count)}</span></div><div style={{height:24,background:C.bg,borderRadius:6,overflow:"hidden"}}><motion.div initial={{width:0}} animate={{width:`${Math.max(w,2)}%`}} transition={{duration:0.6,delay:i*0.08}} style={{height:"100%",background:`linear-gradient(90deg,${C.ch[i]},${C.ch[i]}66)`,borderRadius:6,display:"flex",alignItems:"center",paddingLeft:8}}><span style={{fontSize:9,fontWeight:700,color:"#fff"}}>{w.toFixed(0)}%</span></motion.div></div>{i<stages.length-1&&<div style={{fontSize:9,color:C.dim,textAlign:"right",marginTop:1}}>{s.nextRate}%→</div>}</div>);})}</Card></div>);}
+function PipelinePage({model,inputs}){
+  const{stages,summary:s,pnl:p,channels}=model;
+  const totalChannelSpend = channels.reduce((sum,c) => sum + c.spend, 0);
+  const blendedCPL = s.inquiriesNeeded > 0 ? totalChannelSpend / s.inquiriesNeeded : 0;
+  // Cost to generate each stage volume from demand gen spend
+  const stageCosts = stages.map((st,i) => {
+    const costPer = st.count > 0 ? totalChannelSpend / st.count : 0;
+    return { ...st, costPer, totalCost: i === 0 ? totalChannelSpend : costPer * st.count };
+  });
+  // Budget context
+  const demandGenBudget = p.variableMktg;
+  const afterFixed = p.totalMktgBudget - p.fixedMktg;
+  const fixedPctActual = p.totalMktgBudget > 0 ? p.fixedMktg / p.totalMktgBudget * 100 : 0;
+
+  return(<div><Header title="Pipeline" sub="Lifecycle waterfall — volume, cost per stage, budget context" icon={GitBranch}/>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",gap:12,marginBottom:20}}>
+      <Metric label="SQO Pipeline" value={fmt(s.stage2Pipeline)} sub="Forecastable" color={C.green}/>
+      <Metric label="Stage 1 Pipeline" value={fmt(s.stage1Pipeline)} sub="Non-forecastable" color={C.amber}/>
+      <Metric label="Funnel Yield" value={`${(s.effectiveFunnelYield*100).toFixed(2)}%`} sub={`${Math.round(1/s.effectiveFunnelYield)}:1 inq/deal`} color={C.accent}/>
+      <Metric label="Demand Gen Budget" value={fmt(demandGenBudget)} sub={`${inputs.variableMktgPct}% of rev`} color={C.blue}/>
+      <Metric label="Blended CPL" value={fmt(blendedCPL)} sub="Channel spend ÷ inquiries" color={C.ch[0]}/>
+    </div>
+
+    {/* Budget flow: total → fixed absorbed → demand gen → what it buys */}
+    <Card style={{marginBottom:18}}>
+      <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,marginBottom:14,textTransform:"uppercase",letterSpacing:"0.04em"}}>Budget → Pipeline Flow</h3>
+      <div style={{display:"flex",alignItems:"center",gap:0}}>
+        {[
+          {label:"Total Mktg", value:p.totalMktgBudget, color:C.accent, sub:`${(p.totalMktgBudget/p.totalRevenue*100).toFixed(0)}% rev`},
+          {label:"Fixed Absorbed", value:p.fixedMktg, color:C.violet, sub:`${fixedPctActual.toFixed(0)}% overhead`, negative:true},
+          {label:"Demand Gen", value:afterFixed, color:C.amber, sub:"variable budget"},
+          {label:"Martech Tax", value:p.martechSpend, color:C.blue, sub:`${inputs.martechPctOfVariable||25}%`, negative:true},
+          {label:"Channel Spend", value:p.programmaticBudget, color:C.green, sub:"buys inquiries"},
+        ].map((step,i,arr)=>(
+          <div key={step.label} style={{display:"flex",alignItems:"center",flex:1,gap:0}}>
+            <div style={{flex:1,padding:12,background:`${step.color}08`,borderRadius:10,border:`1px solid ${step.color}20`,textAlign:"center",position:"relative"}}>
+              {step.negative && <div style={{position:"absolute",top:4,right:8,fontSize:9,color:C.rose,fontWeight:700}}>−</div>}
+              <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",fontWeight:700}}>{step.label}</div>
+              <div style={{fontSize:16,fontWeight:700,color:step.color,fontFamily:"'DM Mono',monospace",marginTop:4}}>{fmt(step.value)}</div>
+              <div style={{fontSize:9,color:C.muted,marginTop:2}}>{step.sub}</div>
+            </div>
+            {i<arr.length-1 && <div style={{padding:"0 4px",color:C.dim,fontSize:14}}>→</div>}
+          </div>
+        ))}
+      </div>
+      {p.fixedMktgIsFloorBound && (
+        <div style={{marginTop:10,padding:8,background:`${C.amber}08`,borderRadius:6,border:`1px solid ${C.amber}15`}}>
+          <span style={{fontSize:10,color:C.amber,fontWeight:600}}>⚠ Floor-bound:</span>
+          <span style={{fontSize:10,color:C.muted,marginLeft:6}}>
+            Headcount floor ({fmt(p.floorTotal)}) exceeds formula overhead. VP alone = {(425000/p.totalRevenue*100).toFixed(1)}% of revenue. 
+            Only {fmt(p.programmaticBudget)} reaches channel spend — {(p.programmaticBudget/p.totalMktgBudget*100).toFixed(0)}% of total marketing budget actually buys pipeline.
+          </span>
+        </div>
+      )}
+    </Card>
+
+    {/* Funnel waterfall with cost per stage */}
+    <Card style={{marginBottom:18}}>
+      <h3 style={{fontSize:11,fontWeight:700,color:C.dim,margin:0,marginBottom:14,textTransform:"uppercase",letterSpacing:"0.04em"}}>Funnel Waterfall — Volume & Unit Economics</h3>
+      {stageCosts.map((st,i)=>{
+        const w = stages[0].count > 0 ? (st.count/stages[0].count)*100 : 0;
+        return(<div key={st.name} style={{marginBottom:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:4}}>
+            <div>
+              <span style={{fontSize:13,fontWeight:700,color:C.text}}>{st.name}</span>
+              <span style={{fontSize:9,color:C.dim,marginLeft:8}}>{st.question} • {st.owner}</span>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <span style={{fontSize:14,fontWeight:700,color:C.ch[i],fontFamily:"'DM Mono',monospace"}}>{fN(st.count)}</span>
+              <span style={{fontSize:10,color:C.muted,marginLeft:10}}>{fmt(st.costPer)}/ea</span>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <div style={{flex:1,height:28,background:C.bg,borderRadius:6,overflow:"hidden",position:"relative"}}>
+              <motion.div initial={{width:0}} animate={{width:`${Math.max(w,2)}%`}} transition={{duration:0.6,delay:i*0.08}}
+                style={{height:"100%",background:`linear-gradient(90deg,${C.ch[i]},${C.ch[i]}66)`,borderRadius:6,display:"flex",alignItems:"center",paddingLeft:10}}>
+                <span style={{fontSize:9,fontWeight:700,color:"#fff"}}>{w.toFixed(0)}%</span>
+              </motion.div>
+            </div>
+            <div style={{width:80,textAlign:"right",fontSize:10,color:C.dim,fontFamily:"'DM Mono',monospace"}}>
+              {i===0 ? fmt(totalChannelSpend) : ""}
+            </div>
+          </div>
+          {i<stages.length-1&&<div style={{fontSize:9,color:C.dim,textAlign:"right",marginTop:2}}>{st.nextRate}% → {stages[i+1].name}</div>}
+        </div>);
+      })}
+    </Card>
+
+    {/* Unit economics summary */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+      <Card>
+        <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Cost to Generate Pipeline</div>
+        {[
+          {label:"Per Inquiry", value: blendedCPL, bench:"$80-150 cyber"},
+          {label:"Per MQL", value: s.mqlsNeeded > 0 ? totalChannelSpend / s.mqlsNeeded : 0, bench:"$250-500 mid-market"},
+          {label:"Per SQL", value: s.sqlsNeeded > 0 ? totalChannelSpend / s.sqlsNeeded : 0, bench:"$600-1200"},
+          {label:"Per Meeting", value: s.meetingsNeeded > 0 ? totalChannelSpend / s.meetingsNeeded : 0, bench:"$800-1500"},
+          {label:"Per SQO", value: s.sqosNeeded > 0 ? totalChannelSpend / s.sqosNeeded : 0, bench:"$8K-15K cyber"},
+        ].map(r=>(
+          <div key={r.label} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
+            <div><span style={{fontSize:11,color:C.text}}>{r.label}</span><span style={{fontSize:8,color:C.dim,marginLeft:6}}>{r.bench}</span></div>
+            <span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{fmt(r.value)}</span>
+          </div>
+        ))}
+      </Card>
+      <Card>
+        <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Funnel Efficiency</div>
+        {[
+          {label:"Inquiry → Deal", value:`${(s.effectiveFunnelYield*100).toFixed(2)}%`, desc:`${Math.round(1/s.effectiveFunnelYield)}:1 ratio`},
+          {label:"MQL → Deal", value:`${((s.dealsNeeded/s.mqlsNeeded)*100).toFixed(1)}%`, desc:`${Math.round(s.mqlsNeeded/s.dealsNeeded)}:1`},
+          {label:"SQO → Deal", value:`${inputs.sqoToWonRate}%`, desc:`${Math.round(100/inputs.sqoToWonRate)}:1`},
+          {label:"Mktg Sourced", value:`${inputs.mktgSourcedPct}%`, desc:`${fN(s.mktgSQOs)} mktg SQOs`},
+          {label:"AE Sourced", value:`${100-inputs.mktgSourcedPct}%`, desc:`${fN(s.aeSelfSourcedSQOs)} AE SQOs`},
+        ].map(r=>(
+          <div key={r.label} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
+            <span style={{fontSize:11,color:C.text}}>{r.label}</span>
+            <div style={{textAlign:"right"}}><span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{r.value}</span><span style={{fontSize:9,color:C.dim,marginLeft:6}}>{r.desc}</span></div>
+          </div>
+        ))}
+      </Card>
+      <Card>
+        <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:8}}>Budget Reality Check</div>
+        {[
+          {label:"Total Mktg Budget", value:fmt(p.totalMktgBudget), color:C.accent},
+          {label:"Absorbed by Overhead", value:fmt(p.fixedMktg), color:C.violet},
+          {label:"Available for Demand", value:fmt(afterFixed), color:C.amber},
+          {label:"Buys Inquiries", value:fN(s.mktgInquiriesNeeded), color:C.ch[0]},
+          {label:"Yields Deals", value:fN(s.dealsNeeded), color:C.green},
+        ].map(r=>(
+          <div key={r.label} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
+            <span style={{fontSize:11,color:C.text}}>{r.label}</span>
+            <span style={{fontSize:12,fontWeight:700,color:r.color,fontFamily:"'DM Mono',monospace"}}>{r.value}</span>
+          </div>
+        ))}
+      </Card>
+    </div>
+  </div>);
+}
 
 function VelocityPage({model,inputs,setInputs}){
   const{velocityStages,summary:s}=model;const totalDays=s.totalCycleDays;
@@ -1034,7 +1462,7 @@ export default function App(){
   const[inputs,setInputs]=useState(DEFAULT_INPUTS);
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const pp={model,inputs,setInputs};
-  const pages={dashboard:<DashboardPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>};
 
   return(<div style={{display:"flex",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'DM Sans',sans-serif",color:C.text}}>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>

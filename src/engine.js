@@ -59,6 +59,22 @@ export const DEFAULT_INPUTS = {
   cpSqoBenchmark: 12000,    // Cost per SQO benchmark (mid-market cyber $8K-15K)
   cacPaybackTarget: 24,     // Target CAC payback months (enterprise cyber 18-30)
 
+  // ── Sales Budget Decomposition (within salesOpexPct)
+  // These are % of Sales OPEX — must sum to 100
+  salesBudgetBreakdown: {
+    aeComp: 55,              // AE total comp (base + OTE variable) — typically largest line
+    sdrComp: 20,             // SDR/BDR comp
+    seOverlay: 10,           // SE / Solutions Engineer overlay
+    salesTools: 8,           // CRM seats, outbound tools, ZoomInfo, Gong
+    enablement: 4,           // Training, onboarding, SKO
+    travel: 3,               // Field travel, customer dinners
+  },
+  // Comp benchmarks (fully loaded per head)
+  aeOTE: 280000,             // AE OTE mid-market cyber ($250-320K)
+  aeBenefitsLoad: 1.25,      // Benefits multiplier (1.2-1.3x)
+  sdrOTE: 95000,             // SDR OTE ($85-110K)
+  sdrBenefitsLoad: 1.22,     // SDR benefits load
+
   // Benchmark ranges for delta display (not editable, reference only)
   costBenchmarks: {
     gAndAPct: { low: 8, mid: 10, high: 12, label: "G&A" },
@@ -115,6 +131,7 @@ export function computeModel(inputs) {
     grossMargin, gAndAPct, rAndDPct, salesOpexPct, variableMktgPct,
     salesVariablePct, fixedMktgPct, martechPctOfVariable, fixedMktgBreakdown,
     cpSqoBenchmark, cacPaybackTarget, costBenchmarks,
+    salesBudgetBreakdown, aeOTE, aeBenefitsLoad, sdrOTE, sdrBenefitsLoad,
     nrrPercent, churnRate, pipelineCoverage, stage1MinPct,
     coverageGreen, coverageYellow, coverageRed,
     velStage1to2, velStage2to3, velStage3to4, velStage4to5, velStage5toClose,
@@ -383,12 +400,127 @@ export function computeModel(inputs) {
   const rAndD = totalRevenue * (rAndDPct / 100);
   const salesOpex = totalRevenue * (salesOpexPct / 100);
 
+  // ── Sales Budget Decomposition
+  const sbb = salesBudgetBreakdown || { aeComp: 55, sdrComp: 20, seOverlay: 10, salesTools: 8, enablement: 4, travel: 3 };
+  
+  // Headcount-based comp floor (actual cost to employ the team)
+  const aeFullyLoaded = (aeOTE || 280000) * (aeBenefitsLoad || 1.25);  // $350K per AE
+  const sdrFullyLoaded = (sdrOTE || 95000) * (sdrBenefitsLoad || 1.22); // $116K per SDR
+  const sdrCount = Math.ceil(aeCount * (sdrsPerAe || 1.5));
+  const aeCompFloor = aeCount * aeFullyLoaded;
+  const sdrCompFloor = sdrCount * sdrFullyLoaded;
+  const seCount = Math.max(1, Math.ceil(aeCount / 3)); // ~1 SE per 3 AEs
+  const seFullyLoaded = 195000; // SE fully loaded ($155K base + benefits)
+  const seCompFloor = seCount * seFullyLoaded;
+  const salesHeadcountFloor = aeCompFloor + sdrCompFloor + seCompFloor;
+
+  // Formula-based breakdown (% of salesOpex)
+  const salesBudgetItems = [
+    { name: "AE Comp", pctOfSales: sbb.aeComp,
+      formula: salesOpex * (sbb.aeComp / 100), floor: aeCompFloor,
+      amount: Math.max(salesOpex * (sbb.aeComp / 100), aeCompFloor),
+      headcount: aeCount, perHead: aeFullyLoaded,
+      desc: `${aeCount} AEs × ${Math.round(aeFullyLoaded/1000)}K loaded` },
+    { name: "SDR/BDR Comp", pctOfSales: sbb.sdrComp,
+      formula: salesOpex * (sbb.sdrComp / 100), floor: sdrCompFloor,
+      amount: Math.max(salesOpex * (sbb.sdrComp / 100), sdrCompFloor),
+      headcount: sdrCount, perHead: sdrFullyLoaded,
+      desc: `${sdrCount} SDRs × ${Math.round(sdrFullyLoaded/1000)}K loaded` },
+    { name: "SE / Overlay", pctOfSales: sbb.seOverlay,
+      formula: salesOpex * (sbb.seOverlay / 100), floor: seCompFloor,
+      amount: Math.max(salesOpex * (sbb.seOverlay / 100), seCompFloor),
+      headcount: seCount, perHead: seFullyLoaded,
+      desc: `${seCount} SEs × ${Math.round(seFullyLoaded/1000)}K loaded` },
+    { name: "Sales Tools", pctOfSales: sbb.salesTools,
+      formula: salesOpex * (sbb.salesTools / 100), floor: 0,
+      amount: salesOpex * (sbb.salesTools / 100),
+      desc: "CRM, outbound, Gong, ZoomInfo" },
+    { name: "Enablement", pctOfSales: sbb.enablement,
+      formula: salesOpex * (sbb.enablement / 100), floor: 0,
+      amount: salesOpex * (sbb.enablement / 100),
+      desc: "Training, onboarding, SKO" },
+    { name: "Travel", pctOfSales: sbb.travel,
+      formula: salesOpex * (sbb.travel / 100), floor: 0,
+      amount: salesOpex * (sbb.travel / 100),
+      desc: "Field travel, customer dinners" },
+  ];
+  salesBudgetItems.forEach(si => { si.isFloorBound = si.floor > 0 && si.floor > si.formula; });
+  const salesBudgetActual = salesBudgetItems.reduce((s, si) => s + si.amount, 0);
+  const salesIsFloorBound = salesHeadcountFloor > salesOpex;
+  const salesFloorDelta = salesIsFloorBound ? salesHeadcountFloor - salesOpex : 0;
+  
+  // Sales comp split: base vs variable (for AEs)
+  const aeBasePct = 100 - (salesVariablePct || 50); // if 50% variable, then 50% base
+  const aeTotalBase = aeCompFloor * (aeBasePct / 100);
+  const aeTotalVariable = aeCompFloor * (salesVariablePct / 100);
+  const sdrTotalBase = sdrCompFloor * 0.7; // SDRs typically 70/30
+  const sdrTotalVariable = sdrCompFloor * 0.3;
+  const totalSalesFixedComp = aeTotalBase + sdrTotalBase + seCompFloor; // SEs are all fixed
+  const totalSalesVariableComp = aeTotalVariable + sdrTotalVariable;
+
   // Marketing: total = variable demand gen + fixed marketing overhead
   // Variable marketing is a % of revenue; fixed marketing is a % of total mktg budget
   // We solve: totalMktg = variableMktg / (1 - fixedMktgPct/100)
   const variableMktg = totalRevenue * (variableMktgPct / 100);
-  const totalMktgBudget = fixedMktgPct > 0 ? variableMktg / (1 - fixedMktgPct / 100) : variableMktg;
-  const fixedMktg = totalMktgBudget - variableMktg;
+  const formulaFixedMktg = fixedMktgPct > 0 ? variableMktg / (1 - fixedMktgPct / 100) - variableMktg : 0;
+
+  // ── Fixed Marketing Floor: headcount-based minimum
+  // VP Marketing comp is a step function, not a curve.
+  // At $3M ARR the VP alone is 13% of revenue; at $40M it's 1%.
+  // Model the actual cost floor based on team composition at each stage.
+  const mktgLeadershipComp = 425000;  // VP Mktg all-in (OTE $350K + benefits + equity ~$75K)
+  const revopsComp = 165000;           // RevOps/MOps hire (fully loaded)
+  const contentComp = 135000;          // Content/brand person (fully loaded)
+  const baselineTooling = 85000;       // CRM/MAP/analytics baseline licenses
+
+  // Team scales with ARR: minimum viable at every stage
+  // <$5M: VP + fractional ops + baseline tools
+  // $5-15M: VP + RevOps + content + tools
+  // $15-30M: VP + 2 RevOps + 2 content + Sr tools
+  // $30M+: VP + Dir + 3 RevOps + 3 content + full stack
+  const arrForScale = targetARR;
+  let mktgHeadcountFloor;
+  if (arrForScale < 5000000) {
+    mktgHeadcountFloor = {
+      label: "Seed/Early ($0-5M)",
+      leadership: mktgLeadershipComp,
+      revops: revopsComp * 0.5,    // fractional / part-time
+      content: contentComp * 0.5,   // fractional
+      tools: baselineTooling * 0.7, // starter stack
+    };
+  } else if (arrForScale < 15000000) {
+    mktgHeadcountFloor = {
+      label: "Growth ($5-15M)",
+      leadership: mktgLeadershipComp,
+      revops: revopsComp,
+      content: contentComp,
+      tools: baselineTooling,
+    };
+  } else if (arrForScale < 30000000) {
+    mktgHeadcountFloor = {
+      label: "Scale ($15-30M)",
+      leadership: mktgLeadershipComp + 180000, // + Dir
+      revops: revopsComp * 2,
+      content: contentComp * 2,
+      tools: baselineTooling * 1.5,
+    };
+  } else {
+    mktgHeadcountFloor = {
+      label: "Enterprise ($30M+)",
+      leadership: mktgLeadershipComp + 180000 + 150000, // VP + Dir + Mgr
+      revops: revopsComp * 3,
+      content: contentComp * 3,
+      tools: baselineTooling * 2.5,
+    };
+  }
+  const floorTotal = mktgHeadcountFloor.leadership + mktgHeadcountFloor.revops + mktgHeadcountFloor.content + mktgHeadcountFloor.tools;
+  const floorPctOfRev = totalRevenue > 0 ? floorTotal / totalRevenue * 100 : 0;
+
+  // Use the HIGHER of formula-based or floor-based fixed marketing
+  const fixedMktg = Math.max(formulaFixedMktg, floorTotal);
+  const fixedMktgIsFloorBound = floorTotal > formulaFixedMktg;
+  const effectiveFixedMktgPct = (variableMktg + fixedMktg) > 0 ? fixedMktg / (variableMktg + fixedMktg) * 100 : 0;
+  const totalMktgBudget = variableMktg + fixedMktg;
 
   // ── Marketing Budget Decomposition
   // Variable marketing splits: programmatic (channel spend) vs martech
@@ -396,14 +528,38 @@ export function computeModel(inputs) {
   const martechSpend = variableMktg * martechPct;           // intent data, enrichment, MAP overage, syndication
   const programmaticBudget = variableMktg * (1 - martechPct); // paid media, events, content syndication — what flows through channels
 
-  // Fixed marketing itemization
+  // Fixed marketing itemization — each line uses MAX of (floor comp, formula share)
+  // Leadership comp is a step function: it doesn't drop just because the formula says 30% of a smaller pool
   const fmb = fixedMktgBreakdown || { leadership: 30, revops: 20, contentStaff: 25, baselineTools: 25 };
   const fixedMktgItems = [
-    { name: "Marketing Leadership", pct: fmb.leadership, amount: fixedMktg * (fmb.leadership / 100), desc: "VP/Dir Mktg, CMO allocation" },
-    { name: "RevOps / MOps", pct: fmb.revops, amount: fixedMktg * (fmb.revops / 100), desc: "Ops headcount, analytics" },
-    { name: "Content & Brand Staff", pct: fmb.contentStaff, amount: fixedMktg * (fmb.contentStaff / 100), desc: "Writers, designers, brand" },
-    { name: "Baseline Tooling", pct: fmb.baselineTools, amount: fixedMktg * (fmb.baselineTools / 100), desc: "CRM/MAP/analytics licenses" },
+    { name: "Marketing Leadership",
+      amount: Math.max(mktgHeadcountFloor.leadership, fixedMktg * (fmb.leadership / 100)),
+      floor: mktgHeadcountFloor.leadership,
+      formula: fixedMktg * (fmb.leadership / 100),
+      isFloorBound: mktgHeadcountFloor.leadership > fixedMktg * (fmb.leadership / 100),
+      desc: "VP/Dir Mktg — step function, doesn't scale with ARR" },
+    { name: "RevOps / MOps",
+      amount: Math.max(mktgHeadcountFloor.revops, fixedMktg * (fmb.revops / 100)),
+      floor: mktgHeadcountFloor.revops,
+      formula: fixedMktg * (fmb.revops / 100),
+      isFloorBound: mktgHeadcountFloor.revops > fixedMktg * (fmb.revops / 100),
+      desc: "Ops headcount, analytics" },
+    { name: "Content & Brand Staff",
+      amount: Math.max(mktgHeadcountFloor.content, fixedMktg * (fmb.contentStaff / 100)),
+      floor: mktgHeadcountFloor.content,
+      formula: fixedMktg * (fmb.contentStaff / 100),
+      isFloorBound: mktgHeadcountFloor.content > fixedMktg * (fmb.contentStaff / 100),
+      desc: "Writers, designers, brand" },
+    { name: "Baseline Tooling",
+      amount: Math.max(mktgHeadcountFloor.tools, fixedMktg * (fmb.baselineTools / 100)),
+      floor: mktgHeadcountFloor.tools,
+      formula: fixedMktg * (fmb.baselineTools / 100),
+      isFloorBound: mktgHeadcountFloor.tools > fixedMktg * (fmb.baselineTools / 100),
+      desc: "CRM/MAP/analytics licenses" },
   ];
+  // Recalculate fixedMktg as sum of line items (may exceed original if multiple lines are floor-bound)
+  const fixedMktgActual = fixedMktgItems.reduce((s, fi) => s + fi.amount, 0);
+  fixedMktgItems.forEach(fi => { fi.pct = fixedMktgActual > 0 ? Math.round(fi.amount / fixedMktgActual * 100) : 0; });
 
   // CAC variants
   const programmaticCAC = dealsNeeded > 0 ? totalMarketingSpend / dealsNeeded : 0; // channel spend only
@@ -602,6 +758,12 @@ export function computeModel(inputs) {
       // Marketing budget decomposition
       martechSpend, programmaticBudget, fixedMktgItems,
       programmaticCAC, martechLoadedCAC, fullyBurdenedCAC, blendedAllInCAC,
+      // Fixed marketing floor
+      fixedMktgIsFloorBound, effectiveFixedMktgPct, mktgHeadcountFloor, floorTotal, floorPctOfRev,
+      // Sales budget
+      salesBudgetItems, salesBudgetActual, salesIsFloorBound, salesFloorDelta, salesHeadcountFloor,
+      totalSalesFixedComp, totalSalesVariableComp, aeCompFloor, sdrCompFloor, seCompFloor,
+      aeCount, sdrCount, seCount, aeFullyLoaded, sdrFullyLoaded, seFullyLoaded,
       // Marketing-sourced split
       mktgSQOs, aeSelfSourcedSQOs, mktgMeetingsNeeded, mktgSqlsNeeded, mktgMqlsNeeded, mktgInquiriesNeeded, mktgPct,
       // Attrition
@@ -616,7 +778,11 @@ export function computeModel(inputs) {
       operatingIncome, opMargin, contributionMargin, contributionMarginPct, breakEvenRevenue,
       sAndMHealth, burnRisk, underinvestRisk, benchDeltas, actualCpSqo, cpSqoRatio,
       martechSpend, programmaticBudget, fixedMktgItems,
-      programmaticCAC, martechLoadedCAC, fullyBurdenedCAC, blendedAllInCAC },
+      programmaticCAC, martechLoadedCAC, fullyBurdenedCAC, blendedAllInCAC,
+      fixedMktgIsFloorBound, effectiveFixedMktgPct, mktgHeadcountFloor, floorTotal, floorPctOfRev,
+      salesBudgetItems, salesBudgetActual, salesIsFloorBound, salesFloorDelta, salesHeadcountFloor,
+      totalSalesFixedComp, totalSalesVariableComp, aeCompFloor, sdrCompFloor, seCompFloor,
+      aeCount: inputs.aeCount, sdrCount, seCount, aeFullyLoaded, sdrFullyLoaded, seFullyLoaded },
     glideslope, qbrData, weeklySimplified, velocityStages, quarterlyTargets,
     funnelHealth, cacBreakdown, monthWeights, seasonalityMode, phaseShiftedFunnel,
   };
