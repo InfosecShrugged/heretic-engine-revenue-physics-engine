@@ -1106,12 +1106,14 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
       </table></div>
     </Card>
 
-    {/* Fixed Marketing Overhead Detail */}
+    {/* Fixed Marketing Infrastructure — Structural Allocation Simulator */}
     <Card style={{marginBottom:18}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
         <div>
-          <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Fixed Marketing Overhead (Not in G&A)</h3>
-          <div style={{fontSize:10,color:C.muted}}>Marketing-specific fixed costs — leadership, ops, staff, baseline tools. Separate from G&A (Finance, Legal, HR, IT).</div>
+          <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Marketing Infrastructure — Structural Allocation</h3>
+          <div style={{fontSize:10,color:C.muted,lineHeight:1.5,maxWidth:500}}>
+            Infrastructure cost that exists before a single lead is generated. Allocation across layers shifts by growth stage and GTM motion — structure is a strategic choice, not accounting destiny.
+          </div>
         </div>
         {p.fixedMktgIsFloorBound && (
           <div style={{padding:"6px 12px",borderRadius:6,background:`${C.rose}12`,border:`1px solid ${C.rose}30`}}>
@@ -1119,6 +1121,30 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             <div style={{fontSize:10,color:C.muted}}>{p.mktgHeadcountFloor?.label}</div>
           </div>
         )}
+      </div>
+
+      {/* Structure Presets */}
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:6}}>Structure Preset</div>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+          {[
+            {id:"founder",label:"Founder-Led",desc:"Lean exec, no PMM, ops-heavy",vals:{executive:15,revEngineOps:25,pmm:5,brandContent:25,infraTools:20,prAr:10}},
+            {id:"growth",label:"Growth Engine",desc:"Balanced infrastructure",vals:{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10}},
+            {id:"enterprise",label:"Enterprise Motion",desc:"PMM+PR heavy, field-ready",vals:{executive:20,revEngineOps:15,pmm:22,brandContent:15,infraTools:13,prAr:15}},
+            {id:"brandLed",label:"Brand-Led",desc:"Content+creative dominant",vals:{executive:18,revEngineOps:12,pmm:12,brandContent:30,infraTools:13,prAr:15}},
+            {id:"plgAi",label:"PLG / AI-Heavy",desc:"Tech+ops dominant, lean team",vals:{executive:15,revEngineOps:22,pmm:10,brandContent:15,infraTools:28,prAr:10}},
+          ].map(preset=>{
+            const fmb=inputs.fixedMktgBreakdown||{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10};
+            const isActive=Object.entries(preset.vals).every(([k,v])=>fmb[k]===v);
+            return(<button key={preset.id} onClick={()=>setInputs(p=>({...p,fixedMktgBreakdown:preset.vals}))}
+              style={{padding:"8px 14px",borderRadius:7,border:`1px solid ${isActive?C.violet:C.border}`,
+                background:isActive?`${C.violet}12`:"transparent",color:isActive?C.violet:C.muted,
+                cursor:"pointer",fontSize:10,fontWeight:600,fontFamily:"'DM Sans',sans-serif",textAlign:"left"}}>
+              <div style={{fontWeight:700}}>{preset.label}</div>
+              <div style={{fontSize:8,marginTop:2,color:C.dim}}>{preset.desc}</div>
+            </button>);
+          })}
+        </div>
       </div>
 
       {/* Compression warning */}
@@ -1130,50 +1156,85 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               <div style={{fontSize:12,fontWeight:700,color:C.amber,marginBottom:4}}>Fixed Cost Compression Active</div>
               <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
                 Headcount floor ({fmt(p.floorTotal)}) exceeds the formula-based overhead ({fmt(p.fixedMktg > p.floorTotal ? p.fixedMktg : Math.round(variableBudget * (inputs.fixedMktgPct / 100) / (1 - inputs.fixedMktgPct / 100)))}).
-                At {fmt(s.targetARR)} ARR, fixed marketing consumes <strong style={{color:C.rose}}>{p.floorPctOfRev?.toFixed(1)}% of revenue</strong> — 
-                the VP alone is {((p.leadershipInMktg||455000) / p.totalRevenue * 100).toFixed(1)}%.
-                Effective fixed overhead is {p.effectiveFixedMktgPct?.toFixed(0)}%, not the {inputs.fixedMktgPct}% set in the stress mode.
-              </div>
-              <div style={{marginTop:8,fontSize:10,color:C.muted}}>
-                This compression resolves around $15-20M ARR where leadership comp drops below 3% of revenue. Until then, every demand gen dollar carries disproportionate overhead burden.
+                At {fmt(s.targetARR)} ARR, fixed marketing consumes <strong style={{color:C.rose}}>{p.floorPctOfRev?.toFixed(1)}% of revenue</strong>.
+                This compression resolves around $15-20M ARR where infrastructure drops below 8% of revenue.
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Scaling curve */}
-      <div style={{marginBottom:16}}>
-        <div style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>VP Marketing as % of Revenue — Fully Loaded ({fmt(p.leadershipInMktg||455000)})</div>
+      {/* Reallocation sliders + detail cards */}
+      <div style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:16}}>
+        {/* Left: sliders */}
+        <div style={{padding:12,background:C.bg,borderRadius:10}}>
+          <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>Allocation % of Fixed Overhead</div>
+          {fixedItems.map((fi,i)=>{
+            const fmb=inputs.fixedMktgBreakdown||{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10};
+            const key=fi.layer;
+            const val=fmb[key]||0;
+            const layerColors=["#a78bfa","#f59e0b","#3b82f6","#22c55e","#64748b","#ec4899"];
+            return(<div key={fi.name} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                <span style={{fontSize:10,fontWeight:600,color:layerColors[i]||C.text}}>{fi.name}</span>
+                <span style={{fontSize:10,color:layerColors[i]||C.accent,fontFamily:"'DM Mono',monospace"}}>{val}%</span>
+              </div>
+              <input type="range" min={0} max={40} value={val}
+                onChange={e=>{const nv=parseInt(e.target.value);setInputs(p=>({...p,fixedMktgBreakdown:{...(p.fixedMktgBreakdown||fmb),[key]:nv}}));}}
+                style={{width:"100%",accentColor:layerColors[i]||C.violet}}/>
+            </div>);
+          })}
+          <div style={{padding:6,background:C.bgAlt,borderRadius:6,marginTop:6}}>
+            <div style={{fontSize:9,color:C.dim}}>Total allocation</div>
+            <div style={{fontSize:14,fontWeight:700,fontFamily:"'DM Mono',monospace",
+              color:(()=>{const fmb=inputs.fixedMktgBreakdown||{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10};const t=Object.values(fmb).reduce((s,v)=>s+v,0);return t===100?C.green:C.rose;})()}}>
+              {(()=>{const fmb=inputs.fixedMktgBreakdown||{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10};return Object.values(fmb).reduce((s,v)=>s+v,0);})()}%
+            </div>
+          </div>
+        </div>
+
+        {/* Right: infrastructure layer cards */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+          {fixedItems.map((fi,i)=>{
+            const layerColors=["#a78bfa","#f59e0b","#3b82f6","#22c55e","#64748b","#ec4899"];
+            const pctOfRev = p.totalRevenue > 0 ? fi.amount / p.totalRevenue * 100 : 0;
+            return(<div key={fi.name} style={{padding:12,background:C.bg,borderRadius:10,borderLeft:`3px solid ${layerColors[i]||C.violet}`}}>
+              <div style={{fontSize:11,fontWeight:700,color:layerColors[i]||C.violet,marginBottom:2}}>{fi.name}</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fmt(fi.amount)}</div>
+              <div style={{display:"flex",gap:8,marginTop:4}}>
+                <span style={{fontSize:9,color:C.dim}}>{fi.pct}% of fixed</span>
+                <span style={{fontSize:9,color:pctOfRev>5?C.rose:C.dim}}>{pctOfRev.toFixed(1)}% of rev</span>
+              </div>
+              <div style={{fontSize:9,color:C.muted,marginTop:4}}>{fi.desc}</div>
+              {fi.isFloorBound && <div style={{marginTop:4,fontSize:8,color:C.amber,fontWeight:600}}>▲ FLOOR — doesn't compress</div>}
+              {fi.amount===0 && <div style={{marginTop:4,fontSize:8,color:C.rose,fontWeight:600}}>⚠ Not funded at this stage</div>}
+            </div>);
+          })}
+        </div>
+      </div>
+
+      {/* Infrastructure as % of ARR at different scales */}
+      <div style={{marginTop:14}}>
+        <div style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>Infrastructure Burden by Scale — Fully Loaded ({fmt(p.fixedMktgActual||p.floorTotal)})</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
           {[{arr:3},{arr:5},{arr:10},{arr:20},{arr:40}].map(pt=>{
-            const vpLoaded = p.leadershipInMktg || 455000;
-            const pct = (vpLoaded / (pt.arr * 1000000) * 100).toFixed(1);
+            const infraTotal = p.fixedMktgActual || p.floorTotal;
+            const pct = (infraTotal / (pt.arr * 1000000) * 100).toFixed(1);
             const isClose = Math.abs(s.targetARR / 1000000 - pt.arr) < pt.arr * 0.3;
             return(<div key={pt.arr} style={{padding:8,background:isClose?`${C.accent}12`:C.bg,borderRadius:6,textAlign:"center",border:isClose?`1px solid ${C.accent}30`:"1px solid transparent"}}>
               <div style={{fontSize:9,color:C.dim}}>${pt.arr}M ARR</div>
-              <div style={{fontSize:16,fontWeight:700,color:parseFloat(pct)>5?C.rose:parseFloat(pct)>2?C.amber:C.green,fontFamily:"'DM Mono',monospace"}}>{pct}%</div>
+              <div style={{fontSize:16,fontWeight:700,color:parseFloat(pct)>15?C.rose:parseFloat(pct)>8?C.amber:C.green,fontFamily:"'DM Mono',monospace"}}>{pct}%</div>
               <div style={{fontSize:8,color:C.dim}}>of revenue</div>
             </div>);
           })}
         </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:`repeat(${fixedItems.length},1fr)`,gap:12}}>
-        {fixedItems.map((fi,i)=>(
-          <div key={fi.name} style={{padding:14,background:C.bg,borderRadius:10,borderLeft:`3px solid ${C.violet}`}}>
-            <div style={{fontSize:12,fontWeight:700,color:C.violet,marginBottom:4}}>{fi.name}</div>
-            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fmt(fi.amount)}</div>
-            <div style={{fontSize:9,color:C.dim,marginTop:4}}>{fi.pct}% of fixed mktg • {fi.desc}</div>
-            {fi.isFloorBound && <div style={{marginTop:4,fontSize:8,color:C.amber,fontWeight:600}}>▲ FLOOR — comp doesn't compress</div>}
-          </div>
-        ))}
-      </div>
       <div style={{marginTop:12,padding:10,background:`${C.violet}08`,borderRadius:8,border:`1px solid ${C.violet}15`}}>
-        <div style={{fontSize:10,color:C.muted}}>
-          <strong style={{color:C.violet}}>Why separate from G&A?</strong> G&A covers Finance, Legal, HR, Exec, IT — shared services that exist regardless of GTM motion. 
-          Fixed marketing overhead is marketing-specific infrastructure that enables demand gen but doesn't scale per-lead. 
-          Cutting fixed marketing impairs pipeline generation capability even if variable spend is maintained.
+        <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
+          <strong style={{color:C.violet}}>Infrastructure evolves in step functions.</strong> Leadership and PMM scale by complexity, not ARR linearly. 
+          Operational and MarTech layers scale with motion density. Brand and PR scale with category ambition. 
+          Cross-functional RevOps sits in G&A, not here — only marketing-side ops belongs in marketing infrastructure.
         </div>
       </div>
     </Card>
@@ -2388,6 +2449,17 @@ export default function App(){
         <button onClick={()=>setDrivers(!drivers)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:7,background:drivers?C.violetD:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
           <Settings size={13}/>Global Drivers
         </button>
+        <button onClick={()=>setOnboarded(false)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:7,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'DM Sans',sans-serif"}}>
+          Re-run Setup
+        </button>
+      </div>
+      <div style={{padding:"6px 12px 10px",borderTop:`1px solid ${C.border}`}}>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
+          {[{id:"legal:privacy",label:"Privacy"},{id:"legal:terms",label:"Terms"},{id:"legal:security",label:"Security"},{id:"legal:disclaimer",label:"Disclaimer"}].map(l=>(
+            <button key={l.id} onClick={()=>setPage(l.id)} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:8,fontFamily:"'DM Sans',sans-serif",padding:0,textDecoration:"underline"}}>{l.label}</button>
+          ))}
+        </div>
+        <div style={{textAlign:"center",fontSize:7,color:C.dim,marginTop:4}}>© 2026 Heretic Engine. All rights reserved.</div>
       </div>
     </aside>
 
@@ -2497,6 +2569,55 @@ export default function App(){
     {/* Info panel overlay */}
     <AnimatePresence>
       {infoPanel && <DocPanel moduleId={infoPanel} onClose={()=>setInfoPanel(null)}/>}
+    </AnimatePresence>
+    {/* Legal overlay */}
+    <AnimatePresence>
+      {page.startsWith("legal:")&&(
+        <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center"}}
+          onClick={()=>setPage("dashboard")}>
+          <motion.div initial={{y:20}} animate={{y:0}} style={{width:640,maxHeight:"80vh",background:C.bgAlt,borderRadius:14,border:`1px solid ${C.border}`,overflow:"hidden"}}
+            onClick={e=>e.stopPropagation()}>
+            <div style={{padding:"18px 24px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div style={{fontSize:15,fontWeight:700,color:C.text}}>
+                {page==="legal:privacy"?"Privacy Notice":page==="legal:terms"?"Terms of Use":page==="legal:security"?"Security Overview":"Financial Modeling Disclaimer"}
+              </div>
+              <button onClick={()=>setPage("dashboard")} style={{background:"transparent",border:"none",color:C.muted,cursor:"pointer"}}><X size={16}/></button>
+            </div>
+            <div style={{padding:"20px 24px",overflowY:"auto",maxHeight:"calc(80vh - 60px)",fontSize:12,color:C.muted,lineHeight:1.8}}>
+              {page==="legal:privacy"&&<div>
+                <p>Heretic Engine does not collect, store, or process personal data through this application.</p>
+                <p>This application does not require account creation, does not request personal information, and does not store user inputs.</p>
+                <p>No financial, operational, or CRM data entered into this application is transmitted to or retained by Heretic Engine.</p>
+                <p>Standard server logs may be generated by the hosting provider for infrastructure and uptime monitoring purposes only.</p>
+                <p>This application does not use user inputs to train machine learning models or artificial intelligence systems.</p>
+              </div>}
+              {page==="legal:terms"&&<div>
+                <p>This application is provided for informational and demonstration purposes only.</p>
+                <p>All projections, calculations, and modeling outputs are illustrative and depend entirely on user-provided assumptions.</p>
+                <p>Heretic Engine makes no representations or warranties regarding the accuracy, completeness, or suitability of outputs for business decision-making.</p>
+                <p>Users are solely responsible for validating assumptions and making independent business, financial, or operational decisions.</p>
+                <p>To the fullest extent permitted by law, Heretic Engine shall not be liable for any direct, indirect, incidental, or consequential damages arising from the use of this application.</p>
+                <p>All content, design, modeling logic, calculations, and visual frameworks contained in this application are proprietary intellectual property of Heretic Engine. Reproduction, redistribution, or commercial use without written permission is prohibited.</p>
+                <p>Use of this application constitutes acceptance of these terms.</p>
+              </div>}
+              {page==="legal:security"&&<div>
+                <p>This version of Heretic Engine does not persist user data.</p>
+                <p>No user accounts, CRM integrations, or external system connections are enabled in this environment.</p>
+                <p>The application is served over encrypted HTTPS connections.</p>
+                <p>No proprietary business data is stored or processed by this application.</p>
+                <p style={{marginTop:16,fontWeight:600,color:C.text}}>Intended Use</p>
+                <p>This application is intended for strategic modeling and scenario planning by revenue and finance professionals. It is not a substitute for audited financial statements, formal budgeting systems, or legally binding forecasting tools.</p>
+              </div>}
+              {page==="legal:disclaimer"&&<div>
+                <p>The outputs generated by this application are mathematical simulations based on user-defined inputs and preset assumptions.</p>
+                <p>They do not constitute financial advice, investment advice, accounting guidance, or strategic consulting.</p>
+                <p>Forecasts and projections are inherently uncertain and subject to market, operational, and execution variability.</p>
+                <p>Past performance assumptions do not guarantee future results.</p>
+              </div>}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </AnimatePresence>
   </div>);
 }
