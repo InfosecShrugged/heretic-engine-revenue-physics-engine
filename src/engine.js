@@ -105,8 +105,37 @@ export const DEFAULT_INPUTS = {
   // Velocity baselines (median days per stage)
   velStage1to2: 15, velStage2to3: 10, velStage3to4: 30, velStage4to5: 20, velStage5toClose: 14,
   // Channel
-  channelMix: { "Paid Search":25, "Content/SEO":20, "Events":15, "ABM":20, "Partner":10, "Outbound":10 },
-  channelCPL: { "Paid Search":150, "Content/SEO":45, "Events":300, "ABM":200, "Partner":80, "Outbound":120 },
+  // ── Revenue Motions (replaces flat channelMix)
+  // Every dollar gets TWO tags: Motion (CREATE/CONVERT/ACCELERATE) + Intent
+  motionAllocation: { create: 45, convert: 30, accelerate: 25 }, // must sum to 100
+  
+  // Channels INSIDE each motion (can appear in multiple motions)
+  motionChannels: {
+    create: [
+      { name: "Paid Search", pct: 30, cpl: 150, intent: "Net-new demand" },
+      { name: "Content / SEO", pct: 25, cpl: 45, intent: "Net-new demand" },
+      { name: "Events (ToF)", pct: 15, cpl: 300, intent: "Net-new demand" },
+      { name: "Cold Outbound", pct: 20, cpl: 120, intent: "Net-new demand" },
+      { name: "Content Syndication", pct: 10, cpl: 85, intent: "Net-new demand" },
+    ],
+    convert: [
+      { name: "SDR Labor", pct: 50, costPerSql: 800, intent: "Qualification" },
+      { name: "AI Qualification", pct: 15, costPerSql: 120, intent: "Qualification" },
+      { name: "Partner Handoff", pct: 20, costPerSql: 400, intent: "Qualification" },
+      { name: "Inbound Routing", pct: 15, costPerSql: 60, intent: "Qualification" },
+    ],
+    accelerate: [
+      { name: "ABM Ads", pct: 30, costPerAccount: 500, intent: "Coverage / stage progression" },
+      { name: "Paid Social (Coverage)", pct: 20, costPerAccount: 300, intent: "Coverage / awareness" },
+      { name: "Field Events (Late)", pct: 25, costPerAccount: 1200, intent: "Stage progression" },
+      { name: "Exec Programs", pct: 15, costPerAccount: 2000, intent: "Deal rescue" },
+      { name: "SDR/AE Assist", pct: 10, costPerAccount: 400, intent: "Stage progression" },
+    ],
+  },
+  // Acceleration impact assumptions
+  accelDaysReduced: 30,       // avg days pulled forward per account
+  accelWinRateLift: 5,        // win rate % pts improvement for accelerated deals
+  accelAccountsCoverage: 60,  // % of SQOs that get acceleration treatment
   // Funnel health benchmarks
   funnelBenchmarks: {
     inquiryToMqlRate: { good: 25, great: 40 },
@@ -138,7 +167,8 @@ export function computeModel(inputs) {
     planningYears, y2GrowthRate, y2ConversionLift,
     avgDealSize,
     inquiryToMqlRate, mqlToSqlRate, sqlToMeetingRate, meetingToSqoRate, sqoToWonRate,
-    channelMix, channelCPL, aeCount, aeRampMonths, aeQuota, sdrsPerAe,
+    motionAllocation, motionChannels, accelDaysReduced, accelWinRateLift, accelAccountsCoverage,
+    aeCount, aeRampMonths, aeQuota, sdrsPerAe,
     aeAttritionRate, mktgSourcedPct, sqoLeadQuarters, mqlLeadQuarters,
     grossMargin, gAndAPct, rAndDPct, salesOpexPct, variableMktgPct,
     salesVariablePct, fixedMktgPct, martechPctOfVariable, fixedMktgBreakdown,
@@ -330,51 +360,6 @@ export function computeModel(inputs) {
     };
   });
 
-  // ── Channels with CAC decomposition (marketing-sourced pipeline only)
-  const channels = Object.entries(channelMix).map(([name, pct]) => {
-    const inq = Math.round(mktgInquiriesNeeded * (pct / 100)); // only mktg-sourced inquiries
-    const cpl = channelCPL[name] || 100;
-    const spend = inq * cpl;
-    const mqls = Math.round(inq * (inquiryToMqlRate / 100));
-    const sqls = Math.round(mqls * (mqlToSqlRate / 100));
-    const mtgs = Math.round(sqls * (sqlToMeetingRate / 100));
-    const sqos = Math.round(mtgs * (meetingToSqoRate / 100));
-    const deals = Math.round(sqos * (sqoToWonRate / 100));
-    const rev = deals * avgDealSize;
-    const cac = deals > 0 ? spend / deals : 0;
-    const costPerMql = mqls > 0 ? spend / mqls : 0;
-    const costPerSql = sqls > 0 ? spend / sqls : 0;
-    const costPerSqo = sqos > 0 ? spend / sqos : 0;
-    const costPerMeeting = mtgs > 0 ? spend / mtgs : 0;
-    return { name, pct, channelInquiries: inq, cpl, spend, mqls, sqls, meetings: mtgs, sqos, deals, revenue: rev,
-      roi: spend > 0 ? rev / spend : 0, cac, costPerMql, costPerSql, costPerSqo, costPerMeeting,
-      cacPayback: cac > 0 ? cac / (avgDealSize / 12) : 0,
-      ltvCac: cac > 0 ? (churnRate > 0 ? avgDealSize / (churnRate / 100) : avgDealSize * 10) / cac : 0,
-    };
-  });
-  const totalMarketingSpend = channels.reduce((s,c) => s + c.spend, 0);
-
-  // ── CAC Breakdown (programmatic)
-  const blendedCAC = dealsNeeded > 0 ? totalMarketingSpend / dealsNeeded : 0;
-  const totalDealsAllMotions = dealsNeeded + expansionDeals;
-  const fullyLoadedCAC = totalDealsAllMotions > 0 ? totalMarketingSpend / totalDealsAllMotions : 0;
-  const programmaticChannels = ["Paid Search", "ABM"];
-  const contentChannels = ["Content/SEO"];
-  const eventChannels = ["Events"];
-  const outboundChannels = ["Outbound", "Partner"];
-  const sumSpend = (names) => channels.filter(c => names.includes(c.name)).reduce((s,c) => s + c.spend, 0);
-  const cacBreakdown = {
-    programmatic: { spend: sumSpend(programmaticChannels), label: "Programmatic (Paid + ABM)" },
-    content: { spend: sumSpend(contentChannels), label: "Content & SEO" },
-    events: { spend: sumSpend(eventChannels), label: "Events & Field" },
-    outbound: { spend: sumSpend(outboundChannels), label: "Outbound & Partner" },
-    sdrCost: { spend: aeCount * sdrsPerAe * 85000, label: "SDR Fully Loaded" },
-  };
-  const totalAcquisitionCost = Object.values(cacBreakdown).reduce((s,c) => s + c.spend, 0);
-  Object.values(cacBreakdown).forEach(c => {
-    c.pctOfTotal = totalAcquisitionCost > 0 ? c.spend / totalAcquisitionCost * 100 : 0;
-    c.perDeal = dealsNeeded > 0 ? c.spend / dealsNeeded : 0;
-  });
 
   // Seller ramp with attrition
   const sellerRamp = MONTHS.map((m, i) => {
@@ -576,6 +561,111 @@ export function computeModel(inputs) {
   const martechPct = (martechPctOfVariable || 25) / 100;
   const martechSpend = variableMktg * martechPct;           // intent data, enrichment, MAP overage, syndication
   const programmaticBudget = variableMktg * (1 - martechPct); // paid media, events, content syndication — what flows through channels
+
+  // ══ REVENUE MOTIONS ══
+  // Three motions: CREATE (net-new demand), CONVERT (qualification), ACCELERATE (deal velocity)
+  const ma = motionAllocation || { create: 45, convert: 30, accelerate: 25 };
+  const mc = motionChannels || {};
+  const programmaticForMotions = programmaticBudget; // same as variableMktg × (1-martechPct)
+  
+  // Motion budget splits
+  const maPctTotal = ma.create + ma.convert + ma.accelerate;
+  const createBudget = programmaticForMotions * (ma.create / maPctTotal);
+  const convertBudget = programmaticForMotions * (ma.convert / maPctTotal);
+  const accelBudget = programmaticForMotions * (ma.accelerate / maPctTotal);
+
+  // ── DEMAND CREATION: buys net-new inquiries
+  const createChannels = (mc.create || []).map(ch => {
+    const spend = createBudget * (ch.pct / 100);
+    const inq = ch.cpl > 0 ? Math.round(spend / ch.cpl) : 0;
+    const mqls = Math.round(inq * (inquiryToMqlRate / 100));
+    const sqls = Math.round(mqls * (mqlToSqlRate / 100));
+    const mtgs = Math.round(sqls * (sqlToMeetingRate / 100));
+    const sqos = Math.round(mtgs * (meetingToSqoRate / 100));
+    const deals = Math.round(sqos * (sqoToWonRate / 100));
+    const rev = deals * avgDealSize;
+    return { ...ch, motion: "CREATE", spend, inquiries: inq, mqls, sqls, meetings: mtgs, sqos, deals, revenue: rev,
+      cac: deals > 0 ? spend / deals : 0, roi: spend > 0 ? rev / spend : 0 };
+  });
+  const createTotals = {
+    spend: createChannels.reduce((s,c) => s + c.spend, 0),
+    inquiries: createChannels.reduce((s,c) => s + c.inquiries, 0),
+    mqls: createChannels.reduce((s,c) => s + c.mqls, 0),
+    sqls: createChannels.reduce((s,c) => s + c.sqls, 0),
+    sqos: createChannels.reduce((s,c) => s + c.sqos, 0),
+    deals: createChannels.reduce((s,c) => s + c.deals, 0),
+    pipeline: createChannels.reduce((s,c) => s + c.sqos, 0) * avgDealSize,
+    revenue: createChannels.reduce((s,c) => s + c.revenue, 0),
+  };
+  createTotals.blendedCPL = createTotals.inquiries > 0 ? createTotals.spend / createTotals.inquiries : 0;
+  createTotals.cacCreation = createTotals.deals > 0 ? createTotals.spend / createTotals.deals : 0;
+
+  // ── DEMAND CONVERSION: turns interest into real pipeline (SDR, AI, Partner)
+  const convertChannels = (mc.convert || []).map(ch => {
+    const spend = convertBudget * (ch.pct / 100);
+    const sqlsProcessed = ch.costPerSql > 0 ? Math.round(spend / ch.costPerSql) : 0;
+    const sqosCreated = Math.round(sqlsProcessed * (meetingToSqoRate / 100)); // SQLs that become SQOs
+    const costPerSqo = sqosCreated > 0 ? spend / sqosCreated : 0;
+    const capacityUtil = mktgSqlsNeeded > 0 ? Math.min(100, sqlsProcessed / mktgSqlsNeeded * 100) : 0;
+    return { ...ch, motion: "CONVERT", spend, sqlsProcessed, sqosCreated, costPerSqo, capacityUtil };
+  });
+  const convertTotals = {
+    spend: convertChannels.reduce((s,c) => s + c.spend, 0),
+    sqlsProcessed: convertChannels.reduce((s,c) => s + c.sqlsProcessed, 0),
+    sqosCreated: convertChannels.reduce((s,c) => s + c.sqosCreated, 0),
+  };
+  convertTotals.costPerSqo = convertTotals.sqosCreated > 0 ? convertTotals.spend / convertTotals.sqosCreated : 0;
+
+  // ── DEAL ACCELERATION: collapses time and risk on active opps
+  const accelCovPct = (accelAccountsCoverage || 60) / 100;
+  const accelTargetAccounts = Math.round(sqosNeeded * accelCovPct);
+  const accelChannels = (mc.accelerate || []).map(ch => {
+    const spend = accelBudget * (ch.pct / 100);
+    const accountsTouched = ch.costPerAccount > 0 ? Math.round(spend / ch.costPerAccount) : 0;
+    const oppsInfluenced = Math.min(accountsTouched, accelTargetAccounts);
+    return { ...ch, motion: "ACCELERATE", spend, accountsTouched, oppsInfluenced,
+      avgDaysReduced: accelDaysReduced || 30, winRateDelta: accelWinRateLift || 5 };
+  });
+  const accelTotals = {
+    spend: accelChannels.reduce((s,c) => s + c.spend, 0),
+    accountsTouched: accelChannels.reduce((s,c) => s + c.accountsTouched, 0),
+    oppsInfluenced: Math.min(accelChannels.reduce((s,c) => s + c.oppsInfluenced, 0), accelTargetAccounts),
+  };
+  // Revenue pulled forward = accelerated deals × avg deal size × (improved win rate - base win rate)
+  const accelAdditionalWins = Math.round(accelTotals.oppsInfluenced * ((accelWinRateLift || 5) / 100));
+  accelTotals.revenuePulledForward = accelAdditionalWins * avgDealSize;
+  accelTotals.daysReduced = accelDaysReduced || 30;
+  accelTotals.winRateLift = accelWinRateLift || 5;
+
+  // ── Legacy channels array (for backward compatibility with Pipeline page, CAC, etc.)
+  const channels = createChannels.map(c => ({
+    name: c.name, pct: c.pct, channelInquiries: c.inquiries, cpl: c.cpl, spend: c.spend,
+    mqls: c.mqls, sqls: c.sqls, meetings: c.meetings, sqos: c.sqos, deals: c.deals,
+    revenue: c.revenue, roi: c.roi, cac: c.cac,
+    costPerMql: c.mqls > 0 ? c.spend / c.mqls : 0,
+    costPerSql: c.sqls > 0 ? c.spend / c.sqls : 0,
+    costPerSqo: c.sqos > 0 ? c.spend / c.sqos : 0,
+    costPerMeeting: c.meetings > 0 ? c.spend / c.meetings : 0,
+    cacPayback: c.cac > 0 ? c.cac / (avgDealSize / 12) : 0,
+    ltvCac: c.cac > 0 ? (churnRate > 0 ? avgDealSize / (churnRate / 100) : avgDealSize * 10) / c.cac : 0,
+  }));
+  const totalMarketingSpend = channels.reduce((s,c) => s + c.spend, 0);
+
+  // ── CAC Breakdown (motion-based)
+  const blendedCAC = dealsNeeded > 0 ? totalMarketingSpend / dealsNeeded : 0;
+  const totalDealsAllMotions = dealsNeeded + expansionDeals;
+  const fullyLoadedCAC = totalDealsAllMotions > 0 ? totalMarketingSpend / totalDealsAllMotions : 0;
+  const cacBreakdown = {
+    creation: { spend: createTotals.spend, label: "Demand Creation" },
+    conversion: { spend: convertTotals.spend, label: "Demand Conversion" },
+    acceleration: { spend: accelTotals.spend, label: "Deal Acceleration" },
+    sdrCost: { spend: aeCount * sdrsPerAe * 85000, label: "SDR Fully Loaded" },
+  };
+  const totalAcquisitionCost = Object.values(cacBreakdown).reduce((s,c) => s + c.spend, 0);
+  Object.values(cacBreakdown).forEach(c => {
+    c.pctOfTotal = totalAcquisitionCost > 0 ? c.spend / totalAcquisitionCost * 100 : 0;
+    c.perDeal = dealsNeeded > 0 ? c.spend / dealsNeeded : 0;
+  });
 
   // Fixed marketing itemization — each line uses MAX of (floor comp, formula share)
   // Leadership comp is a step function: it doesn't drop just because the formula says 30% of a smaller pool
@@ -823,6 +913,13 @@ export function computeModel(inputs) {
       totalAttrLoss,
     },
     monthly, channels, sellerRamp, stages, yearTargets, numYears,
+    // Revenue Motions
+    motions: {
+      allocation: ma, createBudget, convertBudget, accelBudget,
+      create: { channels: createChannels, totals: createTotals },
+      convert: { channels: convertChannels, totals: convertTotals },
+      accelerate: { channels: accelChannels, totals: accelTotals },
+    },
     pnl: { totalRevenue, grossProfit, grossMargin, cogsAmount,
       gAndA, rAndD, salesOpex, totalMktgBudget, fixedMktg, variableMktg,
       fixedSalesComp, variableSalesComp,

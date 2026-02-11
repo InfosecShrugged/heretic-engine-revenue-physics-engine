@@ -363,7 +363,7 @@ const NAV_SECTIONS=[
   { section: "GTM Economics", items: [
     {id:"sandmBudget",label:"S&M Budget",icon:DollarSign},
     {id:"mktgBudget",label:"Mktg Budget",icon:DollarSign},
-    {id:"channels",label:"Channel Mix",icon:Layers},
+    {id:"channels",label:"Revenue Motions",icon:Layers},
     {id:"cacBreakdown",label:"CAC Breakdown",icon:PieIcon},
     {id:"sales",label:"Sales Model",icon:Users},
     {id:"sellerRamp",label:"Seller Ramp",icon:TrendingUp},
@@ -584,13 +584,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
   ];
 
   return(<div>
-    <Header
-      title="S&M Budget"
-      sub="Combined Sales & Marketing — the CFO view"
-      icon={DollarSign}
-      moduleId="sandmBudget"
-      onInfoClick={onInfoClick}
-    />
+    <Header title="S&M Budget" sub="Combined Sales & Marketing — the CFO view" icon={DollarSign} moduleId="sandmBudget" onInfoClick={onInfoClick}/>
 
     {/* Health banner */}
     <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",borderRadius:10,marginBottom:20,
@@ -1398,18 +1392,203 @@ function FunnelPage({model,inputs,setInputs,onInfoClick}){
   </div>);
 }
 
+const MOTION_COLORS = { create: "#22c55e", convert: "#f59e0b", accelerate: "#ef4444" };
+const MOTION_BADGES = { create: "🟩 CREATE", convert: "🟨 CONVERT", accelerate: "🟥 ACCELERATE" };
+
 function ChannelsPage({model,inputs,setInputs,onInfoClick}){
-  const{channels}=model;const uM=(ch,v)=>setInputs(p=>({...p,channelMix:{...p.channelMix,[ch]:v}}));const uC=(ch,v)=>setInputs(p=>({...p,channelCPL:{...p.channelCPL,[ch]:v}}));
-  return(<div><Header title="Channel Mix" sub="Inquiry-to-revenue ROI by channel" icon={Layers} moduleId="channels" onInfoClick={onInfoClick}/>
-    <div style={{display:"grid",gridTemplateColumns:"300px 1fr",gap:24}}>
-      <Card>{Object.entries(inputs.channelMix).map(([ch,pct],i)=>(<div key={ch} style={{marginBottom:12}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}><div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:7,height:7,borderRadius:"50%",background:C.ch[i]}}/><span style={{fontSize:11,fontWeight:600,color:C.text}}>{ch}</span></div><span style={{fontSize:11,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{pct}%</span></div>
-        <input type="range" min={0} max={60} value={pct} onChange={e=>uM(ch,parseInt(e.target.value))} style={{width:"100%",accentColor:C.ch[i]}}/><div style={{display:"flex",alignItems:"center",gap:5,marginTop:2}}><span style={{fontSize:9,color:C.dim}}>CPL $</span><input type="number" value={inputs.channelCPL[ch]||0} onChange={e=>uC(ch,parseInt(e.target.value))} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:4,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'DM Mono',monospace"}}/></div></div>))}</Card>
-      <Card><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:12}}>Full Lifecycle by Channel</h3>
-        <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
-          <thead><tr>{["Channel","Inq","CPL","Spend","MQLs","SQLs","Mtgs","SQOs","Won","Rev","ROI"].map(h=><th key={h} style={{textAlign:"right",padding:"7px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>{h}</th>)}</tr></thead>
-          <tbody>{channels.map((c,i)=><tr key={c.name}><td style={{padding:"7px",textAlign:"right"}}><div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}><div style={{width:5,height:5,borderRadius:"50%",background:C.ch[i]}}/><span style={{color:C.text,fontWeight:600}}>{c.name}</span></div></td>
-            {[fN(c.channelInquiries),fmt(c.cpl),fmt(c.spend),fN(c.mqls),fN(c.sqls),fN(c.meetings),fN(c.sqos),fN(c.deals)].map((v,j)=><td key={j} style={{padding:"7px",color:C.muted,fontFamily:"'DM Mono',monospace",textAlign:"right"}}>{v}</td>)}<td style={{padding:"7px",color:C.green,fontWeight:600,fontFamily:"'DM Mono',monospace",textAlign:"right"}}>{fmt(c.revenue)}</td><td style={{padding:"7px",fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:"right",color:c.roi>5?C.green:c.roi>2?C.amber:C.rose}}>{c.roi.toFixed(1)}x</td></tr>)}</tbody>
-        </table></div></Card>
+  const{motions:mot, summary:s}=model;
+  const[activeMotion,setActiveMotion]=useState("create");
+  const totalBudget = mot.createBudget + mot.convertBudget + mot.accelBudget;
+
+  // Motion allocation updater
+  const uMA=(key,val)=>setInputs(p=>({...p,motionAllocation:{...(p.motionAllocation||{create:45,convert:30,accelerate:25}),[key]:val}}));
+  // Channel updater within a motion
+  const uMC=(motion,idx,field,val)=>setInputs(p=>{
+    const mc={...(p.motionChannels||{})};
+    const arr=[...(mc[motion]||[])];
+    arr[idx]={...arr[idx],[field]:val};
+    mc[motion]=arr;
+    return{...p,motionChannels:mc};
+  });
+
+  return(<div><Header title="Revenue Motions" sub="How demand is created, converted, and accelerated" icon={Layers} moduleId="channels" onInfoClick={onInfoClick}/>
+
+    {/* Motion toggle */}
+    <div style={{display:"flex",gap:8,marginBottom:20}}>
+      {[
+        {key:"create",label:"Demand Creation",budget:mot.createBudget,icon:"🟩",desc:"Net-new pipeline"},
+        {key:"convert",label:"Demand Conversion",budget:mot.convertBudget,icon:"🟨",desc:"Qualification throughput"},
+        {key:"accelerate",label:"Deal Acceleration",budget:mot.accelBudget,icon:"🟥",desc:"Velocity & win rate"},
+      ].map(m=>{
+        const isActive=activeMotion===m.key;
+        const color=MOTION_COLORS[m.key];
+        return(<button key={m.key} onClick={()=>setActiveMotion(m.key)} style={{flex:1,padding:"14px 16px",borderRadius:10,
+          border:`2px solid ${isActive?color:C.border}`,background:isActive?`${color}10`:"transparent",cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans',sans-serif"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:isActive?color:C.text}}>{m.icon} {m.label}</div>
+              <div style={{fontSize:10,color:C.muted,marginTop:2}}>{m.desc}</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:16,fontWeight:700,color,fontFamily:"'DM Mono',monospace"}}>{fmt(m.budget)}</div>
+              <div style={{fontSize:9,color:C.dim}}>{totalBudget>0?(m.budget/totalBudget*100).toFixed(0):0}%</div>
+            </div>
+          </div>
+        </button>);
+      })}
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:"280px 1fr",gap:20}}>
+      {/* Left: allocation + channel inputs */}
+      <div>
+        <Card style={{marginBottom:14}}>
+          <h3 style={{fontSize:10,fontWeight:700,color:C.dim,margin:0,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.05em"}}>Motion Budget Split</h3>
+          {["create","convert","accelerate"].map(key=>{
+            const val=(inputs.motionAllocation||{create:45,convert:30,accelerate:25})[key];
+            return(<div key={key} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                <span style={{fontSize:11,fontWeight:600,color:MOTION_COLORS[key]}}>{key==="create"?"Creation":key==="convert"?"Conversion":"Acceleration"}</span>
+                <span style={{fontSize:11,color:MOTION_COLORS[key],fontFamily:"'DM Mono',monospace"}}>{val}%</span>
+              </div>
+              <input type="range" min={5} max={70} value={val} onChange={e=>uMA(key,parseInt(e.target.value))} style={{width:"100%",accentColor:MOTION_COLORS[key]}}/>
+            </div>);
+          })}
+        </Card>
+
+        {/* Channel inputs for active motion */}
+        <Card>
+          <h3 style={{fontSize:10,fontWeight:700,color:MOTION_COLORS[activeMotion],margin:0,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.05em"}}>
+            {activeMotion==="create"?"Creation":activeMotion==="convert"?"Conversion":"Acceleration"} Channels
+          </h3>
+          {(mot[activeMotion]?.channels||[]).map((ch,i)=>(
+            <div key={ch.name} style={{marginBottom:12,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                <span style={{fontSize:11,fontWeight:600,color:C.text}}>{ch.name}</span>
+                <span style={{fontSize:9,padding:"2px 6px",borderRadius:3,background:`${MOTION_COLORS[activeMotion]}15`,color:MOTION_COLORS[activeMotion],fontWeight:600}}>{ch.intent}</span>
+              </div>
+              <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:3}}>
+                <span style={{fontSize:9,color:C.dim}}>Mix %</span>
+                <input type="range" min={0} max={60} value={ch.pct} onChange={e=>uMC(activeMotion,i,"pct",parseInt(e.target.value))} style={{flex:1,accentColor:MOTION_COLORS[activeMotion]}}/>
+                <span style={{fontSize:10,color:C.accent,fontFamily:"'DM Mono',monospace",width:30,textAlign:"right"}}>{ch.pct}%</span>
+              </div>
+              {activeMotion==="create" && <div style={{display:"flex",alignItems:"center",gap:4}}>
+                <span style={{fontSize:9,color:C.dim}}>CPL $</span>
+                <input type="number" value={ch.cpl} onChange={e=>uMC(activeMotion,i,"cpl",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:4,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'DM Mono',monospace"}}/>
+              </div>}
+              {activeMotion==="convert" && <div style={{display:"flex",alignItems:"center",gap:4}}>
+                <span style={{fontSize:9,color:C.dim}}>$/SQL</span>
+                <input type="number" value={ch.costPerSql} onChange={e=>uMC(activeMotion,i,"costPerSql",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:4,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'DM Mono',monospace"}}/>
+              </div>}
+              {activeMotion==="accelerate" && <div style={{display:"flex",alignItems:"center",gap:4}}>
+                <span style={{fontSize:9,color:C.dim}}>$/Acct</span>
+                <input type="number" value={ch.costPerAccount} onChange={e=>uMC(activeMotion,i,"costPerAccount",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:4,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'DM Mono',monospace"}}/>
+              </div>}
+            </div>
+          ))}
+        </Card>
+      </div>
+
+      {/* Right: output tables by motion */}
+      <div>
+        {/* DEMAND CREATION */}
+        {activeMotion==="create" && <Card style={{marginBottom:14}}>
+          <h3 style={{fontSize:11,fontWeight:700,color:MOTION_COLORS.create,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>🟩 Demand Creation — Revenue Impact</h3>
+          <div style={{fontSize:10,color:C.muted,marginBottom:12}}>What creates net-new demand?</div>
+          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+            <thead><tr>{["Channel","Spend","Inquiries","CPL","MQLs","Pipeline","CAC (create)","ROI"].map(h=><th key={h} style={{textAlign:"right",padding:"7px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",borderBottom:`2px solid ${C.border}`}}>{h}</th>)}</tr></thead>
+            <tbody>
+              {mot.create.channels.map((c,i)=><tr key={c.name}>
+                <td style={{padding:"7px",textAlign:"right",fontWeight:600,color:C.text}}>{c.name}</td>
+                {[fmt(c.spend),fN(c.inquiries),fmt(c.cpl),fN(c.mqls),fmt(c.sqos*inputs.avgDealSize),fmt(c.cac)].map((v,j)=>
+                  <td key={j} style={{padding:"7px",color:C.muted,fontFamily:"'DM Mono',monospace",textAlign:"right"}}>{v}</td>)}
+                <td style={{padding:"7px",fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:"right",color:c.roi>5?C.green:c.roi>2?C.amber:C.rose}}>{c.roi.toFixed(1)}x</td>
+              </tr>)}
+              <tr style={{borderTop:`2px solid ${C.border}`,fontWeight:700}}>
+                <td style={{padding:"7px",textAlign:"right",color:MOTION_COLORS.create}}>Total</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(mot.create.totals.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fN(mot.create.totals.inquiries)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(mot.create.totals.blendedCPL)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fN(mot.create.totals.mqls)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(mot.create.totals.pipeline)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(mot.create.totals.cacCreation)}</td>
+                <td style={{padding:"7px"}}/>
+              </tr>
+            </tbody>
+          </table></div>
+        </Card>}
+
+        {/* DEMAND CONVERSION */}
+        {activeMotion==="convert" && <Card style={{marginBottom:14}}>
+          <h3 style={{fontSize:11,fontWeight:700,color:MOTION_COLORS.convert,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>🟨 Demand Conversion — Throughput Engine</h3>
+          <div style={{fontSize:10,color:C.muted,marginBottom:12}}>What turns interest into real pipeline? No revenue yet — this is a throughput engine.</div>
+          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+            <thead><tr>{["Function","Cost","SQLs Processed","SQOs Created","Cost/SQO","Capacity Util"].map(h=><th key={h} style={{textAlign:"right",padding:"7px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",borderBottom:`2px solid ${C.border}`}}>{h}</th>)}</tr></thead>
+            <tbody>
+              {mot.convert.channels.map((c,i)=><tr key={c.name}>
+                <td style={{padding:"7px",textAlign:"right",fontWeight:600,color:C.text}}>{c.name}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fN(c.sqlsProcessed)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fN(c.sqosCreated)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fmt(c.costPerSqo)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:c.capacityUtil>80?C.green:c.capacityUtil>50?C.amber:C.rose}}>{c.capacityUtil.toFixed(0)}%</td>
+              </tr>)}
+              <tr style={{borderTop:`2px solid ${C.border}`,fontWeight:700}}>
+                <td style={{padding:"7px",textAlign:"right",color:MOTION_COLORS.convert}}>Total</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(mot.convert.totals.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fN(mot.convert.totals.sqlsProcessed)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fN(mot.convert.totals.sqosCreated)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace"}}>{fmt(mot.convert.totals.costPerSqo)}</td>
+                <td style={{padding:"7px"}}/>
+              </tr>
+            </tbody>
+          </table></div>
+        </Card>}
+
+        {/* DEAL ACCELERATION */}
+        {activeMotion==="accelerate" && <Card style={{marginBottom:14}}>
+          <h3 style={{fontSize:11,fontWeight:700,color:MOTION_COLORS.accelerate,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>🟥 Deal Acceleration — Velocity & Win Rate</h3>
+          <div style={{fontSize:10,color:C.muted,marginBottom:12}}>What collapses time and risk? No CPL. No fake attribution.</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:14}}>
+            <div style={{padding:10,background:C.bg,borderRadius:8,textAlign:"center"}}>
+              <div style={{fontSize:9,color:C.dim}}>Accounts Touched</div>
+              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'DM Mono',monospace"}}>{fN(mot.accelerate.totals.accountsTouched)}</div>
+            </div>
+            <div style={{padding:10,background:C.bg,borderRadius:8,textAlign:"center"}}>
+              <div style={{fontSize:9,color:C.dim}}>Opps Influenced</div>
+              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'DM Mono',monospace"}}>{fN(mot.accelerate.totals.oppsInfluenced)}</div>
+            </div>
+            <div style={{padding:10,background:C.bg,borderRadius:8,textAlign:"center"}}>
+              <div style={{fontSize:9,color:C.dim}}>Avg Days Reduced</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'DM Mono',monospace"}}>{mot.accelerate.totals.daysReduced}</div>
+            </div>
+            <div style={{padding:10,background:C.bg,borderRadius:8,textAlign:"center"}}>
+              <div style={{fontSize:9,color:C.dim}}>Rev Pulled Forward</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'DM Mono',monospace"}}>{fmt(mot.accelerate.totals.revenuePulledForward)}</div>
+            </div>
+          </div>
+          <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
+            <thead><tr>{["Program","Spend","Accounts","Opps Influenced","Days Reduced","Win Rate Δ","Intent"].map(h=><th key={h} style={{textAlign:"right",padding:"7px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",borderBottom:`2px solid ${C.border}`}}>{h}</th>)}</tr></thead>
+            <tbody>
+              {mot.accelerate.channels.map((c,i)=><tr key={c.name}>
+                <td style={{padding:"7px",textAlign:"right",fontWeight:600,color:C.text}}>{c.name}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fN(c.accountsTouched)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.muted}}>{fN(c.oppsInfluenced)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.green}}>{c.avgDaysReduced}d</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.green}}>+{c.winRateDelta}%</td>
+                <td style={{padding:"7px",textAlign:"right",fontSize:9,color:C.dim}}>{c.intent}</td>
+              </tr>)}
+            </tbody>
+          </table></div>
+          <div style={{marginTop:12,padding:10,background:`${MOTION_COLORS.accelerate}08`,borderRadius:8,border:`1px solid ${MOTION_COLORS.accelerate}15`}}>
+            <div style={{fontSize:11,color:C.text}}>
+              <strong style={{color:MOTION_COLORS.accelerate}}>CFO-grade:</strong> We spent {fmt(mot.accelerate.totals.spend)} to influence {fN(mot.accelerate.totals.oppsInfluenced)} opportunities, 
+              pull {fmt(mot.accelerate.totals.revenuePulledForward)} of revenue forward by {mot.accelerate.totals.daysReduced} days, 
+              and lift win rate by +{mot.accelerate.totals.winRateLift}%.
+            </div>
+          </div>
+        </Card>}
+      </div>
     </div>
   </div>);
 }
