@@ -81,13 +81,13 @@ const MODULE_DOCS = {
   },
   funnelHealth: {
     title: "Funnel Health", docRef: "/docs/modules/funnel-health",
-    tooltip: "Stage-by-stage conversion health with benchmarks",
-    tldr: "Compares your funnel rates against benchmarks. Shows where you're losing deals and what improving each rate is worth in revenue.",
-    included: ["Stage conversion rates", "Benchmark comparisons", "Revenue impact of rate improvements", "Bottleneck identification"],
-    excluded: ["Time-based analysis (see Velocity)", "Channel-specific funnels"],
-    assumptions: ["Benchmarks based on mid-market B2B SaaS / cyber", "Revenue impact assumes linear relationship (1% improvement = X deals)"],
-    whatChanges: ["All inquiry→MQL→SQL→Meeting→SQO→Won rates", "Average deal size (changes revenue impact)"],
-    relatedModules: ["pipeline", "marketing", "velocity"],
+    tooltip: "Stage conversion health + compression metrics exposing true engine yield",
+    tldr: "Stage-by-stage conversion health with benchmarks, plus compression metrics (Inquiry→SQO, Inquiry→Won) that expose the true revenue yield of the engine. Meeting stage standardized to 'held' (not scheduled) with show-rate tracking.",
+    included: ["Stage conversion rates with benchmarks", "Compression metrics: Inquiry→SQO and Inquiry→Won", "Cost/SQO and Cost/Won from programmatic spend", "Required inquiry volume to hit ARR target", "Meeting held vs set tracking (show rate)", "Pipeline coverage settings"],
+    excluded: ["Time-based analysis (see Velocity)", "Channel-specific funnels", "Grading does not yet factor compression health"],
+    assumptions: ["Benchmarks based on mid-market B2B SaaS / cyber", "Meeting = first live sales conversation held, not scheduled", "Meeting show rate default 80% (20% no-show/cancel)", "Compression rates are compounded products, not averages", "Cost metrics use programmatic channel spend only"],
+    whatChanges: ["All stage conversion rates", "Meeting show rate (affects set→held)", "Average deal size (changes cost/won)", "Variable marketing budget (changes cost metrics)"],
+    relatedModules: ["pipeline", "marketing", "velocity", "cacBreakdown"],
   },
   sales: {
     title: "Sales Model", docRef: "/docs/modules/sales",
@@ -412,6 +412,29 @@ function DashboardPage({model,inputs,onInfoClick}){
         ))}
       </div>
     </Card>
+    {/* Engine Output — compressed on dashboard */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:18}}>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.accent}`}}>
+        <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → SQO</div>
+        <div style={{fontSize:16,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
+      </div>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.green}`}}>
+        <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → Won</div>
+        <div style={{fontSize:16,fontWeight:700,color:C.green,fontFamily:"'DM Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
+      </div>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.amber}`}}>
+        <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / SQO</div>
+        <div style={{fontSize:16,fontWeight:700,color:C.amber,fontFamily:"'DM Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
+      </div>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.violet}`}}>
+        <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / Won</div>
+        <div style={{fontSize:16,fontWeight:700,color:C.violet,fontFamily:"'DM Mono',monospace"}}>{fmt(s.costPerWon)}</div>
+      </div>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.text}`}}>
+        <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Required Inquiries</div>
+        <div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
+      </div>
+    </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
       <Card><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>ARR Trajectory</h3>
         <ResponsiveContainer width="100%" height={260}><AreaChart data={monthly}>
@@ -434,21 +457,62 @@ function DashboardPage({model,inputs,onInfoClick}){
 function FunnelHealthPage({model,inputs,setInputs,onInfoClick}){
   const{funnelHealth,summary:s}=model;
   const bk=["inquiryToMqlRate","mqlToSqlRate","sqlToMeetingRate","meetingToSqoRate","sqoToWonRate"];
-  const bl=["Inquiry→MQL","MQL→SQL","SQL→Meeting","Meeting→SQO","SQO→Won"];
+  const bl=["Inquiry→MQL","MQL→SQL","SQL→Meeting (Held)","Meeting→SQO","SQO→Won"];
   return(<div>
-    <Header title="Funnel Health" sub="Conversion benchmarks, coverage settings, and stage-level diagnostics" icon={Heart} moduleId="funnelHealth" onInfoClick={onInfoClick}/>
+    <Header title="Funnel Health" sub="Conversion benchmarks, compression metrics, and stage-level diagnostics" icon={Heart} moduleId="funnelHealth" onInfoClick={onInfoClick}/>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:24}}>
       <Metric label="Overall Grade" value={s.funnelGrade} sub={`Score: ${s.overallFunnelScore}/${s.maxFunnelScore}`} color={s.funnelGrade==="A"?C.green:s.funnelGrade==="B"?C.accent:C.amber}/>
       <Metric label="Pipeline Coverage" value={`${inputs.pipelineCoverage}%`} sub={s.coverageHealth==="good"?"Healthy":"Needs attention"} color={s.coverageHealth==="good"?C.green:s.coverageHealth==="warning"?C.amber:C.rose}/>
       <Metric label="Funnel Yield" value={`${(s.effectiveFunnelYield*100).toFixed(2)}%`} sub={`1 deal per ${Math.round(1/s.effectiveFunnelYield)} inquiries`} color={C.accent}/>
     </div>
+
+    {/* Engine Output — Compression Metrics */}
+    <Card style={{marginBottom:20,borderLeft:`3px solid ${C.accent}`}}>
+      <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Engine Output — Compression Metrics</h3>
+      <div style={{fontSize:10,color:C.dim,marginBottom:14}}>True revenue yield of the engine. Compounded from each stage — not averages, not estimates.</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10}}>
+        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+          <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Inquiry → SQO</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
+          <div style={{fontSize:8,color:C.muted,marginTop:2}}>1 SQO per {Math.round(100/s.inquiryToSqoRate)} inquiries</div>
+        </div>
+        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+          <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Inquiry → Won</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'DM Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
+          <div style={{fontSize:8,color:C.muted,marginTop:2}}>1 deal per {Math.round(100/s.inquiryToWonRate)} inquiries</div>
+        </div>
+        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+          <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Cost / SQO</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.amber,fontFamily:"'DM Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
+          <div style={{fontSize:8,color:C.muted,marginTop:2}}>Programmatic spend ÷ SQOs</div>
+        </div>
+        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+          <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Cost / Won</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'DM Mono',monospace"}}>{fmt(s.costPerWon)}</div>
+          <div style={{fontSize:8,color:C.muted,marginTop:2}}>Programmatic spend ÷ deals</div>
+        </div>
+        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+          <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Required Inquiries</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
+          <div style={{fontSize:8,color:C.muted,marginTop:2}}>To hit {fmt(s.targetARR)} new ARR</div>
+        </div>
+      </div>
+      <div style={{marginTop:10,padding:8,background:`${C.accent}08`,borderRadius:6,border:`1px solid ${C.accent}15`}}>
+        <div style={{fontSize:9,color:C.muted}}><strong style={{color:C.accent}}>CEO lever:</strong> "How many net-new names do we need to hit ${fmt(s.targetARR)}?" → <strong style={{color:C.text}}>{fN(s.requiredInquiries)} inquiries</strong> at current conversion rates.</div>
+      </div>
+    </Card>
+
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
       <Card>
         <h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:16}}>Stage Conversion Health</h3>
         {funnelHealth.map((f,i)=>{const pct=f.bench.great>0?Math.min(100,f.rate/f.bench.great*100):100;return(
           <div key={f.stage} style={{marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-              <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:12,fontWeight:600,color:C.text}}>{f.stage}</span><Badge label={f.status} status={f.status}/></div>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:12,fontWeight:600,color:C.text}}>{f.stage}</span>
+                <Badge label={f.status} status={f.status}/>
+                {f.def && <span title={f.def} style={{fontSize:10,color:C.dim,cursor:"help"}}>ⓘ</span>}
+              </div>
               <span style={{fontSize:14,fontWeight:700,color:f.status==="great"?C.green:f.status==="good"?C.accent:C.rose,fontFamily:"'DM Mono',monospace"}}>{f.rate}%</span>
             </div>
             <div style={{position:"relative",height:20,background:C.bg,borderRadius:6,overflow:"hidden"}}>
@@ -462,6 +526,19 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick}){
               <span style={{fontSize:8,color:C.green}}>Great: {f.bench.great}%</span>
             </div>
           </div>);})}
+        {/* Meeting show rate inline */}
+        <div style={{padding:8,background:C.bg,borderRadius:6,marginTop:8}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <span style={{fontSize:10,fontWeight:600,color:C.muted}}>Meeting Show Rate</span>
+              <span title="SQL→Meeting tracks held meetings. Show rate converts set→held internally." style={{fontSize:10,color:C.dim,cursor:"help",marginLeft:4}}>ⓘ</span>
+            </div>
+            <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{s.meetingShowRate}%</span>
+          </div>
+          <div style={{fontSize:8,color:C.dim,marginTop:2}}>
+            {fN(s.meetingsSetNeeded)} meetings set → {fN(s.meetingsNeeded)} held ({100-s.meetingShowRate}% no-show/cancel)
+          </div>
+        </div>
       </Card>
       <div>
         <Card style={{marginBottom:16}}>
@@ -1123,27 +1200,74 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         )}
       </div>
 
-      {/* Structure Presets */}
-      <div style={{marginBottom:14}}>
-        <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:6}}>Structure Preset</div>
-        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-          {[
-            {id:"founder",label:"Founder-Led",desc:"Lean exec, no PMM, ops-heavy",vals:{executive:15,revEngineOps:25,pmm:5,brandContent:25,infraTools:20,prAr:10}},
-            {id:"growth",label:"Growth Engine",desc:"Balanced infrastructure",vals:{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10}},
-            {id:"enterprise",label:"Enterprise Motion",desc:"PMM+PR heavy, field-ready",vals:{executive:20,revEngineOps:15,pmm:22,brandContent:15,infraTools:13,prAr:15}},
-            {id:"brandLed",label:"Brand-Led",desc:"Content+creative dominant",vals:{executive:18,revEngineOps:12,pmm:12,brandContent:30,infraTools:13,prAr:15}},
-            {id:"plgAi",label:"PLG / AI-Heavy",desc:"Tech+ops dominant, lean team",vals:{executive:15,revEngineOps:22,pmm:10,brandContent:15,infraTools:28,prAr:10}},
-          ].map(preset=>{
-            const fmb=inputs.fixedMktgBreakdown||{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10};
-            const isActive=Object.entries(preset.vals).every(([k,v])=>fmb[k]===v);
-            return(<button key={preset.id} onClick={()=>setInputs(p=>({...p,fixedMktgBreakdown:preset.vals}))}
-              style={{padding:"8px 14px",borderRadius:7,border:`1px solid ${isActive?C.violet:C.border}`,
-                background:isActive?`${C.violet}12`:"transparent",color:isActive?C.violet:C.muted,
-                cursor:"pointer",fontSize:10,fontWeight:600,fontFamily:"'DM Sans',sans-serif",textAlign:"left"}}>
-              <div style={{fontWeight:700}}>{preset.label}</div>
-              <div style={{fontSize:8,marginTop:2,color:C.dim}}>{preset.desc}</div>
-            </button>);
-          })}
+      {/* ═══ LAYER 1: Structural Floors (tier selectors, not sliders) ═══ */}
+      <div style={{marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+          <div style={{fontSize:10,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.05em"}}>Layer 1 — Structural Commitments</div>
+          <div style={{fontSize:9,padding:"2px 8px",borderRadius:4,background:`${C.accent}12`,color:C.accent,fontWeight:600}}>{fmt(p.layer1Summary?.total||0)} · {(p.layer1Summary?.pctOfRev||0).toFixed(1)}% of rev</div>
+        </div>
+        <div style={{fontSize:10,color:C.dim,marginBottom:12}}>Dollar floors set by tier selection. Cannot be slider-optimized — these are headcount commitments that change when you change structure, not when you don't like the output.</div>
+        
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
+          {/* Executive Tier */}
+          <div style={{background:C.bg,borderRadius:10,padding:14,borderTop:`3px solid #a78bfa`}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#a78bfa",marginBottom:8}}>Executive Layer</div>
+            {Object.entries(p.tierTables?.EXEC_TIERS||{}).map(([key,tier])=>{
+              const isActive=(inputs.executiveTier||"fullVP")===key;
+              return(<button key={key} onClick={()=>setInputs(pr=>({...pr,executiveTier:key}))}
+                style={{display:"block",width:"100%",padding:"8px 10px",marginBottom:4,borderRadius:6,textAlign:"left",
+                  border:`1px solid ${isActive?"#a78bfa":C.border}`,background:isActive?"#a78bfa12":"transparent",
+                  cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+                <div style={{display:"flex",justifyContent:"space-between"}}>
+                  <span style={{fontSize:10,fontWeight:isActive?700:500,color:isActive?"#a78bfa":C.muted}}>{tier.label}</span>
+                  <span style={{fontSize:10,fontWeight:700,color:isActive?"#a78bfa":C.dim,fontFamily:"'DM Mono',monospace"}}>{fmt(tier.cost)}</span>
+                </div>
+                <div style={{fontSize:8,color:C.dim,marginTop:2}}>{tier.desc}</div>
+              </button>);
+            })}
+            <div style={{marginTop:6,fontSize:9,color:C.dim}}>
+              At {fmt(s.targetARR)} → <strong style={{color:p.fixedMktgItems?.find(f=>f.layer==="executive")?.pctOfRev>5?"#ef4444":p.fixedMktgItems?.find(f=>f.layer==="executive")?.pctOfRev>3?"#f59e0b":"#22c55e"}}>{(p.fixedMktgItems?.find(f=>f.layer==="executive")?.pctOfRev||0).toFixed(1)}% of rev</strong> (derived, not fixed)
+            </div>
+          </div>
+
+          {/* PMM Tier */}
+          <div style={{background:C.bg,borderRadius:10,padding:14,borderTop:`3px solid #3b82f6`}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#3b82f6",marginBottom:8}}>Product & Market Strategy</div>
+            {Object.entries(p.tierTables?.PMM_TIERS||{}).map(([key,tier])=>{
+              const isActive=(inputs.pmmTier||"full")===key;
+              return(<button key={key} onClick={()=>setInputs(pr=>({...pr,pmmTier:key}))}
+                style={{display:"block",width:"100%",padding:"8px 10px",marginBottom:4,borderRadius:6,textAlign:"left",
+                  border:`1px solid ${isActive?"#3b82f6":C.border}`,background:isActive?"#3b82f612":"transparent",
+                  cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+                <div style={{display:"flex",justifyContent:"space-between"}}>
+                  <span style={{fontSize:10,fontWeight:isActive?700:500,color:isActive?"#3b82f6":C.muted}}>{tier.label}</span>
+                  <span style={{fontSize:10,fontWeight:700,color:isActive?"#3b82f6":C.dim,fontFamily:"'DM Mono',monospace"}}>{fmt(tier.cost)}</span>
+                </div>
+                <div style={{fontSize:8,color:C.dim,marginTop:2}}>{tier.desc}</div>
+              </button>);
+            })}
+            {(inputs.pmmTier||"full")==="none"&&s.targetARR>=10000000&&
+              <div style={{marginTop:6,padding:6,background:"#ef444412",borderRadius:4,fontSize:8,color:"#ef4444",fontWeight:600}}>⚠ No PMM above $10M ARR — positioning risk</div>}
+          </div>
+
+          {/* MarTech Tier */}
+          <div style={{background:C.bg,borderRadius:10,padding:14,borderTop:`3px solid #64748b`}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#64748b",marginBottom:8}}>MarTech Infrastructure</div>
+            {Object.entries(p.tierTables?.MARTECH_TIERS||{}).map(([key,tier])=>{
+              const isActive=(inputs.coreMarTechTier||"standard")===key;
+              return(<button key={key} onClick={()=>setInputs(pr=>({...pr,coreMarTechTier:key}))}
+                style={{display:"block",width:"100%",padding:"8px 10px",marginBottom:4,borderRadius:6,textAlign:"left",
+                  border:`1px solid ${isActive?"#64748b":C.border}`,background:isActive?"#64748b12":"transparent",
+                  cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+                <div style={{display:"flex",justifyContent:"space-between"}}>
+                  <span style={{fontSize:10,fontWeight:isActive?700:500,color:isActive?"#64748b":C.muted}}>{tier.label}</span>
+                  <span style={{fontSize:10,fontWeight:700,color:isActive?"#64748b":C.dim,fontFamily:"'DM Mono',monospace"}}>{fmt(tier.cost)}</span>
+                </div>
+                <div style={{fontSize:8,color:C.dim,marginTop:2}}>{tier.desc}</div>
+              </button>);
+            })}
+            <div style={{marginTop:6,fontSize:8,color:C.dim}}>Performance tools (6sense, intent) are variable — in motions, not here.</div>
+          </div>
         </div>
       </div>
 
@@ -1153,78 +1277,76 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
             <div style={{fontSize:20}}>⚠️</div>
             <div>
-              <div style={{fontSize:12,fontWeight:700,color:C.amber,marginBottom:4}}>Fixed Cost Compression Active</div>
+              <div style={{fontSize:12,fontWeight:700,color:C.amber,marginBottom:4}}>Structural Floor Exceeds Formula</div>
               <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
-                Headcount floor ({fmt(p.floorTotal)}) exceeds the formula-based overhead ({fmt(p.fixedMktg > p.floorTotal ? p.fixedMktg : Math.round(variableBudget * (inputs.fixedMktgPct / 100) / (1 - inputs.fixedMktgPct / 100)))}).
-                At {fmt(s.targetARR)} ARR, fixed marketing consumes <strong style={{color:C.rose}}>{p.floorPctOfRev?.toFixed(1)}% of revenue</strong>.
-                This compression resolves around $15-20M ARR where infrastructure drops below 8% of revenue.
+                Layer 1 commitments ({fmt(p.layer1Summary?.total||0)}) + minimum viable Layer 2 ({fmt(fixedBudget - (p.layer1Summary?.total||0))}) = {fmt(fixedBudget)} total.
+                Formula-based at {inputs.fixedMktgPct}% would only produce {fmt(Math.round(variableBudget * (inputs.fixedMktgPct / 100) / (1 - inputs.fixedMktgPct / 100)))}.
+                This is structural compression — it resolves as revenue grows.
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Reallocation sliders + detail cards */}
-      <div style={{display:"grid",gridTemplateColumns:"220px 1fr",gap:16}}>
-        {/* Left: sliders */}
-        <div style={{padding:12,background:C.bg,borderRadius:10}}>
-          <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>Allocation % of Fixed Overhead</div>
-          {fixedItems.map((fi,i)=>{
-            const fmb=inputs.fixedMktgBreakdown||{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10};
-            const key=fi.layer;
-            const val=fmb[key]||0;
-            const layerColors=["#a78bfa","#f59e0b","#3b82f6","#22c55e","#64748b","#ec4899"];
-            return(<div key={fi.name} style={{marginBottom:10}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
-                <span style={{fontSize:10,fontWeight:600,color:layerColors[i]||C.text}}>{fi.name}</span>
-                <span style={{fontSize:10,color:layerColors[i]||C.accent,fontFamily:"'DM Mono',monospace"}}>{val}%</span>
-              </div>
-              <input type="range" min={0} max={40} value={val}
-                onChange={e=>{const nv=parseInt(e.target.value);setInputs(p=>({...p,fixedMktgBreakdown:{...(p.fixedMktgBreakdown||fmb),[key]:nv}}));}}
-                style={{width:"100%",accentColor:layerColors[i]||C.violet}}/>
-            </div>);
-          })}
-          <div style={{padding:6,background:C.bgAlt,borderRadius:6,marginTop:6}}>
-            <div style={{fontSize:9,color:C.dim}}>Total allocation</div>
-            <div style={{fontSize:14,fontWeight:700,fontFamily:"'DM Mono',monospace",
-              color:(()=>{const fmb=inputs.fixedMktgBreakdown||{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10};const t=Object.values(fmb).reduce((s,v)=>s+v,0);return t===100?C.green:C.rose;})()}}>
-              {(()=>{const fmb=inputs.fixedMktgBreakdown||{executive:22,revEngineOps:18,pmm:15,brandContent:20,infraTools:15,prAr:10};return Object.values(fmb).reduce((s,v)=>s+v,0);})()}%
-            </div>
-          </div>
+      {/* ═══ LAYER 2: Elastic Infrastructure (sliders) ═══ */}
+      <div style={{marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+          <div style={{fontSize:10,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.05em"}}>Layer 2 — Scalable Infrastructure</div>
+          <div style={{fontSize:9,padding:"2px 8px",borderRadius:4,background:`${C.amber}12`,color:C.amber,fontWeight:600}}>{fmt(p.layer2Summary?.total||0)} · {(p.layer2Summary?.pctOfRev||0).toFixed(1)}% of rev</div>
         </div>
+        <div style={{fontSize:10,color:C.dim,marginBottom:12}}>Design choices — redistribute across ops, content, and PR. These are elastic within the remaining budget after structural commitments.</div>
 
-        {/* Right: infrastructure layer cards */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-          {fixedItems.map((fi,i)=>{
-            const layerColors=["#a78bfa","#f59e0b","#3b82f6","#22c55e","#64748b","#ec4899"];
-            const pctOfRev = p.totalRevenue > 0 ? fi.amount / p.totalRevenue * 100 : 0;
-            return(<div key={fi.name} style={{padding:12,background:C.bg,borderRadius:10,borderLeft:`3px solid ${layerColors[i]||C.violet}`}}>
-              <div style={{fontSize:11,fontWeight:700,color:layerColors[i]||C.violet,marginBottom:2}}>{fi.name}</div>
-              <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fmt(fi.amount)}</div>
-              <div style={{display:"flex",gap:8,marginTop:4}}>
-                <span style={{fontSize:9,color:C.dim}}>{fi.pct}% of fixed</span>
-                <span style={{fontSize:9,color:pctOfRev>5?C.rose:C.dim}}>{pctOfRev.toFixed(1)}% of rev</span>
-              </div>
-              <div style={{fontSize:9,color:C.muted,marginTop:4}}>{fi.desc}</div>
-              {fi.isFloorBound && <div style={{marginTop:4,fontSize:8,color:C.amber,fontWeight:600}}>▲ FLOOR — doesn't compress</div>}
-              {fi.amount===0 && <div style={{marginTop:4,fontSize:8,color:C.rose,fontWeight:600}}>⚠ Not funded at this stage</div>}
-            </div>);
-          })}
+        <div style={{display:"grid",gridTemplateColumns:"200px 1fr",gap:14}}>
+          {/* Sliders */}
+          <div style={{padding:12,background:C.bg,borderRadius:10}}>
+            <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>% of Layer 2 Budget</div>
+            {[
+              {key:"revEngineOps",label:"Revenue Engine Ops",color:"#f59e0b"},
+              {key:"brandContent",label:"Brand & Content",color:"#22c55e"},
+              {key:"prAr",label:"PR / AR",color:"#ec4899"},
+            ].map(item=>{
+              const emb=inputs.elasticMktgBreakdown||{revEngineOps:35,brandContent:40,prAr:25};
+              const val=emb[item.key]||0;
+              return(<div key={item.key} style={{marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                  <span style={{fontSize:10,fontWeight:600,color:item.color}}>{item.label}</span>
+                  <span style={{fontSize:10,color:item.color,fontFamily:"'DM Mono',monospace"}}>{val}%</span>
+                </div>
+                <input type="range" min={5} max={70} value={val}
+                  onChange={e=>setInputs(pr=>({...pr,elasticMktgBreakdown:{...(pr.elasticMktgBreakdown||emb),[item.key]:parseInt(e.target.value)}}))}
+                  style={{width:"100%",accentColor:item.color}}/>
+              </div>);
+            })}
+          </div>
+
+          {/* Layer 2 cards */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+            {(fixedItems||[]).filter(fi=>fi.layerType===2).map((fi,i)=>{
+              const colors=["#f59e0b","#22c55e","#ec4899"];
+              return(<div key={fi.name} style={{padding:12,background:C.bg,borderRadius:10,borderLeft:`3px solid ${colors[i]}`}}>
+                <div style={{fontSize:11,fontWeight:700,color:colors[i],marginBottom:2}}>{fi.name}</div>
+                <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fmt(fi.amount)}</div>
+                <div style={{fontSize:9,color:C.dim,marginTop:4}}>{fi.desc}</div>
+                <div style={{fontSize:9,color:C.dim,marginTop:2}}>{fi.pctOfRev?.toFixed(1)}% of rev</div>
+                {fi.belowMinViable && <div style={{marginTop:4,fontSize:8,color:C.rose,fontWeight:600}}>⚠ Below minimum viable ({fmt(fi.floor)})</div>}
+              </div>);
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Infrastructure as % of ARR at different scales */}
+      {/* Infrastructure burden by scale */}
       <div style={{marginTop:14}}>
-        <div style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>Infrastructure Burden by Scale — Fully Loaded ({fmt(p.fixedMktgActual||p.floorTotal)})</div>
+        <div style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>Total Infrastructure Burden by Scale</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
           {[{arr:3},{arr:5},{arr:10},{arr:20},{arr:40}].map(pt=>{
-            const infraTotal = p.fixedMktgActual || p.floorTotal;
+            const infraTotal = p.fixedMktgActual || floorTotal;
             const pct = (infraTotal / (pt.arr * 1000000) * 100).toFixed(1);
             const isClose = Math.abs(s.targetARR / 1000000 - pt.arr) < pt.arr * 0.3;
             return(<div key={pt.arr} style={{padding:8,background:isClose?`${C.accent}12`:C.bg,borderRadius:6,textAlign:"center",border:isClose?`1px solid ${C.accent}30`:"1px solid transparent"}}>
               <div style={{fontSize:9,color:C.dim}}>${pt.arr}M ARR</div>
               <div style={{fontSize:16,fontWeight:700,color:parseFloat(pct)>15?C.rose:parseFloat(pct)>8?C.amber:C.green,fontFamily:"'DM Mono',monospace"}}>{pct}%</div>
-              <div style={{fontSize:8,color:C.dim}}>of revenue</div>
+              <div style={{fontSize:8,color:C.dim}}>compresses with scale</div>
             </div>);
           })}
         </div>
@@ -1232,9 +1354,8 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
 
       <div style={{marginTop:12,padding:10,background:`${C.violet}08`,borderRadius:8,border:`1px solid ${C.violet}15`}}>
         <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
-          <strong style={{color:C.violet}}>Infrastructure evolves in step functions.</strong> Leadership and PMM scale by complexity, not ARR linearly. 
-          Operational and MarTech layers scale with motion density. Brand and PR scale with category ambition. 
-          Cross-functional RevOps sits in G&A, not here — only marketing-side ops belongs in marketing infrastructure.
+          <strong style={{color:C.violet}}>Layer 1 costs are dollar commitments, not revenue ratios.</strong> Executive at $455K is 15% at $3M ARR but 1.1% at $40M — the dollars are fixed, the percentage is derived.
+          Layer 2 is elastic within remaining budget. Cross-functional RevOps sits in G&A, not here.
         </div>
       </div>
     </Card>

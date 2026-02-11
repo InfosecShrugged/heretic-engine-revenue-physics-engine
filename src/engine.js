@@ -47,16 +47,25 @@ export const DEFAULT_INPUTS = {
   // ── Marketing Budget Decomposition
   // Variable marketing sub-splits (% of variable marketing budget)
   martechPctOfVariable: 25, // Martech (intent data, enrichment, MAP overage, syndication) as % of variable mktg
-  // Fixed marketing itemization (% of fixed marketing budget)
-  // Fixed marketing infrastructure layers (% of fixed marketing budget)
-  // Grouped by role in the system, not org chart
-  fixedMktgBreakdown: {
-    executive: 22,           // VP/CMO — step function, floor-bound
-    revEngineOps: 18,        // Demand Gen lead, Lifecycle, Marketing Ops
-    pmm: 15,                 // Product Marketing, competitive, enablement
-    brandContent: 20,        // Creative, content, web, design
-    infraTools: 15,          // CRM, MAP, attribution, CMS, core analytics (fixed)
-    prAr: 10,                // PR/AR leadership, agency retainer (semi-fixed)
+  // Fixed marketing infrastructure — THREE-LAYER MODEL
+  // Layer 1: Structural Floors (dollar-based, tier-selected, NOT % sliders)
+  //   - Executive: headcount tier selector
+  //   - PMM: enterprise motion requires it at $10M+
+  //   - Core MarTech: minimum viable stack
+  // Layer 2: Scalable Infrastructure (elastic % of remaining fixed budget)
+  //   - Revenue Engine Ops, Brand/Content, PR/AR
+  // Layer 3: Variable (handled in motions, not here)
+
+  // Layer 1 tier selectors
+  executiveTier: "fullVP",       // founder | fractional | fullVP | cmoPlusVP
+  pmmTier: "full",               // none | fractional | full | team
+  coreMarTechTier: "standard",   // starter | standard | enterprise
+
+  // Layer 2 elastic allocation (% of remaining fixed budget AFTER Layer 1 floors)
+  elasticMktgBreakdown: {
+    revEngineOps: 35,            // Demand Gen, Lifecycle, Marketing Ops
+    brandContent: 40,            // Creative, content, web, design
+    prAr: 25,                    // PR/AR, agency retainer
   },
 
   // CAC benchmarks
@@ -175,7 +184,8 @@ export function computeModel(inputs) {
     aeCount, aeRampMonths, aeQuota, sdrsPerAe,
     aeAttritionRate, mktgSourcedPct, sqoLeadQuarters, mqlLeadQuarters,
     grossMargin, gAndAPct, rAndDPct, salesOpexPct, variableMktgPct,
-    salesVariablePct, fixedMktgPct, martechPctOfVariable, fixedMktgBreakdown,
+    salesVariablePct, fixedMktgPct, martechPctOfVariable,
+    executiveTier, pmmTier, coreMarTechTier, elasticMktgBreakdown,
     cpSqoBenchmark, cacPaybackTarget, costBenchmarks,
     salesBudgetBreakdown, aeOTE, aeBenefitsLoad, sdrOTE, sdrBenefitsLoad,
     fundingStage, leadershipRoles,
@@ -232,6 +242,17 @@ export function computeModel(inputs) {
   const pipelineRequired = sqosNeeded * avgDealSize * (pipelineCoverage / 100);
   const effectiveFunnelYield = (inquiryToMqlRate/100)*(mqlToSqlRate/100)*(sqlToMeetingRate/100)*(meetingToSqoRate/100)*(sqoToWonRate/100);
 
+  // ── Compression Metrics (Engine Output)
+  const inquiryToSqoRate = (inquiryToMqlRate/100)*(mqlToSqlRate/100)*(sqlToMeetingRate/100)*(meetingToSqoRate/100) * 100;
+  const inquiryToWonRate = effectiveFunnelYield * 100;
+
+  // Meeting definition: "Held" not "Scheduled"
+  // Internal: SQL → Meeting Set → Meeting Held (default 80% show rate)
+  const meetingShowRate = inputs.meetingShowRate || 80;
+  const sqlToMeetingSetRate = sqlToMeetingRate / (meetingShowRate / 100);
+  const meetingsSetNeeded = Math.ceil(meetingsNeeded / (meetingShowRate / 100));
+  const mktgMeetingsSetNeeded = Math.ceil(mktgMeetingsNeeded / (meetingShowRate / 100));
+
   // Stage 1 / Stage 2 pipeline
   const stage1MinAmount = avgDealSize * (stage1MinPct / 100);
   const stage1Pipeline = meetingsNeeded * stage1MinAmount;
@@ -256,9 +277,11 @@ export function computeModel(inputs) {
   // ── Funnel Health Scoring
   const scoreFunnel = (rate, bench) => rate >= bench.great ? "great" : rate >= bench.good ? "good" : "bad";
   const funnelHealth = funnelBenchmarks ? [
-    { stage: "Inquiry→MQL", rate: inquiryToMqlRate, status: scoreFunnel(inquiryToMqlRate, funnelBenchmarks.inquiryToMqlRate), bench: funnelBenchmarks.inquiryToMqlRate },
+    { stage: "Inquiry→MQL", rate: inquiryToMqlRate, status: scoreFunnel(inquiryToMqlRate, funnelBenchmarks.inquiryToMqlRate), bench: funnelBenchmarks.inquiryToMqlRate,
+      def: "Inquiry = net new identifiable prospect created in system" },
     { stage: "MQL→SQL", rate: mqlToSqlRate, status: scoreFunnel(mqlToSqlRate, funnelBenchmarks.mqlToSqlRate), bench: funnelBenchmarks.mqlToSqlRate },
-    { stage: "SQL→Meeting", rate: sqlToMeetingRate, status: scoreFunnel(sqlToMeetingRate, funnelBenchmarks.sqlToMeetingRate), bench: funnelBenchmarks.sqlToMeetingRate },
+    { stage: "SQL→Meeting (Held)", rate: sqlToMeetingRate, status: scoreFunnel(sqlToMeetingRate, funnelBenchmarks.sqlToMeetingRate), bench: funnelBenchmarks.sqlToMeetingRate,
+      def: "First live sales conversation held, not scheduled. Show rate applied internally." },
     { stage: "Meeting→SQO", rate: meetingToSqoRate, status: scoreFunnel(meetingToSqoRate, funnelBenchmarks.meetingToSqoRate), bench: funnelBenchmarks.meetingToSqoRate },
     { stage: "SQO→Won", rate: sqoToWonRate, status: scoreFunnel(sqoToWonRate, funnelBenchmarks.sqoToWonRate), bench: funnelBenchmarks.sqoToWonRate },
   ] : [];
@@ -504,67 +527,77 @@ export function computeModel(inputs) {
   const leadershipInGA = activeLeadership.filter(l => l.sitsIn === "G&A").reduce((s, l) => s + l.loaded, 0);
   const leadershipInRD = activeLeadership.filter(l => l.sitsIn === "R&D").reduce((s, l) => s + l.loaded, 0);
 
-  // ── Fixed Marketing Floor: infrastructure-based minimum
-  // Grouped by role in the system: Executive, RevEngine Ops, PMM, Brand/Content, Infra Tools, PR/AR
-  const mktgLeadershipComp = leadershipInMktg > 0 ? leadershipInMktg : Math.round(compTable.vpMarketing * loadFactor);
-  const revEngineOpsComp = 155000;       // Demand Gen / Lifecycle / MOps hire (fully loaded)
-  const pmmComp = 165000;               // PMM (fully loaded, mid-market cyber)
-  const contentComp = 135000;           // Content/brand/creative person (fully loaded)
-  const baselineTooling = 85000;        // CRM/MAP/analytics/CMS baseline licenses
-  const prArComp = 95000;              // PR/AR retainer + fractional (semi-fixed)
-
-  // Team scales with ARR — infrastructure layers at each stage
+  // ══ THREE-LAYER FIXED MARKETING MODEL ══
+  // Layer 1: Structural Dollar Floors (tier-selected, NOT % sliders)
+  // Layer 2: Scalable Infrastructure (elastic % of remaining budget)
+  // Layer 3: Variable (handled in motions, not here)
   const arrForScale = targetARR;
-  let mktgHeadcountFloor;
-  if (arrForScale < 5000000) {
-    mktgHeadcountFloor = {
-      label: "Seed/Early ($0-5M)",
-      executive: mktgLeadershipComp,
-      revEngineOps: revEngineOpsComp * 0.5,    // fractional demand gen
-      pmm: 0,                                   // not yet — founder does PMM
-      brandContent: contentComp * 0.5,          // fractional content
-      infraTools: baselineTooling * 0.7,        // starter stack
-      prAr: 0,                                  // not yet
-    };
-  } else if (arrForScale < 15000000) {
-    mktgHeadcountFloor = {
-      label: "Growth ($5-15M)",
-      executive: mktgLeadershipComp,
-      revEngineOps: revEngineOpsComp,           // 1 demand gen / MOps
-      pmm: pmmComp,                             // PMM must exist at $10M+
-      brandContent: contentComp,                // 1 content
-      infraTools: baselineTooling,
-      prAr: prArComp * 0.5,                    // agency retainer, no FTE
-    };
-  } else if (arrForScale < 30000000) {
-    mktgHeadcountFloor = {
-      label: "Scale ($15-30M)",
-      executive: mktgLeadershipComp + 180000,   // VP + Dir
-      revEngineOps: revEngineOpsComp * 2,       // DG lead + MOps
-      pmm: pmmComp * 1.5,                       // Sr PMM + competitive
-      brandContent: contentComp * 2,            // content + creative
-      infraTools: baselineTooling * 1.5,
-      prAr: prArComp,                           // full retainer
-    };
-  } else {
-    mktgHeadcountFloor = {
-      label: "Enterprise ($30M+)",
-      executive: mktgLeadershipComp + 180000 + 150000, // VP + Dir + Mgr
-      revEngineOps: revEngineOpsComp * 3,       // DG + Lifecycle + MOps
-      pmm: pmmComp * 2,                         // PMM team
-      brandContent: contentComp * 3,            // content + creative + web
-      infraTools: baselineTooling * 2.5,
-      prAr: prArComp * 2,                       // FTE + agency
-    };
-  }
-  const floorTotal = mktgHeadcountFloor.executive + mktgHeadcountFloor.revEngineOps + mktgHeadcountFloor.pmm + mktgHeadcountFloor.brandContent + mktgHeadcountFloor.infraTools + mktgHeadcountFloor.prAr;
-  const floorPctOfRev = totalRevenue > 0 ? floorTotal / totalRevenue * 100 : 0;
 
-  // Use the HIGHER of formula-based or floor-based fixed marketing
-  const fixedMktg = Math.max(formulaFixedMktg, floorTotal);
-  const fixedMktgIsFloorBound = floorTotal > formulaFixedMktg;
+  // ── LAYER 1: Structural Floors (dollar amounts, user picks tier)
+  // Executive: step function of funding stage × tier selection
+  const mktgLeadershipFromLayer = leadershipInMktg > 0 ? leadershipInMktg : Math.round(compTable.vpMarketing * loadFactor);
+  const EXEC_TIERS = {
+    founder:    { label: "Founder-Led",     cost: 0,         desc: "Founder handles mktg strategy directly" },
+    fractional: { label: "Fractional CMO",  cost: Math.round(mktgLeadershipFromLayer * 0.4), desc: "Part-time / advisory (~40% of full VP)" },
+    fullVP:     { label: "Full VP",         cost: mktgLeadershipFromLayer, desc: "Dedicated VP Marketing, fully loaded" },
+    cmoPlusVP:  { label: "CMO + VP",        cost: mktgLeadershipFromLayer + 180000, desc: "CMO layer + operating VP" },
+  };
+  const execTier = executiveTier || "fullVP";
+  const execCost = EXEC_TIERS[execTier]?.cost || mktgLeadershipFromLayer;
+
+  // PMM: enterprise motion requires it at $10M+
+  const PMM_TIERS = {
+    none:       { label: "None",            cost: 0,      desc: "Founder/AE does positioning" },
+    fractional: { label: "Fractional",      cost: 82500,  desc: "Contractor / part-time PMM" },
+    full:       { label: "Full PMM",        cost: 165000, desc: "Dedicated PMM, fully loaded" },
+    team:       { label: "PMM Team",        cost: 330000, desc: "Sr PMM + competitive analyst" },
+  };
+  const pmmTierKey = pmmTier || "full";
+  const pmmCost = PMM_TIERS[pmmTierKey]?.cost || 165000;
+
+  // Core MarTech: minimum viable stack (CRM, MAP, attribution, CMS)
+  const MARTECH_TIERS = {
+    starter:    { label: "Starter",         cost: 60000,  desc: "Basic CRM + MAP + analytics" },
+    standard:   { label: "Standard",        cost: 85000,  desc: "CRM + MAP + attribution + CMS" },
+    enterprise: { label: "Enterprise",      cost: 145000, desc: "Full stack + ABM platform + intent" },
+  };
+  const mtTierKey = coreMarTechTier || "standard";
+  const mtCost = MARTECH_TIERS[mtTierKey]?.cost || 85000;
+
+  // Layer 1 total (structural floors — cannot be slider-optimized)
+  const layer1Total = execCost + pmmCost + mtCost;
+
+  // ── Minimum viable Layer 2 floors (must be defined before fixedMktg)
+  const revOpsMinViable = 155000;  // 1 DG/MOps hire
+  const contentMinViable = 135000; // 1 content person
+  const prArMinViable = arrForScale > 15000000 ? 95000 : 0;
+
+  // fixedMktg = MAX(formula, Layer 1 + minimum viable Layer 2)
+  // Layer 1 is non-negotiable. Layer 2 must fund at least min viable ops+content.
+  const minViableLayer2 = revOpsMinViable + contentMinViable + prArMinViable;
+  const structuralFloor = layer1Total + minViableLayer2;
+  const fixedMktg = Math.max(formulaFixedMktg, structuralFloor);
+  const fixedMktgIsFloorBound = structuralFloor > formulaFixedMktg;
   const effectiveFixedMktgPct = (variableMktg + fixedMktg) > 0 ? fixedMktg / (variableMktg + fixedMktg) * 100 : 0;
   const totalMktgBudget = variableMktg + fixedMktg;
+
+  // ── LAYER 2: Scalable Infrastructure (elastic, % of remaining after Layer 1)
+  const emb = elasticMktgBreakdown || { revEngineOps: 35, brandContent: 40, prAr: 25 };
+  const embTotal = emb.revEngineOps + emb.brandContent + emb.prAr;
+  const actualLayer2Budget = Math.max(0, fixedMktg - layer1Total);
+  const actualRevOps = embTotal > 0 ? actualLayer2Budget * (emb.revEngineOps / embTotal) : 0;
+  const actualBrandContent = embTotal > 0 ? actualLayer2Budget * (emb.brandContent / embTotal) : 0;
+  const actualPrAr = embTotal > 0 ? actualLayer2Budget * (emb.prAr / embTotal) : 0;
+
+  const floorTotal = fixedMktg;
+  const floorPctOfRev = totalRevenue > 0 ? fixedMktg / totalRevenue * 100 : 0;
+
+  // Headcount floor object (backward compat)
+  const mktgHeadcountFloor = {
+    label: arrForScale < 5000000 ? "Seed/Early ($0-5M)" : arrForScale < 15000000 ? "Growth ($5-15M)" : arrForScale < 30000000 ? "Scale ($15-30M)" : "Enterprise ($30M+)",
+    executive: execCost, pmm: pmmCost, infraTools: mtCost,
+    revEngineOps: actualRevOps, brandContent: actualBrandContent, prAr: actualPrAr,
+  };
 
   // ── Marketing Budget Decomposition
   // Variable marketing splits: programmatic (channel spend) vs martech
@@ -677,56 +710,55 @@ export function computeModel(inputs) {
     c.perDeal = dealsNeeded > 0 ? c.spend / dealsNeeded : 0;
   });
 
-  // Fixed marketing itemization — each line uses MAX of (floor comp, formula share)
-  // Leadership comp is a step function: it doesn't drop just because the formula says 30% of a smaller pool
-  const fmb = fixedMktgBreakdown || { leadership: 30, revops: 20, contentStaff: 25, baselineTools: 25 };
+  // Fixed marketing itemization — THREE-LAYER MODEL
+  // Layer 1 items: dollar floors from tier selectors (structural commitments)
+  // Layer 2 items: elastic allocation of remaining budget (design choices)
   const fixedMktgItems = [
-    { name: "Executive Layer",
-      amount: Math.max(mktgHeadcountFloor.executive, fixedMktg * (fmb.executive / 100)),
-      floor: mktgHeadcountFloor.executive,
-      formula: fixedMktg * (fmb.executive / 100),
-      isFloorBound: mktgHeadcountFloor.executive > fixedMktg * (fmb.executive / 100),
-      layer: "executive",
-      desc: "VP/CMO — step function of funding stage, not ARR" },
-    { name: "Revenue Engine Ops",
-      amount: Math.max(mktgHeadcountFloor.revEngineOps, fixedMktg * (fmb.revEngineOps / 100)),
-      floor: mktgHeadcountFloor.revEngineOps,
-      formula: fixedMktg * (fmb.revEngineOps / 100),
-      isFloorBound: mktgHeadcountFloor.revEngineOps > fixedMktg * (fmb.revEngineOps / 100),
-      layer: "revEngineOps",
-      desc: "Demand Gen, Lifecycle, Marketing Ops" },
-    { name: "Product & Market Strategy",
-      amount: Math.max(mktgHeadcountFloor.pmm, fixedMktg * (fmb.pmm / 100)),
-      floor: mktgHeadcountFloor.pmm,
-      formula: fixedMktg * (fmb.pmm / 100),
-      isFloorBound: mktgHeadcountFloor.pmm > fixedMktg * (fmb.pmm / 100),
-      layer: "pmm",
-      desc: "PMM, competitive intelligence, sales enablement" },
-    { name: "Brand & Content Production",
-      amount: Math.max(mktgHeadcountFloor.brandContent, fixedMktg * (fmb.brandContent / 100)),
-      floor: mktgHeadcountFloor.brandContent,
-      formula: fixedMktg * (fmb.brandContent / 100),
-      isFloorBound: mktgHeadcountFloor.brandContent > fixedMktg * (fmb.brandContent / 100),
-      layer: "brandContent",
-      desc: "Creative, content, web, design" },
-    { name: "MarTech Infrastructure",
-      amount: Math.max(mktgHeadcountFloor.infraTools, fixedMktg * (fmb.infraTools / 100)),
-      floor: mktgHeadcountFloor.infraTools,
-      formula: fixedMktg * (fmb.infraTools / 100),
-      isFloorBound: mktgHeadcountFloor.infraTools > fixedMktg * (fmb.infraTools / 100),
-      layer: "infraTools",
-      desc: "CRM, MAP, attribution, CMS, analytics (fixed stack)" },
-    { name: "PR / AR",
-      amount: Math.max(mktgHeadcountFloor.prAr, fixedMktg * (fmb.prAr / 100)),
-      floor: mktgHeadcountFloor.prAr,
-      formula: fixedMktg * (fmb.prAr / 100),
-      isFloorBound: mktgHeadcountFloor.prAr > fixedMktg * (fmb.prAr / 100),
-      layer: "prAr",
-      desc: "AR relationships, agency retainer, thought leadership" },
+    // LAYER 1: Structural Floors
+    { name: "Executive Layer", amount: execCost, floor: execCost, formula: execCost,
+      isFloorBound: true, layer: "executive", layerType: 1,
+      tier: execTier, tierLabel: EXEC_TIERS[execTier]?.label,
+      desc: EXEC_TIERS[execTier]?.desc || "VP/CMO",
+      pctOfRev: totalRevenue > 0 ? execCost / totalRevenue * 100 : 0 },
+    { name: "Product & Market Strategy", amount: pmmCost, floor: pmmCost, formula: pmmCost,
+      isFloorBound: true, layer: "pmm", layerType: 1,
+      tier: pmmTierKey, tierLabel: PMM_TIERS[pmmTierKey]?.label,
+      desc: PMM_TIERS[pmmTierKey]?.desc || "PMM",
+      pctOfRev: totalRevenue > 0 ? pmmCost / totalRevenue * 100 : 0 },
+    { name: "MarTech Infrastructure", amount: mtCost, floor: mtCost, formula: mtCost,
+      isFloorBound: true, layer: "infraTools", layerType: 1,
+      tier: mtTierKey, tierLabel: MARTECH_TIERS[mtTierKey]?.label,
+      desc: MARTECH_TIERS[mtTierKey]?.desc || "Core stack",
+      pctOfRev: totalRevenue > 0 ? mtCost / totalRevenue * 100 : 0 },
+    // LAYER 2: Elastic Infrastructure
+    { name: "Revenue Engine Ops", amount: actualRevOps, floor: revOpsMinViable,
+      formula: actualRevOps, isFloorBound: actualRevOps < revOpsMinViable,
+      layer: "revEngineOps", layerType: 2,
+      belowMinViable: actualRevOps < revOpsMinViable,
+      desc: "Demand Gen, Lifecycle, Marketing Ops",
+      pctOfRev: totalRevenue > 0 ? actualRevOps / totalRevenue * 100 : 0 },
+    { name: "Brand & Content Production", amount: actualBrandContent, floor: contentMinViable,
+      formula: actualBrandContent, isFloorBound: actualBrandContent < contentMinViable,
+      layer: "brandContent", layerType: 2,
+      belowMinViable: actualBrandContent < contentMinViable,
+      desc: "Creative, content, web, design",
+      pctOfRev: totalRevenue > 0 ? actualBrandContent / totalRevenue * 100 : 0 },
+    { name: "PR / AR", amount: actualPrAr, floor: prArMinViable,
+      formula: actualPrAr, isFloorBound: false,
+      layer: "prAr", layerType: 2,
+      belowMinViable: prArMinViable > 0 && actualPrAr < prArMinViable,
+      desc: "AR relationships, agency retainer, thought leadership",
+      pctOfRev: totalRevenue > 0 ? actualPrAr / totalRevenue * 100 : 0 },
   ];
-  // Recalculate fixedMktg as sum of line items (may exceed original if multiple lines are floor-bound)
   const fixedMktgActual = fixedMktgItems.reduce((s, fi) => s + fi.amount, 0);
   fixedMktgItems.forEach(fi => { fi.pct = fixedMktgActual > 0 ? Math.round(fi.amount / fixedMktgActual * 100) : 0; });
+
+  // Layer summaries for UI
+  const layer1Summary = { total: layer1Total, pctOfRev: totalRevenue > 0 ? layer1Total / totalRevenue * 100 : 0, label: "Structural Floors" };
+  const layer2Summary = { total: actualRevOps + actualBrandContent + actualPrAr, pctOfRev: totalRevenue > 0 ? (actualRevOps + actualBrandContent + actualPrAr) / totalRevenue * 100 : 0, label: "Scalable Infrastructure" };
+
+  // Tier tables for UI
+  const tierTables = { EXEC_TIERS, PMM_TIERS, MARTECH_TIERS };
 
   // CAC variants
   const programmaticCAC = dealsNeeded > 0 ? totalMarketingSpend / dealsNeeded : 0; // channel spend only
@@ -911,6 +943,13 @@ export function computeModel(inputs) {
       pipelineRequired, totalRevenue, grossProfit, operatingIncome, totalMarketingSpend,
       blendedCAC, fullyLoadedCAC, cacPayback, ltv, ltvCac, rule40, magicNumber, burnMultiple, growthRate, opMargin,
       attainmentRequired, steadyStateQuota, totalRampLoss, effectiveFunnelYield,
+      // Compression metrics (Engine Output)
+      inquiryToSqoRate, inquiryToWonRate,
+      costPerSqo: sqosNeeded > 0 ? totalMarketingSpend / sqosNeeded : 0,
+      costPerWon: dealsNeeded > 0 ? totalMarketingSpend / dealsNeeded : 0,
+      requiredInquiries: inquiriesNeeded,
+      // Meeting held/set tracking
+      meetingShowRate, sqlToMeetingSetRate, meetingsSetNeeded, mktgMeetingsSetNeeded,
       stage1MinAmount, stage1Pipeline, stage2Pipeline, totalCycleDays, velocityPerDay,
       coverageHealth, totalAcquisitionCost,
       newLogoARR, expansionARR, expansionDeals, expansionSQOs,
@@ -923,7 +962,7 @@ export function computeModel(inputs) {
       contributionMargin, contributionMarginPct, breakEvenRevenue,
       funnelGrade, overallFunnelScore, maxFunnelScore,
       // Marketing budget decomposition
-      martechSpend, programmaticBudget, fixedMktgItems, fixedMktgActual,
+      martechSpend, programmaticBudget, fixedMktgItems, fixedMktgActual, layer1Summary, layer2Summary, tierTables, formulaFixedMktg,
       programmaticCAC, martechLoadedCAC, fullyBurdenedCAC, blendedAllInCAC,
       // Fixed marketing floor
       fixedMktgIsFloorBound, effectiveFixedMktgPct, mktgHeadcountFloor, floorTotal, floorPctOfRev,
@@ -955,7 +994,7 @@ export function computeModel(inputs) {
       totalFixedCosts, totalVariableCosts,
       operatingIncome, opMargin, contributionMargin, contributionMarginPct, breakEvenRevenue,
       sAndMHealth, burnRisk, underinvestRisk, benchDeltas, actualCpSqo, cpSqoRatio,
-      martechSpend, programmaticBudget, fixedMktgItems, fixedMktgActual,
+      martechSpend, programmaticBudget, fixedMktgItems, fixedMktgActual, layer1Summary, layer2Summary, tierTables, formulaFixedMktg,
       programmaticCAC, martechLoadedCAC, fullyBurdenedCAC, blendedAllInCAC,
       fixedMktgIsFloorBound, effectiveFixedMktgPct, mktgHeadcountFloor, floorTotal, floorPctOfRev,
       salesBudgetItems, salesBudgetActual, salesIsFloorBound, salesFloorDelta, salesHeadcountFloor,
