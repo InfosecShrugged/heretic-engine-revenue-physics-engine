@@ -2021,15 +2021,355 @@ function NavSection({section,items,page,setPage}){
   </div>);
 }
 
+// ════════════════════════════════════════════════════════════
+// ONBOARDING WIZARD — "A contract with reality"
+// Sets the physics before anyone touches a slider.
+// ════════════════════════════════════════════════════════════
+
+// Preset profiles that snap inputs to reality based on answers
+const ONBOARDING_PRESETS = {
+  // Sales motion × Buyer segment → default inputs
+  motionBuyer: {
+    "sales-led_smb":      { avgDealSize: 25000, salesCycleWeeks: 6, aeQuota: 500000, sqoToWonRate: 35, meetingToSqoRate: 55, sdrsPerAe: 2 },
+    "sales-led_mid":      { avgDealSize: 60000, salesCycleWeeks: 12, aeQuota: 750000, sqoToWonRate: 30, meetingToSqoRate: 50, sdrsPerAe: 1.5 },
+    "sales-led_enterprise":{ avgDealSize: 150000, salesCycleWeeks: 24, aeQuota: 1200000, sqoToWonRate: 25, meetingToSqoRate: 40, sdrsPerAe: 1 },
+    "plg_smb":            { avgDealSize: 15000, salesCycleWeeks: 4, aeQuota: 400000, sqoToWonRate: 40, meetingToSqoRate: 60, sdrsPerAe: 0.5, mktgSourcedPct: 75 },
+    "plg_mid":            { avgDealSize: 40000, salesCycleWeeks: 8, aeQuota: 600000, sqoToWonRate: 35, meetingToSqoRate: 55, sdrsPerAe: 1, mktgSourcedPct: 65 },
+    "plg_enterprise":     { avgDealSize: 100000, salesCycleWeeks: 16, aeQuota: 900000, sqoToWonRate: 28, meetingToSqoRate: 45, sdrsPerAe: 1, mktgSourcedPct: 55 },
+    "hybrid_smb":         { avgDealSize: 20000, salesCycleWeeks: 5, aeQuota: 450000, sqoToWonRate: 38, meetingToSqoRate: 55, sdrsPerAe: 1.5, mktgSourcedPct: 60 },
+    "hybrid_mid":         { avgDealSize: 50000, salesCycleWeeks: 10, aeQuota: 700000, sqoToWonRate: 32, meetingToSqoRate: 50, sdrsPerAe: 1.5, mktgSourcedPct: 55 },
+    "hybrid_enterprise":  { avgDealSize: 120000, salesCycleWeeks: 20, aeQuota: 1000000, sqoToWonRate: 26, meetingToSqoRate: 42, sdrsPerAe: 1, mktgSourcedPct: 45 },
+  },
+  // Growth intent → cost structure
+  growthIntent: {
+    efficiency: { grossMargin: 80, gAndAPct: 8, rAndDPct: 18, salesOpexPct: 22, variableMktgPct: 7 },
+    growth:     { grossMargin: 78, gAndAPct: 10, rAndDPct: 20, salesOpexPct: 25, variableMktgPct: 9 },
+    capture:    { grossMargin: 75, gAndAPct: 12, rAndDPct: 22, salesOpexPct: 30, variableMktgPct: 12 },
+  },
+  // Funding stage
+  funding: {
+    bootstrapped: { fundingStage: "bootstrapped" },
+    seed:         { fundingStage: "seed" },
+    seriesA:      { fundingStage: "seriesA" },
+    seriesB:      { fundingStage: "seriesB" },
+    seriesC:      { fundingStage: "seriesC" },
+  },
+  // Entry point → mktg sourced
+  entryPoint: {
+    inbound:   { mktgSourcedPct: 65 },
+    outbound:  { mktgSourcedPct: 30 },
+    partner:   { mktgSourcedPct: 40 },
+    expansion: { mktgSourcedPct: 25 },
+  },
+};
+
+const ONBOARDING_STEPS = [
+  { id: "welcome", title: "Revenue Physics Engine", sub: "Before we model revenue, we need to declare how your company actually behaves — on a bad Tuesday, not in a board deck." },
+  { id: "motion", title: "GTM Operating Model", sub: "How do you actually acquire and close customers?" },
+  { id: "scale", title: "Current Scale", sub: "Where are you now?" },
+  { id: "capacity", title: "Capacity Constraints", sub: "Models assume infinite elasticity. Let's kill that fantasy." },
+  { id: "finance", title: "Financial Guardrails", sub: "CFO-grade constraints that bound the model." },
+  { id: "intent", title: "Growth Intent", sub: "This changes the math. Be honest." },
+  { id: "review", title: "Your Operating Profile", sub: "Here's the contract with reality. Everything downstream is tuning, not debate." },
+];
+
+function OnboardingWizard({onComplete}){
+  const[step,setStep]=useState(0);
+  const[answers,setAnswers]=useState({
+    salesMotion: "sales-led",
+    buyerSegment: "mid",
+    entryPoint: "inbound",
+    fundingStage: "seriesB",
+    startingARR: 3000000,
+    targetARR: 10000000,
+    aeCount: 8,
+    aeRampMonths: 6,
+    maxOppsPerAE: 25,
+    maxMeetingsPerSDR: 15,
+    growthIntent: "growth",
+    grossMargin: 78,
+    maxCACPayback: 24,
+    pipelineCoverage: 3,
+    slipPct: 20,
+  });
+  const u=(k,v)=>setAnswers(p=>({...p,[k]:v}));
+  const canNext = step < ONBOARDING_STEPS.length - 1;
+  const canBack = step > 0;
+  const currentStep = ONBOARDING_STEPS[step];
+
+  // Build final overrides from answers
+  const buildOverrides=()=>{
+    const key = `${answers.salesMotion}_${answers.buyerSegment}`;
+    const motionDefaults = ONBOARDING_PRESETS.motionBuyer[key] || {};
+    const intentDefaults = ONBOARDING_PRESETS.growthIntent[answers.growthIntent] || {};
+    const fundingDefaults = ONBOARDING_PRESETS.funding[answers.fundingStage] || {};
+    const entryDefaults = ONBOARDING_PRESETS.entryPoint[answers.entryPoint] || {};
+    return {
+      ...motionDefaults,
+      ...intentDefaults,
+      ...fundingDefaults,
+      ...entryDefaults,
+      startingARR: answers.startingARR,
+      targetARR: answers.targetARR,
+      aeCount: answers.aeCount,
+      aeRampMonths: answers.aeRampMonths,
+      grossMargin: answers.grossMargin,
+    };
+  };
+
+  const ChoiceGrid=({options,value,onChange,columns=3})=>(
+    <div style={{display:"grid",gridTemplateColumns:`repeat(${columns},1fr)`,gap:10}}>
+      {options.map(o=>{
+        const isActive=value===o.value;
+        return(<button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"16px 14px",borderRadius:10,
+          border:`2px solid ${isActive?C.accent:C.border}`,background:isActive?C.accentD:"transparent",
+          cursor:"pointer",textAlign:"left",fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s"}}>
+          <div style={{fontSize:13,fontWeight:700,color:isActive?C.accent:C.text}}>{o.label}</div>
+          {o.desc&&<div style={{fontSize:10,color:C.muted,marginTop:4,lineHeight:1.4}}>{o.desc}</div>}
+        </button>);
+      })}
+    </div>
+  );
+
+  const NumberInput=({label,value,onChange,prefix,suffix,step:s=1,desc})=>(
+    <div style={{marginBottom:14}}>
+      <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{label}</div>
+      {desc&&<div style={{fontSize:10,color:C.dim,marginBottom:6}}>{desc}</div>}
+      <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 12px",background:C.bg,borderRadius:8,border:`1px solid ${C.border}`}}>
+        {prefix&&<span style={{color:C.dim,fontSize:13}}>{prefix}</span>}
+        <input type="number" value={value} step={s} onChange={e=>onChange(parseFloat(e.target.value)||0)}
+          style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:14,fontFamily:"'DM Mono',monospace"}}/>
+        {suffix&&<span style={{color:C.dim,fontSize:11}}>{suffix}</span>}
+      </div>
+    </div>
+  );
+
+  const renderStep=()=>{
+    switch(currentStep.id){
+      case "welcome": return(
+        <div style={{textAlign:"center",maxWidth:500,margin:"0 auto"}}>
+          <div style={{fontSize:48,marginBottom:16}}>⚡</div>
+          <p style={{fontSize:14,color:C.muted,lineHeight:1.7,marginBottom:24}}>
+            This wizard asks 6 questions that determine 80% of your model. Everything after this is tuning.
+          </p>
+          <p style={{fontSize:12,color:C.dim,lineHeight:1.6}}>
+            Answers should describe how your company actually behaves — not how it wants to behave in a deck.
+            Models lie when inputs are aspirational. Let's start with physics.
+          </p>
+        </div>
+      );
+      case "motion": return(<div>
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:11,fontWeight:700,color:C.dim,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.05em"}}>Sales Motion</div>
+          <ChoiceGrid value={answers.salesMotion} onChange={v=>u("salesMotion",v)} options={[
+            {value:"plg",label:"Product-Led",desc:"Free/trial → self-serve → expand. Humans enter late."},
+            {value:"sales-led",label:"Sales-Led",desc:"AE-driven from first contact. SDRs qualify, AEs close."},
+            {value:"hybrid",label:"Hybrid",desc:"PLG for SMB, sales-assisted for mid-market and up."},
+          ]}/>
+        </div>
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:11,fontWeight:700,color:C.dim,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.05em"}}>Primary Buyer</div>
+          <ChoiceGrid value={answers.buyerSegment} onChange={v=>u("buyerSegment",v)} options={[
+            {value:"smb",label:"SMB",desc:"< $50K ACV, short cycles, volume play."},
+            {value:"mid",label:"Mid-Market",desc:"$50-150K ACV, 3-6 month cycles, committee buys."},
+            {value:"enterprise",label:"Enterprise",desc:"> $150K ACV, 6-12+ month cycles, procurement."},
+          ]}/>
+        </div>
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:C.dim,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.05em"}}>Primary Entry Point</div>
+          <ChoiceGrid columns={4} value={answers.entryPoint} onChange={v=>u("entryPoint",v)} options={[
+            {value:"inbound",label:"Inbound",desc:"Marketing drives demand."},
+            {value:"outbound",label:"Outbound",desc:"SDRs/AEs prospect."},
+            {value:"partner",label:"Partner",desc:"Channel-sourced."},
+            {value:"expansion",label:"Expansion",desc:"Land & expand."},
+          ]}/>
+        </div>
+      </div>);
+      case "scale": return(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+        <div>
+          <NumberInput label="Starting ARR" value={answers.startingARR} onChange={v=>u("startingARR",v)} prefix="$" step={500000} desc="Current annual recurring revenue"/>
+          <NumberInput label="Target ARR" value={answers.targetARR} onChange={v=>u("targetARR",v)} prefix="$" step={500000} desc="Where you need to be at year-end"/>
+        </div>
+        <div>
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:700,color:C.dim,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.05em"}}>Funding Stage</div>
+            <ChoiceGrid columns={2} value={answers.fundingStage} onChange={v=>u("fundingStage",v)} options={[
+              {value:"bootstrapped",label:"Bootstrapped"},
+              {value:"seed",label:"Seed"},
+              {value:"seriesA",label:"Series A"},
+              {value:"seriesB",label:"Series B"},
+              {value:"seriesC",label:"Series C+"},
+            ]}/>
+          </div>
+          <div style={{padding:12,background:`${C.accent}08`,borderRadius:8,border:`1px solid ${C.accent}15`}}>
+            <div style={{fontSize:10,color:C.dim,marginBottom:4}}>Implied Growth Rate</div>
+            <div style={{fontSize:20,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>
+              {answers.startingARR>0?((answers.targetARR-answers.startingARR)/answers.startingARR*100).toFixed(0):0}%
+            </div>
+          </div>
+        </div>
+      </div>);
+      case "capacity": return(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+        <div>
+          <NumberInput label="AE Count" value={answers.aeCount} onChange={v=>u("aeCount",v)} desc="Current quota-carrying AEs" step={1}/>
+          <NumberInput label="AE Ramp (months)" value={answers.aeRampMonths} onChange={v=>u("aeRampMonths",v)} suffix="months" desc="Months to full productivity" step={1}/>
+        </div>
+        <div>
+          <NumberInput label="Max Active Opps per AE" value={answers.maxOppsPerAE} onChange={v=>u("maxOppsPerAE",v)} desc="Before quality degrades. Be honest." step={1}/>
+          <NumberInput label="Max Meetings per SDR/week" value={answers.maxMeetingsPerSDR} onChange={v=>u("maxMeetingsPerSDR",v)} suffix="/wk" desc="Actual throughput, not target." step={1}/>
+          <div style={{padding:10,background:C.bg,borderRadius:8,marginTop:8}}>
+            <div style={{fontSize:10,color:C.dim}}>These are not preferences — they're physics.</div>
+          </div>
+        </div>
+      </div>);
+      case "finance": return(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+        <div>
+          <NumberInput label="Target Gross Margin" value={answers.grossMargin} onChange={v=>u("grossMargin",v)} suffix="%" desc="SaaS benchmark: 75-85%" step={1}/>
+          <NumberInput label="Max CAC Payback" value={answers.maxCACPayback} onChange={v=>u("maxCACPayback",v)} suffix="months" desc="Enterprise: 18-30 mo. SMB: 6-12 mo." step={1}/>
+        </div>
+        <div>
+          <NumberInput label="Target Pipeline Coverage" value={answers.pipelineCoverage} onChange={v=>u("pipelineCoverage",v)} suffix="x" desc="SQO pipeline ÷ target. Healthy: 3-4x." step={0.5}/>
+          <NumberInput label="Expected Pipeline Slip %" value={answers.slipPct} onChange={v=>u("slipPct",v)} suffix="%" desc="What % slips quarter to quarter? This calibrates optimism." step={5}/>
+        </div>
+      </div>);
+      case "intent": return(<div>
+        <div style={{fontSize:11,fontWeight:700,color:C.dim,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.05em"}}>What are you optimizing for?</div>
+        <ChoiceGrid columns={3} value={answers.growthIntent} onChange={v=>u("growthIntent",v)} options={[
+          {value:"efficiency",label:"Efficiency",desc:"Protect margins. Prove unit economics. PE-ready."},
+          {value:"growth",label:"Growth",desc:"Invest in GTM. Acceptable burn for market position."},
+          {value:"capture",label:"Market Capture",desc:"Win at all costs. Speed > margin. Land grab."},
+        ]}/>
+        <div style={{marginTop:20,padding:14,background:C.bg,borderRadius:8,border:`1px solid ${C.border}`}}>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+            {answers.growthIntent==="efficiency"&&"Efficiency mode tightens all cost ratios. The model will flag any spend that doesn't directly produce pipeline. Expect 35-45% S&M as a % of revenue."}
+            {answers.growthIntent==="growth"&&"Growth mode balances burn against progress. The model allows higher S&M ratios (45-55% of rev) in exchange for pipeline velocity. Standard for Series A-B."}
+            {answers.growthIntent==="capture"&&"Market capture mode removes most guardrails. S&M can exceed 55% of revenue. The model will warn but not block. Use this when market timing matters more than margins."}
+          </div>
+        </div>
+      </div>);
+      case "review": {
+        const overrides = buildOverrides();
+        const motionLabel = {plg:"Product-Led",["sales-led"]:"Sales-Led",hybrid:"Hybrid"}[answers.salesMotion];
+        const buyerLabel = {smb:"SMB",mid:"Mid-Market",enterprise:"Enterprise"}[answers.buyerSegment];
+        const intentLabel = {efficiency:"Efficiency",growth:"Growth",capture:"Market Capture"}[answers.growthIntent];
+        return(<div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:20}}>
+            {[
+              {label:"Operating Mode",value:`${motionLabel} × ${buyerLabel}`,color:C.accent},
+              {label:"Growth Intent",value:intentLabel,color:answers.growthIntent==="capture"?C.rose:answers.growthIntent==="growth"?C.amber:C.green},
+              {label:"Funding Stage",value:answers.fundingStage.replace("series","Series "),color:C.violet},
+            ].map(b=>(<div key={b.label} style={{padding:14,background:C.bg,borderRadius:10,border:`1px solid ${C.border}`}}>
+              <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.05em"}}>{b.label}</div>
+              <div style={{fontSize:15,fontWeight:700,color:b.color,marginTop:4}}>{b.value}</div>
+            </div>))}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+            {[
+              {label:"Starting ARR",value:fmt(answers.startingARR)},
+              {label:"Target ARR",value:fmt(answers.targetARR)},
+              {label:"Avg Deal Size",value:fmt(overrides.avgDealSize||60000)},
+              {label:"Sales Cycle",value:`${overrides.salesCycleWeeks||12} weeks`},
+              {label:"AE Count",value:answers.aeCount},
+              {label:"AE Quota",value:fmt(overrides.aeQuota||750000)},
+              {label:"Win Rate",value:`${overrides.sqoToWonRate||30}%`},
+              {label:"Mktg Sourced",value:`${overrides.mktgSourcedPct||50}%`},
+            ].map(b=>(<div key={b.label} style={{display:"flex",justifyContent:"space-between",padding:"8px 12px",background:C.bg,borderRadius:6}}>
+              <span style={{fontSize:11,color:C.muted}}>{b.label}</span>
+              <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{b.value}</span>
+            </div>))}
+          </div>
+          <div style={{padding:12,background:`${C.green}08`,borderRadius:8,border:`1px solid ${C.green}20`}}>
+            <div style={{fontSize:11,color:C.green,fontWeight:600,marginBottom:4}}>These defaults anchor the model.</div>
+            <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>Everything can be tuned later in Global Drivers. But these values represent your declared operating reality — change them when reality changes, not when someone doesn't like the output.</div>
+          </div>
+        </div>);
+      }
+      default: return null;
+    }
+  };
+
+  return(
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans',sans-serif",color:C.text,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+      
+      <div style={{width:"100%",maxWidth:720,padding:"40px 32px"}}>
+        {/* Logo */}
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <img src={LOGO_URL} alt="Heretics" style={{height:32,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
+          <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>Revenue Physics Engine</div>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{display:"flex",gap:4,marginBottom:32}}>
+          {ONBOARDING_STEPS.map((_,i)=>(
+            <div key={i} style={{flex:1,height:3,borderRadius:2,background:i<=step?C.accent:C.border,transition:"all 0.3s"}}/>
+          ))}
+        </div>
+
+        {/* Step header */}
+        <div style={{marginBottom:24}}>
+          <div style={{fontSize:9,color:C.accent,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>
+            Step {step + 1} of {ONBOARDING_STEPS.length}
+          </div>
+          <h1 style={{fontSize:24,fontWeight:700,color:C.text,margin:0,marginBottom:4}}>{currentStep.title}</h1>
+          <p style={{fontSize:13,color:C.muted,margin:0}}>{currentStep.sub}</p>
+        </div>
+
+        {/* Step content */}
+        <AnimatePresence mode="wait">
+          <motion.div key={step} initial={{opacity:0,x:20}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-20}} transition={{duration:0.2}}>
+            {renderStep()}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Nav buttons */}
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:32}}>
+          <button onClick={()=>canBack&&setStep(step-1)} style={{padding:"10px 20px",borderRadius:8,border:`1px solid ${C.border}`,
+            background:"transparent",color:canBack?C.text:C.dim,cursor:canBack?"pointer":"default",fontSize:12,fontWeight:600,
+            fontFamily:"'DM Sans',sans-serif",opacity:canBack?1:0.3}}>
+            Back
+          </button>
+          {step===ONBOARDING_STEPS.length-1 ? (
+            <button onClick={()=>onComplete(buildOverrides())} style={{padding:"10px 28px",borderRadius:8,border:"none",
+              background:C.accent,color:"#fff",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"'DM Sans',sans-serif"}}>
+              Launch Engine →
+            </button>
+          ) : (
+            <button onClick={()=>setStep(step+1)} style={{padding:"10px 24px",borderRadius:8,border:"none",
+              background:C.accentD,color:C.accent,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"'DM Sans',sans-serif"}}>
+              Continue →
+            </button>
+          )}
+        </div>
+
+        {/* Skip link */}
+        {step===0&&<div style={{textAlign:"center",marginTop:16}}>
+          <button onClick={()=>onComplete({})} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:11,fontFamily:"'DM Sans',sans-serif",textDecoration:"underline"}}>
+            Skip — use default inputs
+          </button>
+        </div>}
+      </div>
+    </div>
+  );
+}
+
 export default function App(){
+  const[onboarded,setOnboarded]=useState(false);
   const[page,setPage]=useState("dashboard");
   const[drivers,setDrivers]=useState(false);
-  const[infoPanel,setInfoPanel]=useState(null); // moduleId or null
+  const[infoPanel,setInfoPanel]=useState(null);
   const[inputs,setInputs]=useState(DEFAULT_INPUTS);
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick};
   const pages={dashboard:<DashboardPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>};
+
+  const handleOnboardComplete=(overrides)=>{
+    setInputs(prev=>({...prev,...overrides}));
+    setOnboarded(true);
+  };
+
+  if(!onboarded) return <OnboardingWizard onComplete={handleOnboardComplete}/>;
 
   return(<div style={{display:"flex",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'DM Sans',sans-serif",color:C.text}}>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
