@@ -965,7 +965,8 @@ const STRESS_MODES = [
 
 function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
   const{pnl:p,summary:s}=model;
-  const[debtTax,setDebtTax]=useState(0); // tactical debt tax slider (0-20%)
+  const[debtTax,setDebtTax]=useState(0);
+  const[simArr,setSimArr]=useState(Math.round(s.targetARR/1000000)||10);
   const currentMode = STRESS_MODES.find(m => m.fixedPct <= inputs.fixedMktgPct) || STRESS_MODES[0];
   const activeMode = STRESS_MODES.find(m => m.fixedPct === inputs.fixedMktgPct);
 
@@ -1182,180 +1183,211 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         })}</tbody>
       </table></div>
     </Card>
-
-    {/* Fixed Marketing Infrastructure — Structural Allocation Simulator */}
+    {/* ═══ STRUCTURAL GRAVITY VS REVENUE LIFT ═══ */}
     <Card style={{marginBottom:18}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
         <div>
-          <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Marketing Infrastructure — Structural Allocation</h3>
-          <div style={{fontSize:10,color:C.muted,lineHeight:1.5,maxWidth:500}}>
-            Infrastructure cost that exists before a single lead is generated. Allocation across layers shifts by growth stage and GTM motion — structure is a strategic choice, not accounting destiny.
+          <h3 style={{fontSize:12,fontWeight:700,color:C.violet,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Structural Gravity vs Revenue Lift</h3>
+          <div style={{fontSize:10,color:C.muted,lineHeight:1.5,maxWidth:520}}>
+            At low ARR, structural gravity is heavy — fixed commitments consume a large share of revenue.
+            As revenue grows, lift wins. Same dollars, shrinking percentage.
           </div>
         </div>
-        {p.fixedMktgIsFloorBound && (
-          <div style={{padding:"6px 12px",borderRadius:6,background:`${C.rose}12`,border:`1px solid ${C.rose}30`}}>
-            <div style={{fontSize:9,fontWeight:700,color:C.rose,textTransform:"uppercase"}}>Floor-Bound</div>
-            <div style={{fontSize:10,color:C.muted}}>{p.mktgHeadcountFloor?.label}</div>
-          </div>
-        )}
+        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+          {p.fixedMktgIsFloorBound ? (
+            <button onClick={()=>setDebtTax(dt=>dt===0?1:0)} style={{padding:"5px 10px",borderRadius:5,border:`1px solid ${debtTax>0?"#22c55e":"#f59e0b"}`,background:debtTax>0?"#22c55e12":"#f59e0b12",color:debtTax>0?"#22c55e":"#f59e0b",cursor:"pointer",fontSize:9,fontWeight:700,fontFamily:"'DM Sans',sans-serif"}}>
+              {debtTax>0?"Strategic Overbuild":"Compression Active"}
+            </button>
+          ) : (
+            <div style={{padding:"5px 10px",borderRadius:5,background:`${C.green}12`,border:`1px solid ${C.green}30`}}>
+              <span style={{fontSize:9,fontWeight:700,color:C.green}}>Revenue Exceeds Structure</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ═══ LAYER 1: Structural Floors (tier selectors, not sliders) ═══ */}
-      <div style={{marginBottom:16}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-          <div style={{fontSize:10,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.05em"}}>Layer 1 — Structural Commitments</div>
-          <div style={{fontSize:9,padding:"2px 8px",borderRadius:4,background:`${C.accent}12`,color:C.accent,fontWeight:600}}>{fmt(p.layer1Summary?.total||0)} · {(p.layer1Summary?.pctOfRev||0).toFixed(1)}% of rev</div>
-        </div>
-        <div style={{fontSize:10,color:C.dim,marginBottom:12}}>Dollar floors set by tier selection. Cannot be slider-optimized — these are headcount commitments that change when you change structure, not when you don't like the output.</div>
-        
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
-          {/* Executive Tier */}
-          <div style={{background:C.bg,borderRadius:10,padding:14,borderTop:`3px solid #a78bfa`}}>
-            <div style={{fontSize:11,fontWeight:700,color:"#a78bfa",marginBottom:8}}>Executive Layer</div>
-            {Object.entries(p.tierTables?.EXEC_TIERS||{}).map(([key,tier])=>{
-              const isActive=(inputs.executiveTier||"fullVP")===key;
-              return(<button key={key} onClick={()=>setInputs(pr=>({...pr,executiveTier:key}))}
-                style={{display:"block",width:"100%",padding:"8px 10px",marginBottom:4,borderRadius:6,textAlign:"left",
-                  border:`1px solid ${isActive?"#a78bfa":C.border}`,background:isActive?"#a78bfa12":"transparent",
-                  cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
-                <div style={{display:"flex",justifyContent:"space-between"}}>
-                  <span style={{fontSize:10,fontWeight:isActive?700:500,color:isActive?"#a78bfa":C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:10,fontWeight:700,color:isActive?"#a78bfa":C.dim,fontFamily:"'DM Mono',monospace"}}>{fmt(tier.cost)}</span>
-                </div>
-                <div style={{fontSize:8,color:C.dim,marginTop:2}}>{tier.desc}</div>
-              </button>);
-            })}
-            <div style={{marginTop:6,fontSize:9,color:C.dim}}>
-              At {fmt(s.targetARR)} → <strong style={{color:p.fixedMktgItems?.find(f=>f.layer==="executive")?.pctOfRev>5?"#ef4444":p.fixedMktgItems?.find(f=>f.layer==="executive")?.pctOfRev>3?"#f59e0b":"#22c55e"}}>{(p.fixedMktgItems?.find(f=>f.layer==="executive")?.pctOfRev||0).toFixed(1)}% of rev</strong> (derived, not fixed)
+      {/* Visual Tension: Formula vs Structural bars */}
+      {(()=>{
+        const formulaBudget = Math.round(variableBudget * (inputs.fixedMktgPct / 100) / (1 - inputs.fixedMktgPct / 100));
+        const structBudget = p.fixedMktgActual || 0;
+        const maxBar = Math.max(formulaBudget, structBudget) * 1.1;
+        const formulaW = maxBar > 0 ? formulaBudget / maxBar * 100 : 0;
+        const structW = maxBar > 0 ? structBudget / maxBar * 100 : 0;
+        const overflow = structBudget > formulaBudget;
+        const overflowPct = formulaBudget > 0 ? ((structBudget - formulaBudget) / formulaBudget * 100) : 0;
+        const growthRate = inputs.targetGrowthRate || 30;
+        const quartersToResolve = overflow ? Math.max(1, Math.ceil(Math.log(structBudget / Math.max(1,formulaBudget)) / Math.log(1 + growthRate / 400))) : 0;
+        return(<div style={{marginBottom:16}}>
+          <div style={{marginBottom:8}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+              <span style={{fontSize:9,color:C.dim,fontWeight:600}}>Revenue-Driven Budget (formula at {inputs.fixedMktgPct}%)</span>
+              <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{fmt(formulaBudget)}</span>
+            </div>
+            <div style={{position:"relative",height:22,background:C.bg,borderRadius:6,overflow:"hidden"}}>
+              <motion.div initial={{width:0}} animate={{width:`${formulaW}%`}} transition={{duration:0.6}}
+                style={{height:"100%",background:`${C.accent}40`,borderRadius:6}}/>
             </div>
           </div>
+          <div style={{marginBottom:8}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+              <span style={{fontSize:9,color:C.dim,fontWeight:600}}>Structural Minimum (commitments)</span>
+              <span style={{fontSize:10,fontWeight:700,color:overflow?C.amber:C.green,fontFamily:"'DM Mono',monospace"}}>{fmt(structBudget)}</span>
+            </div>
+            <div style={{position:"relative",height:22,background:C.bg,borderRadius:6,overflow:"hidden"}}>
+              <motion.div initial={{width:0}} animate={{width:`${Math.min(formulaW,structW)}%`}} transition={{duration:0.6}}
+                style={{height:"100%",background:`${C.violet}50`,borderRadius:6}}/>
+              {overflow && <motion.div initial={{width:0}} animate={{width:`${structW - formulaW}%`}} transition={{duration:0.8,delay:0.3}}
+                style={{position:"absolute",left:`${formulaW}%`,top:0,height:"100%",
+                  background:`linear-gradient(90deg, ${C.amber}60, ${C.amber}30)`,borderRadius:"0 6px 6px 0",
+                  boxShadow:`0 0 12px ${C.amber}40`}}/>}
+            </div>
+          </div>
+          {overflow && (
+            <div style={{padding:10,background:debtTax>0?`${C.green}08`:`${C.amber}08`,borderRadius:8,border:`1px solid ${debtTax>0?C.green:C.amber}20`}}>
+              <div style={{fontSize:10,color:debtTax>0?C.green:C.amber,fontWeight:600,marginBottom:2}}>
+                {debtTax>0 ? "Intentional Front-Loading for Growth" : `Structure exceeds formula by ${fmt(structBudget - formulaBudget)} (+${overflowPct.toFixed(0)}%)`}
+              </div>
+              <div style={{fontSize:9,color:C.muted}}>
+                {debtTax>0
+                  ? "Building infrastructure ahead of revenue. Strategic bet — investing in capacity before demand arrives."
+                  : `At ${growthRate}% growth, compression resolves in ~${quartersToResolve} quarter${quartersToResolve!==1?"s":""}. Every demand dollar carries ${overflowPct.toFixed(0)}% overhead surplus until then.`}
+              </div>
+            </div>
+          )}
+        </div>);
+      })()}
 
-          {/* PMM Tier */}
-          <div style={{background:C.bg,borderRadius:10,padding:14,borderTop:`3px solid #3b82f6`}}>
-            <div style={{fontSize:11,fontWeight:700,color:"#3b82f6",marginBottom:8}}>Product & Market Strategy</div>
-            {Object.entries(p.tierTables?.PMM_TIERS||{}).map(([key,tier])=>{
-              const isActive=(inputs.pmmTier||"full")===key;
-              return(<button key={key} onClick={()=>setInputs(pr=>({...pr,pmmTier:key}))}
-                style={{display:"block",width:"100%",padding:"8px 10px",marginBottom:4,borderRadius:6,textAlign:"left",
-                  border:`1px solid ${isActive?"#3b82f6":C.border}`,background:isActive?"#3b82f612":"transparent",
-                  cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+      {/* STRUCTURAL CORE (Layer 1) */}
+      <div style={{padding:14,background:C.bg,borderRadius:12,border:`1px solid ${C.border}`,marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+          <div style={{width:4,height:14,background:C.accent,borderRadius:2}}/>
+          <span style={{fontSize:10,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.05em"}}>Structural Core</span>
+          <span style={{fontSize:9,padding:"2px 8px",borderRadius:4,background:`${C.accent}12`,color:C.accent,fontWeight:600}}>{fmt(p.layer1Summary?.total||0)}</span>
+          <span style={{fontSize:9,color:C.dim}}>Non-negotiable</span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+          {/* Executive Tier */}
+          <div style={{background:C.bgAlt,borderRadius:8,padding:12,borderTop:`3px solid #a78bfa`}}>
+            <div style={{fontSize:10,fontWeight:700,color:"#a78bfa",marginBottom:6}}>Executive</div>
+            {Object.entries(p.tierTables?.EXEC_TIERS||{}).map(([key,tier])=>{
+              const isA=(inputs.executiveTier||"fullVP")===key;
+              return(<button key={key} onClick={()=>setInputs(pr=>({...pr,executiveTier:key}))}
+                style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:5,textAlign:"left",
+                  border:`1px solid ${isA?"#a78bfa":C.border}`,background:isA?"#a78bfa12":"transparent",cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
-                  <span style={{fontSize:10,fontWeight:isActive?700:500,color:isActive?"#3b82f6":C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:10,fontWeight:700,color:isActive?"#3b82f6":C.dim,fontFamily:"'DM Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#a78bfa":C.muted}}>{tier.label}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?"#a78bfa":C.dim,fontFamily:"'DM Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
-                <div style={{fontSize:8,color:C.dim,marginTop:2}}>{tier.desc}</div>
+              </button>);
+            })}
+            <div style={{marginTop:4,fontSize:8,color:C.dim}}>{(p.fixedMktgItems?.find(f=>f.layer==="executive")?.pctOfRev||0).toFixed(1)}% of rev — derived</div>
+          </div>
+          {/* PMM Tier */}
+          <div style={{background:C.bgAlt,borderRadius:8,padding:12,borderTop:`3px solid #3b82f6`}}>
+            <div style={{fontSize:10,fontWeight:700,color:"#3b82f6",marginBottom:6}}>Product & Market Strategy</div>
+            {Object.entries(p.tierTables?.PMM_TIERS||{}).map(([key,tier])=>{
+              const isA=(inputs.pmmTier||"full")===key;
+              return(<button key={key} onClick={()=>setInputs(pr=>({...pr,pmmTier:key}))}
+                style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:5,textAlign:"left",
+                  border:`1px solid ${isA?"#3b82f6":C.border}`,background:isA?"#3b82f612":"transparent",cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+                <div style={{display:"flex",justifyContent:"space-between"}}>
+                  <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#3b82f6":C.muted}}>{tier.label}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?"#3b82f6":C.dim,fontFamily:"'DM Mono',monospace"}}>{fmt(tier.cost)}</span>
+                </div>
               </button>);
             })}
             {(inputs.pmmTier||"full")==="none"&&s.targetARR>=10000000&&
-              <div style={{marginTop:6,padding:6,background:"#ef444412",borderRadius:4,fontSize:8,color:"#ef4444",fontWeight:600}}>⚠ No PMM above $10M ARR — positioning risk</div>}
+              <div style={{marginTop:4,padding:4,background:"#ef444412",borderRadius:4,fontSize:8,color:"#ef4444",fontWeight:600}}>⚠ Positioning risk above $10M</div>}
           </div>
-
           {/* MarTech Tier */}
-          <div style={{background:C.bg,borderRadius:10,padding:14,borderTop:`3px solid #64748b`}}>
-            <div style={{fontSize:11,fontWeight:700,color:"#64748b",marginBottom:8}}>MarTech Infrastructure</div>
+          <div style={{background:C.bgAlt,borderRadius:8,padding:12,borderTop:`3px solid #64748b`}}>
+            <div style={{fontSize:10,fontWeight:700,color:"#64748b",marginBottom:6}}>MarTech Infrastructure</div>
             {Object.entries(p.tierTables?.MARTECH_TIERS||{}).map(([key,tier])=>{
-              const isActive=(inputs.coreMarTechTier||"standard")===key;
+              const isA=(inputs.coreMarTechTier||"standard")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,coreMarTechTier:key}))}
-                style={{display:"block",width:"100%",padding:"8px 10px",marginBottom:4,borderRadius:6,textAlign:"left",
-                  border:`1px solid ${isActive?"#64748b":C.border}`,background:isActive?"#64748b12":"transparent",
-                  cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+                style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:5,textAlign:"left",
+                  border:`1px solid ${isA?"#64748b":C.border}`,background:isA?"#64748b12":"transparent",cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
-                  <span style={{fontSize:10,fontWeight:isActive?700:500,color:isActive?"#64748b":C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:10,fontWeight:700,color:isActive?"#64748b":C.dim,fontFamily:"'DM Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#64748b":C.muted}}>{tier.label}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?"#64748b":C.dim,fontFamily:"'DM Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
-                <div style={{fontSize:8,color:C.dim,marginTop:2}}>{tier.desc}</div>
               </button>);
             })}
-            <div style={{marginTop:6,fontSize:8,color:C.dim}}>Performance tools (6sense, intent) are variable — in motions, not here.</div>
+            <div style={{marginTop:4,fontSize:8,color:C.dim}}>Performance tools are variable — in motions.</div>
           </div>
         </div>
       </div>
 
-      {/* Compression warning */}
-      {p.fixedMktgIsFloorBound && (
-        <div style={{padding:14,background:`${C.amber}08`,borderRadius:10,border:`1px solid ${C.amber}20`,marginBottom:16}}>
-          <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-            <div style={{fontSize:20}}>⚠️</div>
-            <div>
-              <div style={{fontSize:12,fontWeight:700,color:C.amber,marginBottom:4}}>Structural Floor Exceeds Formula</div>
-              <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
-                Layer 1 commitments ({fmt(p.layer1Summary?.total||0)}) + minimum viable Layer 2 ({fmt(fixedBudget - (p.layer1Summary?.total||0))}) = {fmt(fixedBudget)} total.
-                Formula-based at {inputs.fixedMktgPct}% would only produce {fmt(Math.round(variableBudget * (inputs.fixedMktgPct / 100) / (1 - inputs.fixedMktgPct / 100)))}.
-                This is structural compression — it resolves as revenue grows.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ═══ LAYER 2: Elastic Infrastructure (sliders) ═══ */}
-      <div style={{marginBottom:16}}>
+      {/* SCALABLE PROGRAMS (Layer 2) */}
+      <div style={{padding:14,background:C.bg,borderRadius:12,border:`1px dashed ${C.border}`,marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-          <div style={{fontSize:10,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.05em"}}>Layer 2 — Scalable Infrastructure</div>
-          <div style={{fontSize:9,padding:"2px 8px",borderRadius:4,background:`${C.amber}12`,color:C.amber,fontWeight:600}}>{fmt(p.layer2Summary?.total||0)} · {(p.layer2Summary?.pctOfRev||0).toFixed(1)}% of rev</div>
+          <div style={{width:4,height:14,background:C.amber,borderRadius:2}}/>
+          <span style={{fontSize:10,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.05em"}}>Scalable Programs</span>
+          <span style={{fontSize:9,padding:"2px 8px",borderRadius:4,background:`${C.amber}12`,color:C.amber,fontWeight:600}}>{fmt(p.layer2Summary?.total||0)}</span>
+          <span style={{fontSize:9,color:C.dim}}>Elastic — design choices</span>
         </div>
-        <div style={{fontSize:10,color:C.dim,marginBottom:12}}>Design choices — redistribute across ops, content, and PR. These are elastic within the remaining budget after structural commitments.</div>
-
-        <div style={{display:"grid",gridTemplateColumns:"200px 1fr",gap:14}}>
-          {/* Sliders */}
-          <div style={{padding:12,background:C.bg,borderRadius:10}}>
-            <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>% of Layer 2 Budget</div>
-            {[
-              {key:"revEngineOps",label:"Revenue Engine Ops",color:"#f59e0b"},
-              {key:"brandContent",label:"Brand & Content",color:"#22c55e"},
-              {key:"prAr",label:"PR / AR",color:"#ec4899"},
-            ].map(item=>{
+        <div style={{display:"grid",gridTemplateColumns:"180px 1fr",gap:12}}>
+          <div style={{padding:10,background:C.bgAlt,borderRadius:8}}>
+            {[{key:"revEngineOps",label:"RevEngine Ops",color:"#f59e0b"},{key:"brandContent",label:"Brand & Content",color:"#22c55e"},{key:"prAr",label:"PR / AR",color:"#ec4899"}].map(item=>{
               const emb=inputs.elasticMktgBreakdown||{revEngineOps:35,brandContent:40,prAr:25};
-              const val=emb[item.key]||0;
-              return(<div key={item.key} style={{marginBottom:10}}>
+              return(<div key={item.key} style={{marginBottom:8}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
-                  <span style={{fontSize:10,fontWeight:600,color:item.color}}>{item.label}</span>
-                  <span style={{fontSize:10,color:item.color,fontFamily:"'DM Mono',monospace"}}>{val}%</span>
+                  <span style={{fontSize:9,fontWeight:600,color:item.color}}>{item.label}</span>
+                  <span style={{fontSize:9,color:item.color,fontFamily:"'DM Mono',monospace"}}>{emb[item.key]||0}%</span>
                 </div>
-                <input type="range" min={5} max={70} value={val}
+                <input type="range" min={5} max={70} value={emb[item.key]||0}
                   onChange={e=>setInputs(pr=>({...pr,elasticMktgBreakdown:{...(pr.elasticMktgBreakdown||emb),[item.key]:parseInt(e.target.value)}}))}
                   style={{width:"100%",accentColor:item.color}}/>
               </div>);
             })}
           </div>
-
-          {/* Layer 2 cards */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
             {(fixedItems||[]).filter(fi=>fi.layerType===2).map((fi,i)=>{
               const colors=["#f59e0b","#22c55e","#ec4899"];
-              return(<div key={fi.name} style={{padding:12,background:C.bg,borderRadius:10,borderLeft:`3px solid ${colors[i]}`}}>
-                <div style={{fontSize:11,fontWeight:700,color:colors[i],marginBottom:2}}>{fi.name}</div>
-                <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fmt(fi.amount)}</div>
-                <div style={{fontSize:9,color:C.dim,marginTop:4}}>{fi.desc}</div>
-                <div style={{fontSize:9,color:C.dim,marginTop:2}}>{fi.pctOfRev?.toFixed(1)}% of rev</div>
-                {fi.belowMinViable && <div style={{marginTop:4,fontSize:8,color:C.rose,fontWeight:600}}>⚠ Below minimum viable ({fmt(fi.floor)})</div>}
+              const hs = fi.belowMinViable ? "at-risk" : fi.amount < fi.floor * 1.2 ? "thin" : "stable";
+              const hc = hs==="at-risk"?"#ef4444":hs==="thin"?"#f59e0b":"#22c55e";
+              const ghostCaps = {revEngineOps:["Lifecycle automation","Lead scoring","Campaign ops"],brandContent:["Case studies","Content velocity","Video production"],prAr:["Analyst coverage","Thought leadership","Press"]};
+              const ghosts = fi.belowMinViable ? (ghostCaps[fi.layer]||[]) : [];
+              return(<div key={fi.name} style={{padding:10,background:C.bgAlt,borderRadius:8,borderLeft:`3px solid ${colors[i]}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}}>
+                  <span style={{fontSize:10,fontWeight:700,color:colors[i]}}>{fi.name}</span>
+                  <span style={{fontSize:7,padding:"1px 5px",borderRadius:3,background:`${hc}15`,color:hc,fontWeight:600}}>{hs==="at-risk"?"At Risk":hs==="thin"?"Thin":"Stable"}</span>
+                </div>
+                <div style={{fontSize:15,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fmt(fi.amount)}</div>
+                <div style={{fontSize:8,color:C.dim,marginTop:2}}>{fi.pctOfRev?.toFixed(1)}% of rev</div>
+                {ghosts.length>0 && <div style={{marginTop:4}}>{ghosts.map(g=>(<div key={g} style={{fontSize:7,color:`${C.muted}60`,fontStyle:"italic"}}>○ {g}</div>))}<div style={{fontSize:7,color:C.dim,marginTop:1}}>Capability gaps at current funding</div></div>}
               </div>);
             })}
           </div>
         </div>
       </div>
 
-      {/* Infrastructure burden by scale */}
-      <div style={{marginTop:14}}>
-        <div style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:8}}>Total Infrastructure Burden by Scale</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6}}>
-          {[{arr:3},{arr:5},{arr:10},{arr:20},{arr:40}].map(pt=>{
-            const infraTotal = p.fixedMktgActual || floorTotal;
-            const pct = (infraTotal / (pt.arr * 1000000) * 100).toFixed(1);
-            const isClose = Math.abs(s.targetARR / 1000000 - pt.arr) < pt.arr * 0.3;
-            return(<div key={pt.arr} style={{padding:8,background:isClose?`${C.accent}12`:C.bg,borderRadius:6,textAlign:"center",border:isClose?`1px solid ${C.accent}30`:"1px solid transparent"}}>
-              <div style={{fontSize:9,color:C.dim}}>${pt.arr}M ARR</div>
-              <div style={{fontSize:16,fontWeight:700,color:parseFloat(pct)>15?C.rose:parseFloat(pct)>8?C.amber:C.green,fontFamily:"'DM Mono',monospace"}}>{pct}%</div>
-              <div style={{fontSize:8,color:C.dim}}>compresses with scale</div>
+      {/* Gravity Simulator — interactive ARR slider */}
+      <div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+          <span style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase"}}>Gravity Simulator</span>
+          <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>${simArr}M ARR</span>
+        </div>
+        <input type="range" min={2} max={50} value={simArr} onChange={e=>setSimArr(parseInt(e.target.value))}
+          style={{width:"100%",accentColor:C.accent,marginBottom:8}}/>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:4}}>
+          {[3,5,10,20,40,simArr].filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b).slice(0,6).map(pt=>{
+            const infra = p.fixedMktgActual || p.floorTotal;
+            const pct = infra / (pt * 1000000) * 100;
+            const isYou = Math.abs(s.targetARR / 1000000 - pt) < 1;
+            return(<div key={pt} style={{padding:6,background:isYou?`${C.accent}12`:C.bg,borderRadius:6,textAlign:"center",border:isYou?`1px solid ${C.accent}30`:"1px solid transparent"}}>
+              <div style={{fontSize:8,color:isYou?C.accent:C.dim,fontWeight:isYou?700:400}}>{isYou?"▸ ":""}${pt}M</div>
+              <div style={{fontSize:14,fontWeight:700,color:pct>15?"#ef4444":pct>8?"#f59e0b":"#22c55e",fontFamily:"'DM Mono',monospace"}}>{pct.toFixed(1)}%</div>
+              <div style={{fontSize:7,color:C.dim}}>{pct>12?"heavy":pct>6?"moderate":"lift wins"}</div>
             </div>);
           })}
         </div>
       </div>
 
-      <div style={{marginTop:12,padding:10,background:`${C.violet}08`,borderRadius:8,border:`1px solid ${C.violet}15`}}>
-        <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
-          <strong style={{color:C.violet}}>Layer 1 costs are dollar commitments, not revenue ratios.</strong> Executive at $455K is 15% at $3M ARR but 1.1% at $40M — the dollars are fixed, the percentage is derived.
-          Layer 2 is elastic within remaining budget. Cross-functional RevOps sits in G&A, not here.
+      <div style={{marginTop:10,padding:8,background:`${C.violet}08`,borderRadius:6,border:`1px solid ${C.violet}12`}}>
+        <div style={{fontSize:9,color:C.muted,lineHeight:1.6}}>
+          <strong style={{color:C.violet}}>Structural Core is dollars, not percentages.</strong> $455K VP = 15% at $3M but 1.1% at $40M.
+          Scalable Programs are elastic — redistribute as strategy shifts. This is a physics simulator, not a compliance check.
         </div>
       </div>
     </Card>
