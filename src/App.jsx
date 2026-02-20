@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Gauge, Users, Megaphone, Layers, GitBranch, TrendingUp, DollarSign, Target,
@@ -27,6 +27,20 @@ const C = {
 const fmt=(n,d=0)=>{if(n==null||isNaN(n))return"$0";const s=n<0?"-":"",a=Math.abs(n);if(a>=1e6)return`${s}$${(a/1e6).toFixed(1)}M`;if(a>=1e3)return`${s}$${(a/1e3).toFixed(d>0?d:0)}K`;return`${s}$${a.toFixed(d)}`;};
 const fN=(n)=>n==null||isNaN(n)?"0":Math.round(n).toLocaleString();
 const fP=(n)=>`${(n*100).toFixed(1)}%`;
+
+// ─── RESPONSIVE ───
+function useMediaQuery(query){
+  const[matches,setMatches]=useState(()=>typeof window!=='undefined'&&window.matchMedia(query).matches);
+  useEffect(()=>{
+    const mq=window.matchMedia(query);
+    const handler=(e)=>setMatches(e.matches);
+    mq.addEventListener('change',handler);
+    return()=>mq.removeEventListener('change',handler);
+  },[query]);
+  return matches;
+}
+// Responsive grid: collapses to 1 col on mobile, 2 on tablet
+const rGrid=(cols,mob)=>({display:"grid",gridTemplateColumns:cols,gap:mob?8:12});
 
 const Card=({children,style={}})=><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24,...style}}>{children}</div>;
 
@@ -378,18 +392,18 @@ const LOGO_URL = "https://images.squarespace-cdn.com/content/v1/63d155fa93aba852
 // ════════════════════════════════════════════════════════════
 // DASHBOARD
 // ════════════════════════════════════════════════════════════
-function DashboardPage({model,inputs,onInfoClick}){
+function DashboardPage({model,inputs,onInfoClick,mobile,tablet}){
   const{summary:s,monthly,glideslope,funnelHealth}=model;
   const isSplit = inputs.revenueMode === "split";
   return(<div>
     <Header title="Command Center" sub="Every metric derived from your model inputs" icon={Gauge} moduleId="dashboard" onInfoClick={onInfoClick}/>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,marginBottom:24}}>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(auto-fit,minmax(200px,1fr))",gap:mobile?8:12,marginBottom:mobile?16:24}}>
       <Metric label="Target ARR" value={fmt(s.targetARR)} sub={inputs.targetMode==="growthRate"?`${inputs.targetGrowthRate}% growth`:""} icon={Target} color={C.accent} delay={0}/>
       <Metric label="Starting ARR" value={fmt(s.startingARR)} sub={`NRR retained: ${fmt(s.retainedARR)}`} icon={DollarSign} color={C.green} delay={1}/>
       <Metric label="New ARR Gap" value={fmt(s.newARRNeeded)} sub={isSplit?`${fN(s.dealsNeeded)} logo + ${fN(s.expansionDeals)} exp`:`${fN(s.dealsNeeded)} deals`} icon={TrendingUp} color={C.amber} delay={2}/>
       <Metric label="Projected Revenue" value={fmt(s.totalRevenue)} sub={`Op margin: ${(s.opMargin*100).toFixed(1)}%`} icon={DollarSign} color={C.violet} delay={3}/>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(165px,1fr))",gap:12,marginBottom:24}}>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(auto-fit,minmax(165px,1fr))",gap:mobile?8:12,marginBottom:mobile?16:24}}>
       <Metric label="LTV:CAC" value={`${s.ltvCac.toFixed(1)}x`} color={s.ltvCac>3?C.green:C.amber} delay={4}/>
       <Metric label="CAC Payback" value={`${s.cacPayback.toFixed(1)} mo`} color={s.cacPayback<18?C.green:C.rose} delay={5}/>
       <Metric label="Magic Number" value={s.magicNumber.toFixed(2)} color={s.magicNumber>0.75?C.green:C.amber} delay={6}/>
@@ -402,40 +416,40 @@ function DashboardPage({model,inputs,onInfoClick}){
         <h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0}}>Funnel Health</h3>
         <Badge label={`Grade ${s.funnelGrade}`} status={s.funnelGrade==="A"||s.funnelGrade==="B"?"good":s.funnelGrade==="C"?"warning":"bad"}/>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:mobile?8:10}}>
         {funnelHealth.map((f)=>(
-          <div key={f.stage} style={{padding:"12px 10px",background:C.bg,borderRadius:10,border:`1px solid ${f.status==="great"?C.green:f.status==="good"?C.accent:C.rose}22`,textAlign:"center"}}>
-            <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.04em",marginBottom:6}}>{f.stage}</div>
-            <div style={{fontSize:22,fontWeight:700,color:f.status==="great"?C.green:f.status==="good"?C.accent:C.rose}}>{f.rate}%</div>
+          <div key={f.stage} style={{padding:mobile?"10px 8px":"12px 10px",background:C.bg,borderRadius:10,border:`1px solid ${f.status==="great"?C.green:f.status==="good"?C.accent:C.rose}22`,textAlign:"center"}}>
+            <div style={{fontSize:mobile?8:9,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.04em",marginBottom:6}}>{f.stage}</div>
+            <div style={{fontSize:mobile?18:22,fontWeight:700,color:f.status==="great"?C.green:f.status==="good"?C.accent:C.rose}}>{f.rate}%</div>
             <Badge label={f.status} status={f.status}/>
           </div>
         ))}
       </div>
     </Card>
     {/* Engine Output — compressed on dashboard */}
-    <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:18}}>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:mobile?8:10,marginBottom:18}}>
       <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.accent}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → SQO</div>
-        <div style={{fontSize:16,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.accent,fontFamily:"'DM Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.green}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → Won</div>
-        <div style={{fontSize:16,fontWeight:700,color:C.green,fontFamily:"'DM Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.green,fontFamily:"'DM Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.amber}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / SQO</div>
-        <div style={{fontSize:16,fontWeight:700,color:C.amber,fontFamily:"'DM Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.amber,fontFamily:"'DM Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.violet}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / Won</div>
-        <div style={{fontSize:16,fontWeight:700,color:C.violet,fontFamily:"'DM Mono',monospace"}}>{fmt(s.costPerWon)}</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.violet,fontFamily:"'DM Mono',monospace"}}>{fmt(s.costPerWon)}</div>
       </div>
-      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.text}`}}>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.text}`,gridColumn:mobile?"span 2":"auto"}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Required Inquiries</div>
-        <div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.text,fontFamily:"'DM Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
       </div>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:16}}>
       <Card><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>ARR Trajectory</h3>
         <ResponsiveContainer width="100%" height={260}><AreaChart data={monthly}>
           <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.accent} stopOpacity={0.25}/><stop offset="95%" stopColor={C.accent} stopOpacity={0}/></linearGradient></defs>
@@ -454,7 +468,7 @@ function DashboardPage({model,inputs,onInfoClick}){
 // ════════════════════════════════════════════════════════════
 // FUNNEL HEALTH
 // ════════════════════════════════════════════════════════════
-function FunnelHealthPage({model,inputs,setInputs,onInfoClick}){
+function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
   const{funnelHealth,summary:s}=model;
   const bk=["inquiryToMqlRate","mqlToSqlRate","sqlToMeetingRate","meetingToSqoRate","sqoToWonRate"];
   const bl=["Inquiry→MQL","MQL→SQL","SQL→Meeting (Held)","Meeting→SQO","SQO→Won"];
@@ -2506,7 +2520,7 @@ function OnboardingWizard({onComplete}){
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans',sans-serif",color:C.text,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
       
-      <div style={{width:"100%",maxWidth:720,padding:"40px 32px"}}>
+      <div style={{width:"100%",maxWidth:720,padding:window.innerWidth<768?"20px 16px":"40px 32px"}}>
         {/* Logo */}
         <div style={{textAlign:"center",marginBottom:32}}>
           <img src={LOGO_URL} alt="Heretics" style={{height:32,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
@@ -2573,61 +2587,91 @@ export default function App(){
   const[drivers,setDrivers]=useState(false);
   const[infoPanel,setInfoPanel]=useState(null);
   const[inputs,setInputs]=useState(DEFAULT_INPUTS);
+  const[navOpen,setNavOpen]=useState(false);
+  const mobile=useMediaQuery("(max-width:768px)");
+  const tablet=useMediaQuery("(max-width:1024px)");
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
-  const pp={model,inputs,setInputs,onInfoClick};
+  const pp={model,inputs,setInputs,onInfoClick,mobile,tablet};
   const pages={dashboard:<DashboardPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>};
 
   const handleOnboardComplete=(overrides)=>{
     setInputs(prev=>({...prev,...overrides}));
     setOnboarded(true);
   };
+  const navTo=(pg)=>{setPage(pg);if(mobile)setNavOpen(false);};
 
   if(!onboarded) return <OnboardingWizard onComplete={handleOnboardComplete}/>;
 
   return(<div style={{display:"flex",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'DM Sans',sans-serif",color:C.text}}>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 
-    <aside style={{width:220,height:"100vh",background:C.bgAlt,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",flexShrink:0}}>
-      <div style={{padding:"16px 16px 20px"}}>
-        <img src={LOGO_URL} alt="Heretics" style={{height:28,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
-        <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>Revenue Physics Engine</div>
-      </div>
-      <nav style={{flex:1,padding:"0 6px",overflowY:"auto"}}>
-        {NAV_SECTIONS.map((sec,si)=>(
-          <NavSection key={si} section={sec.section} items={sec.items} page={page} setPage={setPage}/>
-        ))}
-      </nav>
-      <div style={{padding:"8px 6px",borderTop:`1px solid ${C.border}`}}>
-        <button onClick={()=>setDrivers(!drivers)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:7,background:drivers?C.violetD:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
-          <Settings size={13}/>Global Drivers
+    {/* Mobile top bar */}
+    {mobile && (
+      <div style={{position:"fixed",top:0,left:0,right:0,height:48,background:C.bgAlt,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",zIndex:100}}>
+        <button onClick={()=>setNavOpen(!navOpen)} style={{background:"transparent",border:"none",color:C.text,cursor:"pointer",padding:4}}>
+          <Layers size={20}/>
         </button>
-        <button onClick={()=>setOnboarded(false)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:7,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'DM Sans',sans-serif"}}>
-          Re-run Setup
+        <div style={{fontSize:10,color:C.dim,letterSpacing:"0.06em",textTransform:"uppercase"}}>Heretic Engine</div>
+        <button onClick={()=>setDrivers(!drivers)} style={{background:"transparent",border:"none",color:drivers?C.violet:C.muted,cursor:"pointer",padding:4}}>
+          <Settings size={18}/>
         </button>
       </div>
-      <div style={{padding:"6px 12px 10px",borderTop:`1px solid ${C.border}`}}>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
-          {[{id:"legal:privacy",label:"Privacy"},{id:"legal:terms",label:"Terms"},{id:"legal:security",label:"Security"},{id:"legal:disclaimer",label:"Disclaimer"}].map(l=>(
-            <button key={l.id} onClick={()=>setPage(l.id)} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:8,fontFamily:"'DM Sans',sans-serif",padding:0,textDecoration:"underline"}}>{l.label}</button>
-          ))}
-        </div>
-        <div style={{textAlign:"center",fontSize:7,color:C.dim,marginTop:4}}>© 2026 Heretic Engine. All rights reserved.</div>
-      </div>
-    </aside>
+    )}
 
-    <div style={{flex:1,display:"flex",overflow:"hidden"}}>
-      <main style={{flex:1,overflowY:"auto",padding:"24px 32px 60px"}}>
+    {/* Sidebar — desktop: fixed, mobile: overlay */}
+    {(!mobile || navOpen) && (
+      <>
+        {mobile && <div onClick={()=>setNavOpen(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:149}}/>}
+        <aside style={{width:mobile?260:220,height:"100vh",background:C.bgAlt,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",flexShrink:0,
+          ...(mobile?{position:"fixed",left:0,top:0,zIndex:150}:{})}}>
+          <div style={{padding:"16px 16px 20px"}}>
+            <img src={LOGO_URL} alt="Heretics" style={{height:28,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
+            <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>Revenue Physics Engine</div>
+          </div>
+          <nav style={{flex:1,padding:"0 6px",overflowY:"auto"}}>
+            {NAV_SECTIONS.map((sec,si)=>(
+              <NavSection key={si} section={sec.section} items={sec.items} page={page} setPage={navTo}/>
+            ))}
+          </nav>
+          <div style={{padding:"8px 6px",borderTop:`1px solid ${C.border}`}}>
+            <button onClick={()=>{setDrivers(!drivers);if(mobile)setNavOpen(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:7,background:drivers?C.violetD:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'DM Sans',sans-serif"}}>
+              <Settings size={13}/>Global Drivers
+            </button>
+            <button onClick={()=>setOnboarded(false)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:7,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'DM Sans',sans-serif"}}>
+              Re-run Setup
+            </button>
+          </div>
+          <div style={{padding:"6px 12px 10px",borderTop:`1px solid ${C.border}`}}>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
+              {[{id:"legal:privacy",label:"Privacy"},{id:"legal:terms",label:"Terms"},{id:"legal:security",label:"Security"},{id:"legal:disclaimer",label:"Disclaimer"}].map(l=>(
+                <button key={l.id} onClick={()=>navTo(l.id)} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:8,fontFamily:"'DM Sans',sans-serif",padding:0,textDecoration:"underline"}}>{l.label}</button>
+              ))}
+            </div>
+            <div style={{textAlign:"center",fontSize:7,color:C.dim,marginTop:4}}>© 2026 Heretic Engine. All rights reserved.</div>
+          </div>
+        </aside>
+      </>
+    )}
+
+    <div style={{flex:1,display:"flex",overflow:"hidden",marginTop:mobile?48:0}}>
+      <main style={{flex:1,overflowY:"auto",padding:mobile?"16px 12px 80px":tablet?"20px 20px 60px":"24px 32px 60px"}}>
         <AnimatePresence mode="wait"><motion.div key={page} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:0.2}}>
           {pages[page]}
         </motion.div></AnimatePresence>
       </main>
 
       <AnimatePresence>{drivers&&(
-        <motion.aside initial={{width:0,opacity:0}} animate={{width:280,opacity:1}} exit={{width:0,opacity:0}} transition={{duration:0.2}}
-          style={{height:"100vh",borderLeft:`1px solid ${C.border}`,background:C.bgAlt,overflow:"hidden",flexShrink:0}}>
-          <div style={{width:280,padding:"20px 16px",overflowY:"auto",height:"100%"}}>
-            <h3 style={{fontSize:10,fontWeight:700,color:C.violet,margin:0,marginBottom:16,textTransform:"uppercase",letterSpacing:"0.08em"}}>Model Drivers</h3>
+        <>
+        {mobile && <div onClick={()=>setDrivers(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:199}}/>}
+        <motion.aside initial={{width:0,opacity:0}} animate={{width:mobile?"100%":280,opacity:1}} exit={{width:0,opacity:0}} transition={{duration:0.2}}
+          style={{height:"100vh",borderLeft:mobile?"none":`1px solid ${C.border}`,background:C.bgAlt,overflow:"hidden",flexShrink:0,
+            ...(mobile?{position:"fixed",right:0,top:0,zIndex:200,width:"100%",maxWidth:320}:{})}}>
+          <div style={{width:mobile?320:280,padding:"20px 16px",overflowY:"auto",height:"100%"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+              <h3 style={{fontSize:10,fontWeight:700,color:C.violet,margin:0,textTransform:"uppercase",letterSpacing:"0.08em"}}>Model Drivers</h3>
+              {mobile && <button onClick={()=>setDrivers(false)} style={{background:"transparent",border:"none",color:C.muted,cursor:"pointer"}}><X size={18}/></button>}
+            </div>
 
             {/* Target Mode Toggle */}
             <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Target Mode</div>
@@ -2717,6 +2761,7 @@ export default function App(){
 
           </div>
         </motion.aside>
+        </>
       )}</AnimatePresence>
     </div>
     {/* Info panel overlay */}
