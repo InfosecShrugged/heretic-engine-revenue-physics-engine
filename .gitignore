@@ -1,2 +1,13 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+heretics-site/dist/
+heretics-site/node_modules/
+
 # Local Netlify folder
 .netlify
+
+# OS files
+.DS_Store
