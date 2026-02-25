@@ -10,6 +10,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine
 } from 'recharts';
 import { computeModel, DEFAULT_INPUTS, MONTHS, QUARTERS } from './engine';
+import ArchitectureDiagram from './ArchitectureDiagram';
 
 // ─── TOKENS — Scorecard.io Light Design System ───
 const C = {
@@ -384,6 +385,9 @@ const NAV_SECTIONS=[
   ]},
   { section: "Finance", items: [
     {id:"pnl",label:"P&L",icon:DollarSign},
+  ]},
+  { section: "System", items: [
+    {id:"architecture",label:"Architecture",icon:Activity},
   ]},
 ];
 
@@ -2594,7 +2598,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet};
-  const pages={dashboard:<DashboardPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     setInputs(prev=>({...prev,...overrides}));
