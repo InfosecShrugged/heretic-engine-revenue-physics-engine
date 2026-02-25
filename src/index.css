@@ -28,7 +28,7 @@ html, body, #root {
 }
 ::-webkit-scrollbar-thumb {
   background: #ccc;
-  border-radius: 2px;
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #b5b5b5;
@@ -46,7 +46,7 @@ input[type="range"] {
   appearance: none;
   height: 4px;
   background: #d9d9d9;
-  border-radius: 2px;
+  border-radius: 0;
   outline: none;
 }
 input[type="range"]::-webkit-slider-thumb {
@@ -54,11 +54,11 @@ input[type="range"]::-webkit-slider-thumb {
   appearance: none;
   width: 14px;
   height: 14px;
-  border-radius: 50%;
+  border-radius: 0;
   background: #ff6e3e;
   cursor: pointer;
   border: 2px solid #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
   transition: transform 0.15s ease;
 }
 input[type="range"]::-webkit-slider-thumb:hover {
@@ -67,7 +67,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 input[type="range"]::-moz-range-thumb {
   width: 14px;
   height: 14px;
-  border-radius: 50%;
+  border-radius: 0;
   background: #ff6e3e;
   cursor: pointer;
   border: 2px solid #ffffff;
@@ -87,9 +87,4 @@ input:focus {
   outline: none;
   border-color: #ff6e3e !important;
   box-shadow: 0 0 0 2px rgba(255, 110, 62, 0.15);
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .sidebar-nav { display: none; }
 }

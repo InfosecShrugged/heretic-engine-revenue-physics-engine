@@ -42,11 +42,11 @@ function useMediaQuery(query){
 // Responsive grid: collapses to 1 col on mobile, 2 on tablet
 const rGrid=(cols,mob)=>({display:"grid",gridTemplateColumns:cols,gap:mob?8:12});
 
-const Card=({children,style={}})=><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24,...style}}>{children}</div>;
+const Card=({children,style={}})=><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:0,padding:24,...style}}>{children}</div>;
 
 const Metric=({label,value,sub,color=C.accent,icon:I,delay=0})=>(
   <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:delay*0.04,duration:0.3}}
-    style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"18px 22px",position:"relative",overflow:"hidden"}}>
+    style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:0,padding:"18px 22px",position:"relative",overflow:"hidden"}}>
     <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,${color},${color}66)`}}/>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
       <span style={{color:C.muted,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em"}}>{label}</span>
@@ -60,7 +60,7 @@ const Metric=({label,value,sub,color=C.accent,icon:I,delay=0})=>(
 const Input=({label,value,onChange,prefix="",suffix="",min,max,step=1,compact})=>(
   <div style={{marginBottom:compact?8:13}}>
     <label style={{display:"block",fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{label}</label>
-    <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.border}`,borderRadius:7,padding:compact?"5px 9px":"7px 11px",gap:4}}>
+    <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:compact?"5px 9px":"7px 11px",gap:4}}>
       {prefix&&<span style={{color:C.dim,fontSize:13}}>{prefix}</span>}
       <input type="number" value={value} min={min} max={max} step={step}
         onChange={e=>onChange(parseFloat(e.target.value)||0)}
@@ -242,7 +242,7 @@ function DocPanel({moduleId, onClose}){
   return(
     <motion.div initial={{x:320,opacity:0}} animate={{x:0,opacity:1}} exit={{x:320,opacity:0}} transition={{duration:0.2,ease:"easeOut"}}
       style={{position:"fixed",top:0,right:0,width:360,height:"100vh",background:C.bgAlt,borderLeft:`1px solid ${C.border}`,
-        zIndex:100,display:"flex",flexDirection:"column",boxShadow:"-4px 0 24px rgba(0,0,0,0.3)"}}>
+        zIndex:100,display:"flex",flexDirection:"column",boxShadow:"-2px 0 8px rgba(0,0,0,0.08)"}}>
       {/* Header */}
       <div style={{padding:"16px 18px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div>
@@ -256,7 +256,7 @@ function DocPanel({moduleId, onClose}){
       {/* Content */}
       <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
         {/* TL;DR */}
-        <div style={{padding:12,background:`${C.accent}08`,borderRadius:8,border:`1px solid ${C.accent}15`,marginBottom:16}}>
+        <div style={{padding:12,background:`${C.accent}08`,borderRadius:0,border:`1px solid ${C.accent}15`,marginBottom:16}}>
           <div style={{fontSize:9,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>In Plain English</div>
           <div style={{fontSize:12,color:C.text,lineHeight:1.6}}>{doc.tldr}</div>
         </div>
@@ -307,7 +307,7 @@ function DocBullet({text,color}){
 }
 
 function DocLink({icon:I,label,href}){
-  return(<div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:6,background:C.bg,cursor:"pointer",fontSize:11,color:C.accent}}
+  return(<div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:0,background:C.bg,cursor:"pointer",fontSize:11,color:C.accent}}
     onClick={()=>{}}>
     <I size={12}/>{label}
   </div>);
@@ -316,13 +316,13 @@ function DocLink({icon:I,label,href}){
 const Header=({title,sub,icon:I,moduleId,onInfoClick})=>(
   <motion.div initial={{opacity:0,x:-8}} animate={{opacity:1,x:0}} style={{marginBottom:24}}>
     <div style={{display:"flex",alignItems:"center",gap:10}}>
-      {I&&<div style={{width:30,height:30,borderRadius:8,background:C.accentD,display:"flex",alignItems:"center",justifyContent:"center"}}><I size={15} style={{color:C.accent}}/></div>}
+      {I&&<div style={{width:30,height:30,borderRadius:0,background:C.accentD,display:"flex",alignItems:"center",justifyContent:"center"}}><I size={15} style={{color:C.accent}}/></div>}
       <div style={{flex:1}}><h2 style={{fontSize:21,fontWeight:700,color:C.text,margin:0}}>{title}</h2>
         {sub&&<p style={{fontSize:12,color:C.muted,margin:0,marginTop:2}}>{sub}</p>}</div>
       {moduleId && MODULE_DOCS[moduleId] && (
         <button onClick={()=>onInfoClick&&onInfoClick(moduleId)}
           title={MODULE_DOCS[moduleId].tooltip}
-          style={{width:28,height:28,borderRadius:7,border:`1px solid ${C.border}`,background:"transparent",
+          style={{width:28,height:28,borderRadius:0,border:`1px solid ${C.border}`,background:"transparent",
             color:C.muted,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
             transition:"all 0.15s"}}
           onMouseEnter={e=>{e.currentTarget.style.borderColor=C.accent;e.currentTarget.style.color=C.accent;e.currentTarget.style.background=C.accentD}}
@@ -336,7 +336,7 @@ const Header=({title,sub,icon:I,moduleId,onInfoClick})=>(
 
 const TT=({active,payload,label})=>{
   if(!active||!payload?.length)return null;
-  return(<div style={{background:"#d9d9d9",border:`1px solid ${C.borderL}`,borderRadius:10,padding:"10px 14px",boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
+  return(<div style={{background:"#d9d9d9",border:`1px solid ${C.borderL}`,borderRadius:0,padding:"10px 14px",boxShadow:"none"}}>
     <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:6}}>{label}</div>
     {payload.map((p,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.muted,marginBottom:2}}>
       <div style={{width:7,height:7,borderRadius:"50%",background:p.color}}/>{p.name}: <span style={{color:C.text,fontWeight:600,fontFamily:"'Space Mono',monospace"}}>{typeof p.value==="number"&&Math.abs(p.value)>100?fmt(p.value):fN(p.value)}</span>
@@ -347,13 +347,13 @@ const TT=({active,payload,label})=>{
 const Badge=({label,status="neutral"})=>{
   const m={good:{bg:C.greenD,c:C.green},great:{bg:C.greenD,c:C.green},warning:{bg:C.amberD,c:C.amber},bad:{bg:C.roseD,c:C.rose},neutral:{bg:C.accentD,c:C.accent}};
   const s=m[status]||m.neutral;
-  return <span style={{padding:"3px 9px",borderRadius:20,fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.04em",background:s.bg,color:s.c,border:`1px solid ${s.c}33`}}>{label}</span>;
+  return <span style={{padding:"3px 9px",borderRadius:0,fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.04em",background:s.bg,color:s.c,border:`1px solid ${s.c}33`}}>{label}</span>;
 };
 
 const SegmentToggle=({options,value,onChange})=>(
-  <div style={{display:"flex",gap:2,padding:3,background:C.bg,borderRadius:8,border:`1px solid ${C.border}`}}>
+  <div style={{display:"flex",gap:2,padding:3,background:C.bg,borderRadius:0,border:`1px solid ${C.border}`}}>
     {options.map(o=>(
-      <button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"6px 14px",borderRadius:6,border:"none",background:value===o.value?C.accentD:"transparent",color:value===o.value?C.accent:C.dim,cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"'Oxanium',sans-serif",textTransform:"uppercase",letterSpacing:"0.04em",transition:"all 0.15s"}}>{o.label}</button>
+      <button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"6px 14px",borderRadius:0,border:"none",background:value===o.value?C.accentD:"transparent",color:value===o.value?C.accent:C.dim,cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"'Oxanium',sans-serif",textTransform:"uppercase",letterSpacing:"0.04em",transition:"all 0.15s"}}>{o.label}</button>
     ))}
   </div>
 );
@@ -418,7 +418,7 @@ function DashboardPage({model,inputs,onInfoClick,mobile,tablet}){
       </div>
       <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:mobile?8:10}}>
         {funnelHealth.map((f)=>(
-          <div key={f.stage} style={{padding:mobile?"10px 8px":"12px 10px",background:C.bg,borderRadius:10,border:`1px solid ${f.status==="great"?C.green:f.status==="good"?C.accent:C.rose}22`,textAlign:"center"}}>
+          <div key={f.stage} style={{padding:mobile?"10px 8px":"12px 10px",background:C.bg,borderRadius:0,border:`1px solid ${f.status==="great"?C.green:f.status==="good"?C.accent:C.rose}22`,textAlign:"center"}}>
             <div style={{fontSize:mobile?8:9,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.04em",marginBottom:6}}>{f.stage}</div>
             <div style={{fontSize:mobile?18:22,fontWeight:700,color:f.status==="great"?C.green:f.status==="good"?C.accent:C.rose}}>{f.rate}%</div>
             <Badge label={f.status} status={f.status}/>
@@ -428,23 +428,23 @@ function DashboardPage({model,inputs,onInfoClick,mobile,tablet}){
     </Card>
     {/* Engine Output — compressed on dashboard */}
     <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:mobile?8:10,marginBottom:18}}>
-      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.accent}`}}>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.accent}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → SQO</div>
         <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
       </div>
-      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.green}`}}>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.green}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → Won</div>
         <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.green,fontFamily:"'Space Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
       </div>
-      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.amber}`}}>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.amber}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / SQO</div>
         <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
       </div>
-      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.violet}`}}>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.violet}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / Won</div>
         <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.violet,fontFamily:"'Space Mono',monospace"}}>{fmt(s.costPerWon)}</div>
       </div>
-      <div style={{padding:10,background:C.bgAlt,borderRadius:8,borderBottom:`2px solid ${C.text}`,gridColumn:mobile?"span 2":"auto"}}>
+      <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.text}`,gridColumn:mobile?"span 2":"auto"}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Required Inquiries</div>
         <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
       </div>
@@ -485,33 +485,33 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
       <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Engine Output — Compression Metrics</h3>
       <div style={{fontSize:10,color:C.dim,marginBottom:14}}>True revenue yield of the engine. Compounded from each stage — not averages, not estimates.</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10}}>
-        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+        <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Inquiry → SQO</div>
           <div style={{fontSize:18,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>1 SQO per {Math.round(100/s.inquiryToSqoRate)} inquiries</div>
         </div>
-        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+        <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Inquiry → Won</div>
           <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Space Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>1 deal per {Math.round(100/s.inquiryToWonRate)} inquiries</div>
         </div>
-        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+        <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Cost / SQO</div>
           <div style={{fontSize:18,fontWeight:700,color:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>Programmatic spend ÷ SQOs</div>
         </div>
-        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+        <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Cost / Won</div>
           <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Space Mono',monospace"}}>{fmt(s.costPerWon)}</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>Programmatic spend ÷ deals</div>
         </div>
-        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+        <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Required Inquiries</div>
           <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>To hit {fmt(s.targetARR)} new ARR</div>
         </div>
       </div>
-      <div style={{marginTop:10,padding:8,background:`${C.accent}08`,borderRadius:6,border:`1px solid ${C.accent}15`}}>
+      <div style={{marginTop:10,padding:8,background:`${C.accent}08`,borderRadius:0,border:`1px solid ${C.accent}15`}}>
         <div style={{fontSize:9,color:C.muted}}><strong style={{color:C.accent}}>CEO lever:</strong> "How many net-new names do we need to hit ${fmt(s.targetARR)}?" → <strong style={{color:C.text}}>{fN(s.requiredInquiries)} inquiries</strong> at current conversion rates.</div>
       </div>
     </Card>
@@ -529,10 +529,10 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
               </div>
               <span style={{fontSize:14,fontWeight:700,color:f.status==="great"?C.green:f.status==="good"?C.accent:C.rose,fontFamily:"'Space Mono',monospace"}}>{f.rate}%</span>
             </div>
-            <div style={{position:"relative",height:20,background:C.bg,borderRadius:6,overflow:"hidden"}}>
+            <div style={{position:"relative",height:20,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <div style={{position:"absolute",left:`${f.bench.good/f.bench.great*100}%`,top:0,bottom:0,width:1,background:C.amber,zIndex:2}}/>
               <motion.div initial={{width:0}} animate={{width:`${Math.min(pct,100)}%`}} transition={{duration:0.5,delay:i*0.06}}
-                style={{height:"100%",background:f.status==="great"?C.green:f.status==="good"?C.accent:C.rose,borderRadius:6,opacity:0.7}}/>
+                style={{height:"100%",background:f.status==="great"?C.green:f.status==="good"?C.accent:C.rose,borderRadius:0,opacity:0.7}}/>
             </div>
             <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
               <span style={{fontSize:8,color:C.dim}}>0%</span>
@@ -541,7 +541,7 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
             </div>
           </div>);})}
         {/* Meeting show rate inline */}
-        <div style={{padding:8,background:C.bg,borderRadius:6,marginTop:8}}>
+        <div style={{padding:8,background:C.bg,borderRadius:0,marginTop:8}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
               <span style={{fontSize:10,fontWeight:600,color:C.muted}}>Meeting Show Rate</span>
@@ -562,7 +562,7 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
           <Input compact label="Green" value={inputs.coverageGreen} onChange={v=>setInputs(p=>({...p,coverageGreen:v}))} suffix="%" step={10}/>
           <Input compact label="Yellow" value={inputs.coverageYellow} onChange={v=>setInputs(p=>({...p,coverageYellow:v}))} suffix="%" step={10}/>
           <Input compact label="Red" value={inputs.coverageRed} onChange={v=>setInputs(p=>({...p,coverageRed:v}))} suffix="%" step={10}/>
-          <div style={{marginTop:10,padding:10,background:C.bg,borderRadius:8,display:"flex",alignItems:"center",gap:8}}>
+          <div style={{marginTop:10,padding:10,background:C.bg,borderRadius:0,display:"flex",alignItems:"center",gap:8}}>
             <div style={{width:12,height:12,borderRadius:"50%",background:s.coverageHealth==="good"?C.green:s.coverageHealth==="warning"?C.amber:C.rose}}/>
             <span style={{fontSize:13,fontWeight:700,color:C.text}}>{inputs.pipelineCoverage}%</span>
             <Badge label={s.coverageHealth} status={s.coverageHealth}/>
@@ -573,12 +573,12 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
           {bk.map((key,i)=>(
             <div key={key} style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr",gap:6,marginBottom:6,alignItems:"center"}}>
               <span style={{fontSize:10,color:C.muted}}>{bl[i]}</span>
-              <div style={{display:"flex",alignItems:"center",gap:3,background:C.bg,borderRadius:5,padding:"3px 6px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:3,background:C.bg,borderRadius:0,padding:"3px 6px"}}>
                 <span style={{fontSize:8,color:C.amber}}>G</span>
                 <input type="number" value={inputs.funnelBenchmarks[key].good} onChange={e=>setInputs(p=>({...p,funnelBenchmarks:{...p.funnelBenchmarks,[key]:{...p.funnelBenchmarks[key],good:parseInt(e.target.value)||0}}}))}
                   style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'Space Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
               </div>
-              <div style={{display:"flex",alignItems:"center",gap:3,background:C.bg,borderRadius:5,padding:"3px 6px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:3,background:C.bg,borderRadius:0,padding:"3px 6px"}}>
                 <span style={{fontSize:8,color:C.green}}>★</span>
                 <input type="number" value={inputs.funnelBenchmarks[key].great} onChange={e=>setInputs(p=>({...p,funnelBenchmarks:{...p.funnelBenchmarks,[key]:{...p.funnelBenchmarks[key],great:parseInt(e.target.value)||0}}}))}
                   style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'Space Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
@@ -678,9 +678,9 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
     <Header title="S&M Budget" sub="Combined Sales & Marketing — the CFO view" icon={DollarSign} moduleId="sandmBudget" onInfoClick={onInfoClick}/>
 
     {/* Health banner */}
-    <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",borderRadius:10,marginBottom:20,
+    <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",borderRadius:0,marginBottom:20,
       background:`${healthColor}08`,border:`1px solid ${healthColor}20`}}>
-      <div style={{padding:"6px 14px",borderRadius:6,background:healthColor,color:"#fff",fontSize:11,fontWeight:700}}>{healthLabel}</div>
+      <div style={{padding:"6px 14px",borderRadius:0,background:healthColor,color:"#fff",fontSize:11,fontWeight:700}}>{healthLabel}</div>
       <div style={{fontSize:13,color:C.text}}>Total S&M: <strong style={{fontFamily:"'Space Mono',monospace"}}>{fmt(totalSandM)}</strong> = <strong>{sandMPctRev.toFixed(1)}%</strong> of revenue</div>
       <div style={{marginLeft:"auto",fontSize:10,color:C.dim}}>Benchmark: 35-55% growth stage • &gt;60% = burn risk</div>
     </div>
@@ -700,7 +700,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
       <Card>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
           <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,textTransform:"uppercase",letterSpacing:"0.04em"}}>Sales Budget</h3>
-          {p.salesIsFloorBound && <div style={{padding:"3px 8px",borderRadius:4,background:`${C.rose}15`,fontSize:9,fontWeight:700,color:C.rose}}>FLOOR-BOUND +{fmt(p.salesFloorDelta)}</div>}
+          {p.salesIsFloorBound && <div style={{padding:"3px 8px",borderRadius:0,background:`${C.rose}15`,fontSize:9,fontWeight:700,color:C.rose}}>FLOOR-BOUND +{fmt(p.salesFloorDelta)}</div>}
         </div>
         {salesItems.map((si,i)=>{
           const barW = p.salesBudgetActual > 0 ? si.amount / p.salesBudgetActual * 100 : 0;
@@ -713,8 +713,8 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
               </div>
               <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(si.amount)}</span>
             </div>
-            <div style={{height:16,background:C.bg,borderRadius:4,overflow:"hidden"}}>
-              <div style={{height:"100%",width:`${barW}%`,background:si.isFloorBound?`linear-gradient(90deg,${C.accent},${C.amber})`:C.accent,borderRadius:4,opacity:0.7}}/>
+            <div style={{height:16,background:C.bg,borderRadius:0,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${barW}%`,background:si.isFloorBound?`linear-gradient(90deg,${C.accent},${C.amber})`:C.accent,borderRadius:0,opacity:0.7}}/>
             </div>
             <div style={{fontSize:9,color:C.dim,marginTop:2}}>{si.desc}</div>
           </div>);
@@ -731,7 +731,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
       <Card>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
           <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,textTransform:"uppercase",letterSpacing:"0.04em"}}>Marketing Budget</h3>
-          {p.fixedMktgIsFloorBound && <div style={{padding:"3px 8px",borderRadius:4,background:`${C.rose}15`,fontSize:9,fontWeight:700,color:C.rose}}>FLOOR-BOUND</div>}
+          {p.fixedMktgIsFloorBound && <div style={{padding:"3px 8px",borderRadius:0,background:`${C.rose}15`,fontSize:9,fontWeight:700,color:C.rose}}>FLOOR-BOUND</div>}
         </div>
         {[
           {name:"Programmatic (Channel)", amount:p.programmaticBudget, color:C.green, desc:"Paid media, events — buys inquiries"},
@@ -748,8 +748,8 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
               </div>
               <span style={{fontSize:12,fontWeight:600,color:item.color,fontFamily:"'Space Mono',monospace"}}>{fmt(item.amount)}</span>
             </div>
-            <div style={{height:12,background:C.bg,borderRadius:3,overflow:"hidden"}}>
-              <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:3,opacity:0.6}}/>
+            <div style={{height:12,background:C.bg,borderRadius:0,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:0,opacity:0.6}}/>
             </div>
           </div>);
         })}
@@ -779,7 +779,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           const h = maxVal > 0 ? Math.abs(bar.value) / maxVal * 160 : 0;
           return(<div key={bar.label} style={{flex:1,textAlign:"center"}}>
             <div style={{fontSize:10,fontWeight:700,color:bar.color,fontFamily:"'Space Mono',monospace",marginBottom:4}}>{fmt(bar.value)}</div>
-            <div style={{height:h,background:bar.neg?`${bar.color}40`:bar.color,borderRadius:"4px 4px 0 0",marginBottom:2,opacity:bar.full?1:0.7}}/>
+            <div style={{height:h,background:bar.neg?`${bar.color}40`:bar.color,borderRadius:0,marginBottom:2,opacity:bar.full?1:0.7}}/>
             <div style={{fontSize:8,color:C.dim,marginTop:4,lineHeight:1.2}}>{bar.label}</div>
           </div>);
         })}
@@ -793,7 +793,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           <h3 style={{fontSize:11,fontWeight:700,color:C.rose,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Leadership Cost Layer</h3>
           <div style={{fontSize:10,color:C.muted}}>Step function — driven by funding stage, not revenue. Board-mandated comp bands.</div>
         </div>
-        <div style={{padding:"6px 12px",borderRadius:6,background:`${C.rose}12`,border:`1px solid ${C.rose}30`}}>
+        <div style={{padding:"6px 12px",borderRadius:0,background:`${C.rose}12`,border:`1px solid ${C.rose}30`}}>
           <div style={{fontSize:14,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</div>
           <div style={{fontSize:8,color:C.dim}}>of revenue</div>
         </div>
@@ -805,7 +805,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           const isActive = (inputs.fundingStage||"seriesB") === fs;
           const labels = {bootstrapped:"Bootstrapped",seed:"Seed",seriesA:"Series A",seriesB:"Series B",seriesC:"Series C+"};
           return(<button key={fs} onClick={()=>setInputs(prev=>({...prev,fundingStage:fs}))}
-            style={{padding:"6px 14px",borderRadius:6,border:`1px solid ${isActive?C.accent:C.border}`,
+            style={{padding:"6px 14px",borderRadius:0,border:`1px solid ${isActive?C.accent:C.border}`,
               background:isActive?C.accentD:"transparent",color:isActive?C.accent:C.muted,
               cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Oxanium',sans-serif"}}>
             {labels[fs]}
@@ -826,7 +826,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
               <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:l.enabled?C.text:C.dim}}>{l.role}</td>
               <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(l.ote)}</td>
               <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700,color:l.enabled?C.text:C.dim}}>{fmt(l.loaded)}</td>
-              <td style={{padding:"10px",textAlign:"right"}}><span style={{padding:"2px 8px",borderRadius:4,background:`${sitsColor}15`,color:sitsColor,fontSize:9,fontWeight:600}}>{l.sitsIn}</span></td>
+              <td style={{padding:"10px",textAlign:"right"}}><span style={{padding:"2px 8px",borderRadius:0,background:`${sitsColor}15`,color:sitsColor,fontSize:9,fontWeight:600}}>{l.sitsIn}</span></td>
               <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:pctRev>5?C.rose:C.text}}>{l.enabled?pctRev.toFixed(1)+"%":"—"}</td>
               <td style={{padding:"10px",textAlign:"right"}}>
                 <button onClick={()=>setInputs(prev=>{
@@ -834,7 +834,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
                   const key = l.role.includes("Sales")?"vpSales":l.role.includes("Marketing")?"vpMarketing":l.role.includes("CS")?"vpCS":l.role.includes("Ops")?"vpOps":"vpProduct";
                   roles[key] = !roles[key];
                   return {...prev, leadershipRoles: roles};
-                })} style={{padding:"3px 10px",borderRadius:4,border:`1px solid ${l.enabled?C.green:C.border}`,
+                })} style={{padding:"3px 10px",borderRadius:0,border:`1px solid ${l.enabled?C.green:C.border}`,
                   background:l.enabled?`${C.green}15`:"transparent",color:l.enabled?C.green:C.dim,
                   cursor:"pointer",fontSize:9,fontWeight:600,fontFamily:"'Oxanium',sans-serif"}}>
                   {l.enabled?"Active":"Add"}
@@ -858,7 +858,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           {label:"In Marketing", value:p.leadershipInMktg, color:C.violet},
           {label:"In G&A", value:p.leadershipInGA, color:C.dim},
           {label:"In R&D", value:p.leadershipInRD, color:C.blue},
-        ].map(b=>(<div key={b.label} style={{padding:8,background:C.bg,borderRadius:6,textAlign:"center"}}>
+        ].map(b=>(<div key={b.label} style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}>
           <div style={{fontSize:9,color:C.dim}}>{b.label}</div>
           <div style={{fontSize:14,fontWeight:700,color:b.color,fontFamily:"'Space Mono',monospace"}}>{fmt(b.value)}</div>
         </div>))}
@@ -912,7 +912,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
         </tbody>
       </table></div>
       {p.salesIsFloorBound && (
-        <div style={{marginTop:12,padding:10,background:`${C.amber}08`,borderRadius:6,border:`1px solid ${C.amber}15`}}>
+        <div style={{marginTop:12,padding:10,background:`${C.amber}08`,borderRadius:0,border:`1px solid ${C.amber}15`}}>
           <span style={{fontSize:10,color:C.amber,fontWeight:600}}>⚠ Headcount floor exceeds formula:</span>
           <span style={{fontSize:10,color:C.muted,marginLeft:6}}>
             {inputs.salesOpexPct}% of revenue = {fmt(p.salesOpex)}, but {salesHeads} heads cost {fmt(p.salesHeadcountFloor)} in comp alone before tools/enablement/travel.
@@ -955,8 +955,8 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
               <span style={{fontSize:10,color:C.text}}>{item.label}</span>
               <span style={{fontSize:11,fontWeight:600,color:item.color,fontFamily:"'Space Mono',monospace"}}>{fmt(item.value)}</span>
             </div>
-            <div style={{height:10,background:C.bg,borderRadius:3,overflow:"hidden"}}>
-              <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:3,opacity:0.6}}/>
+            <div style={{height:10,background:C.bg,borderRadius:0,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:0,opacity:0.6}}/>
             </div>
           </div>);
         })}
@@ -1048,7 +1048,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         {STRESS_MODES.map(mode=>{
           const isActive = inputs.fixedMktgPct === mode.fixedPct;
           return(<div key={mode.id} onClick={()=>setInputs(p=>({...p,fixedMktgPct:mode.fixedPct}))}
-            style={{padding:16,borderRadius:10,cursor:"pointer",transition:"all 0.2s",
+            style={{padding:16,borderRadius:0,cursor:"pointer",transition:"all 0.2s",
               background:isActive?`${mode.color}12`:"transparent",
               border:`2px solid ${isActive?mode.color:C.border}`,
             }}>
@@ -1078,7 +1078,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         {waterfallData.map((item,i)=>{
           const indent = item.name.startsWith("  ");
           const pctOfTotal = adjustedTotalBudget > 0 ? item.value / adjustedTotalBudget * 100 : 0;
-          return(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",borderRadius:5,background:!indent&&i<5?C.bg:"transparent"}}>
+          return(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",borderRadius:0,background:!indent&&i<5?C.bg:"transparent"}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               {indent&&<div style={{width:16}}/>}
               <div style={{width:8,height:8,borderRadius:"50%",background:item.fill}}/>
@@ -1111,14 +1111,14 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               <span style={{fontSize:12,fontWeight:600,color:C.text}}>{cac.label}</span>
               <span style={{fontSize:14,fontWeight:700,color:cac.color,fontFamily:"'Space Mono',monospace"}}>{fmt(cac.value)}</span>
             </div>
-            <div style={{height:20,background:C.bg,borderRadius:6,overflow:"hidden",position:"relative"}}>
-              <div style={{height:"100%",width:`${barW}%`,background:cac.color,borderRadius:6,opacity:0.7}}/>
+            <div style={{height:20,background:C.bg,borderRadius:0,overflow:"hidden",position:"relative"}}>
+              <div style={{height:"100%",width:`${barW}%`,background:cac.color,borderRadius:0,opacity:0.7}}/>
             </div>
             <div style={{fontSize:9,color:C.dim,marginTop:2}}>{cac.desc}</div>
           </div>);
         })}
         <div style={{height:1,background:C.border,margin:"12px 0"}}/>
-        <div style={{padding:10,background:C.bg,borderRadius:8}}>
+        <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
             <span style={{fontSize:10,color:C.dim}}>CAC Payback (Programmatic)</span>
             <span style={{fontSize:12,fontWeight:700,color:s.cacPayback<18?C.green:C.rose,fontFamily:"'Space Mono',monospace"}}>{s.cacPayback.toFixed(1)} mo</span>
@@ -1154,15 +1154,15 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
       </div>
       {debtTax > 0 && (
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
-          <div style={{padding:10,background:`${C.rose}08`,borderRadius:8}}>
+          <div style={{padding:10,background:`${C.rose}08`,borderRadius:0}}>
             <div style={{fontSize:9,color:C.dim}}>Debt Tax Cost</div>
             <div style={{fontSize:16,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>{fmt(debtTaxAmount)}</div>
           </div>
-          <div style={{padding:10,background:`${C.rose}08`,borderRadius:8}}>
+          <div style={{padding:10,background:`${C.rose}08`,borderRadius:0}}>
             <div style={{fontSize:9,color:C.dim}}>Burdened CAC Impact</div>
             <div style={{fontSize:16,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>+{fmt(adjustedBurdenedCAC - p.fullyBurdenedCAC)}</div>
           </div>
-          <div style={{padding:10,background:`${C.rose}08`,borderRadius:8}}>
+          <div style={{padding:10,background:`${C.rose}08`,borderRadius:0}}>
             <div style={{fontSize:9,color:C.dim}}>Payback Impact</div>
             <div style={{fontSize:16,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>+{(adjustedPayback - (p.fullyBurdenedCAC/(inputs.avgDealSize/12))).toFixed(1)} mo</div>
           </div>
@@ -1209,11 +1209,11 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
           {p.fixedMktgIsFloorBound ? (
-            <button onClick={()=>setDebtTax(dt=>dt===0?1:0)} style={{padding:"5px 10px",borderRadius:5,border:`1px solid ${debtTax>0?"#2d8a56":"#c07800"}`,background:debtTax>0?"#2d8a5612":"#c0780012",color:debtTax>0?"#2d8a56":"#c07800",cursor:"pointer",fontSize:9,fontWeight:700,fontFamily:"'Oxanium',sans-serif"}}>
+            <button onClick={()=>setDebtTax(dt=>dt===0?1:0)} style={{padding:"5px 10px",borderRadius:0,border:`1px solid ${debtTax>0?"#2d8a56":"#c07800"}`,background:debtTax>0?"#2d8a5612":"#c0780012",color:debtTax>0?"#2d8a56":"#c07800",cursor:"pointer",fontSize:9,fontWeight:700,fontFamily:"'Oxanium',sans-serif"}}>
               {debtTax>0?"Strategic Overbuild":"Compression Active"}
             </button>
           ) : (
-            <div style={{padding:"5px 10px",borderRadius:5,background:`${C.green}12`,border:`1px solid ${C.green}30`}}>
+            <div style={{padding:"5px 10px",borderRadius:0,background:`${C.green}12`,border:`1px solid ${C.green}30`}}>
               <span style={{fontSize:9,fontWeight:700,color:C.green}}>Revenue Exceeds Structure</span>
             </div>
           )}
@@ -1237,9 +1237,9 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               <span style={{fontSize:9,color:C.dim,fontWeight:600}}>Revenue-Driven Budget (formula at {inputs.fixedMktgPct}%)</span>
               <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(formulaBudget)}</span>
             </div>
-            <div style={{position:"relative",height:22,background:C.bg,borderRadius:6,overflow:"hidden"}}>
+            <div style={{position:"relative",height:22,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <motion.div initial={{width:0}} animate={{width:`${formulaW}%`}} transition={{duration:0.6}}
-                style={{height:"100%",background:`${C.accent}40`,borderRadius:6}}/>
+                style={{height:"100%",background:`${C.accent}40`,borderRadius:0}}/>
             </div>
           </div>
           <div style={{marginBottom:8}}>
@@ -1247,17 +1247,17 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               <span style={{fontSize:9,color:C.dim,fontWeight:600}}>Structural Minimum (commitments)</span>
               <span style={{fontSize:10,fontWeight:700,color:overflow?C.amber:C.green,fontFamily:"'Space Mono',monospace"}}>{fmt(structBudget)}</span>
             </div>
-            <div style={{position:"relative",height:22,background:C.bg,borderRadius:6,overflow:"hidden"}}>
+            <div style={{position:"relative",height:22,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <motion.div initial={{width:0}} animate={{width:`${Math.min(formulaW,structW)}%`}} transition={{duration:0.6}}
-                style={{height:"100%",background:`${C.violet}50`,borderRadius:6}}/>
+                style={{height:"100%",background:`${C.violet}50`,borderRadius:0}}/>
               {overflow && <motion.div initial={{width:0}} animate={{width:`${structW - formulaW}%`}} transition={{duration:0.8,delay:0.3}}
                 style={{position:"absolute",left:`${formulaW}%`,top:0,height:"100%",
-                  background:`linear-gradient(90deg, ${C.amber}60, ${C.amber}30)`,borderRadius:"0 6px 6px 0",
+                  background:`linear-gradient(90deg, ${C.amber}60, ${C.amber}30)`,borderRadius:0,
                   boxShadow:`0 0 12px ${C.amber}40`}}/>}
             </div>
           </div>
           {overflow && (
-            <div style={{padding:10,background:debtTax>0?`${C.green}08`:`${C.amber}08`,borderRadius:8,border:`1px solid ${debtTax>0?C.green:C.amber}20`}}>
+            <div style={{padding:10,background:debtTax>0?`${C.green}08`:`${C.amber}08`,borderRadius:0,border:`1px solid ${debtTax>0?C.green:C.amber}20`}}>
               <div style={{fontSize:10,color:debtTax>0?C.green:C.amber,fontWeight:600,marginBottom:2}}>
                 {debtTax>0 ? "Intentional Front-Loading for Growth" : `Structure exceeds formula by ${fmt(structBudget - formulaBudget)} (+${overflowPct.toFixed(0)}%)`}
               </div>
@@ -1272,21 +1272,21 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
       })()}
 
       {/* STRUCTURAL CORE (Layer 1) */}
-      <div style={{padding:14,background:C.bg,borderRadius:12,border:`1px solid ${C.border}`,marginBottom:12}}>
+      <div style={{padding:14,background:C.bg,borderRadius:0,border:`1px solid ${C.border}`,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-          <div style={{width:4,height:14,background:C.accent,borderRadius:2}}/>
+          <div style={{width:4,height:14,background:C.accent,borderRadius:0}}/>
           <span style={{fontSize:10,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.05em"}}>Structural Core</span>
-          <span style={{fontSize:9,padding:"2px 8px",borderRadius:4,background:`${C.accent}12`,color:C.accent,fontWeight:600}}>{fmt(p.layer1Summary?.total||0)}</span>
+          <span style={{fontSize:9,padding:"2px 8px",borderRadius:0,background:`${C.accent}12`,color:C.accent,fontWeight:600}}>{fmt(p.layer1Summary?.total||0)}</span>
           <span style={{fontSize:9,color:C.dim}}>Non-negotiable</span>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
           {/* Executive Tier */}
-          <div style={{background:C.bgAlt,borderRadius:8,padding:12,borderTop:`3px solid #7c4ddb`}}>
+          <div style={{background:C.bgAlt,borderRadius:0,padding:12,borderTop:`3px solid #7c4ddb`}}>
             <div style={{fontSize:10,fontWeight:700,color:"#7c4ddb",marginBottom:6}}>Executive</div>
             {Object.entries(p.tierTables?.EXEC_TIERS||{}).map(([key,tier])=>{
               const isA=(inputs.executiveTier||"fullVP")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,executiveTier:key}))}
-                style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:5,textAlign:"left",
+                style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
                   border:`1px solid ${isA?"#7c4ddb":C.border}`,background:isA?"#7c4ddb12":"transparent",cursor:"pointer",fontFamily:"'Oxanium',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#7c4ddb":C.muted}}>{tier.label}</span>
@@ -1297,12 +1297,12 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             <div style={{marginTop:4,fontSize:8,color:C.dim}}>{(p.fixedMktgItems?.find(f=>f.layer==="executive")?.pctOfRev||0).toFixed(1)}% of rev — derived</div>
           </div>
           {/* PMM Tier */}
-          <div style={{background:C.bgAlt,borderRadius:8,padding:12,borderTop:`3px solid #3b82f6`}}>
+          <div style={{background:C.bgAlt,borderRadius:0,padding:12,borderTop:`3px solid #3b82f6`}}>
             <div style={{fontSize:10,fontWeight:700,color:"#3b82f6",marginBottom:6}}>Product & Market Strategy</div>
             {Object.entries(p.tierTables?.PMM_TIERS||{}).map(([key,tier])=>{
               const isA=(inputs.pmmTier||"full")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,pmmTier:key}))}
-                style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:5,textAlign:"left",
+                style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
                   border:`1px solid ${isA?"#3b82f6":C.border}`,background:isA?"#3b82f612":"transparent",cursor:"pointer",fontFamily:"'Oxanium',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#3b82f6":C.muted}}>{tier.label}</span>
@@ -1311,15 +1311,15 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               </button>);
             })}
             {(inputs.pmmTier||"full")==="none"&&s.targetARR>=10000000&&
-              <div style={{marginTop:4,padding:4,background:"#d42e4a12",borderRadius:4,fontSize:8,color:"#d42e4a",fontWeight:600}}>⚠ Positioning risk above $10M</div>}
+              <div style={{marginTop:4,padding:4,background:"#d42e4a12",borderRadius:0,fontSize:8,color:"#d42e4a",fontWeight:600}}>⚠ Positioning risk above $10M</div>}
           </div>
           {/* MarTech Tier */}
-          <div style={{background:C.bgAlt,borderRadius:8,padding:12,borderTop:`3px solid #a3a3a3`}}>
+          <div style={{background:C.bgAlt,borderRadius:0,padding:12,borderTop:`3px solid #a3a3a3`}}>
             <div style={{fontSize:10,fontWeight:700,color:"#a3a3a3",marginBottom:6}}>MarTech Infrastructure</div>
             {Object.entries(p.tierTables?.MARTECH_TIERS||{}).map(([key,tier])=>{
               const isA=(inputs.coreMarTechTier||"standard")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,coreMarTechTier:key}))}
-                style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:5,textAlign:"left",
+                style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
                   border:`1px solid ${isA?"#a3a3a3":C.border}`,background:isA?"#a3a3a312":"transparent",cursor:"pointer",fontFamily:"'Oxanium',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#a3a3a3":C.muted}}>{tier.label}</span>
@@ -1333,15 +1333,15 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
       </div>
 
       {/* SCALABLE PROGRAMS (Layer 2) */}
-      <div style={{padding:14,background:C.bg,borderRadius:12,border:`1px dashed ${C.border}`,marginBottom:14}}>
+      <div style={{padding:14,background:C.bg,borderRadius:0,border:`1px dashed ${C.border}`,marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-          <div style={{width:4,height:14,background:C.amber,borderRadius:2}}/>
+          <div style={{width:4,height:14,background:C.amber,borderRadius:0}}/>
           <span style={{fontSize:10,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.05em"}}>Scalable Programs</span>
-          <span style={{fontSize:9,padding:"2px 8px",borderRadius:4,background:`${C.amber}12`,color:C.amber,fontWeight:600}}>{fmt(p.layer2Summary?.total||0)}</span>
+          <span style={{fontSize:9,padding:"2px 8px",borderRadius:0,background:`${C.amber}12`,color:C.amber,fontWeight:600}}>{fmt(p.layer2Summary?.total||0)}</span>
           <span style={{fontSize:9,color:C.dim}}>Elastic — design choices</span>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"180px 1fr",gap:12}}>
-          <div style={{padding:10,background:C.bgAlt,borderRadius:8}}>
+          <div style={{padding:10,background:C.bgAlt,borderRadius:0}}>
             {[{key:"revEngineOps",label:"RevEngine Ops",color:"#c07800"},{key:"brandContent",label:"Brand & Content",color:"#2d8a56"},{key:"prAr",label:"PR / AR",color:"#b45bc0"}].map(item=>{
               const emb=inputs.elasticMktgBreakdown||{revEngineOps:35,brandContent:40,prAr:25};
               return(<div key={item.key} style={{marginBottom:8}}>
@@ -1362,10 +1362,10 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               const hc = hs==="at-risk"?"#d42e4a":hs==="thin"?"#c07800":"#2d8a56";
               const ghostCaps = {revEngineOps:["Lifecycle automation","Lead scoring","Campaign ops"],brandContent:["Case studies","Content velocity","Video production"],prAr:["Analyst coverage","Thought leadership","Press"]};
               const ghosts = fi.belowMinViable ? (ghostCaps[fi.layer]||[]) : [];
-              return(<div key={fi.name} style={{padding:10,background:C.bgAlt,borderRadius:8,borderLeft:`3px solid ${colors[i]}`}}>
+              return(<div key={fi.name} style={{padding:10,background:C.bgAlt,borderRadius:0,borderLeft:`3px solid ${colors[i]}`}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}}>
                   <span style={{fontSize:10,fontWeight:700,color:colors[i]}}>{fi.name}</span>
-                  <span style={{fontSize:7,padding:"1px 5px",borderRadius:3,background:`${hc}15`,color:hc,fontWeight:600}}>{hs==="at-risk"?"At Risk":hs==="thin"?"Thin":"Stable"}</span>
+                  <span style={{fontSize:7,padding:"1px 5px",borderRadius:0,background:`${hc}15`,color:hc,fontWeight:600}}>{hs==="at-risk"?"At Risk":hs==="thin"?"Thin":"Stable"}</span>
                 </div>
                 <div style={{fontSize:15,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fmt(fi.amount)}</div>
                 <div style={{fontSize:8,color:C.dim,marginTop:2}}>{fi.pctOfRev?.toFixed(1)}% of rev</div>
@@ -1389,7 +1389,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             const infra = p.fixedMktgActual || p.floorTotal;
             const pct = infra / (pt * 1000000) * 100;
             const isYou = Math.abs(s.targetARR / 1000000 - pt) < 1;
-            return(<div key={pt} style={{padding:6,background:isYou?`${C.accent}12`:C.bg,borderRadius:6,textAlign:"center",border:isYou?`1px solid ${C.accent}30`:"1px solid transparent"}}>
+            return(<div key={pt} style={{padding:6,background:isYou?`${C.accent}12`:C.bg,borderRadius:0,textAlign:"center",border:isYou?`1px solid ${C.accent}30`:"1px solid transparent"}}>
               <div style={{fontSize:8,color:isYou?C.accent:C.dim,fontWeight:isYou?700:400}}>{isYou?"▸ ":""}${pt}M</div>
               <div style={{fontSize:14,fontWeight:700,color:pct>15?"#d42e4a":pct>8?"#c07800":"#2d8a56",fontFamily:"'Space Mono',monospace"}}>{pct.toFixed(1)}%</div>
               <div style={{fontSize:7,color:C.dim}}>{pct>12?"heavy":pct>6?"moderate":"lift wins"}</div>
@@ -1398,7 +1398,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         </div>
       </div>
 
-      <div style={{marginTop:10,padding:8,background:`${C.violet}08`,borderRadius:6,border:`1px solid ${C.violet}12`}}>
+      <div style={{marginTop:10,padding:8,background:`${C.violet}08`,borderRadius:0,border:`1px solid ${C.violet}12`}}>
         <div style={{fontSize:9,color:C.muted,lineHeight:1.6}}>
           <strong style={{color:C.violet}}>Structural Core is dollars, not percentages.</strong> $455K VP = 15% at $3M but 1.1% at $40M.
           Scalable Programs are elastic — redistribute as strategy shifts. This is a physics simulator, not a compliance check.
@@ -1424,7 +1424,7 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
       <Card style={{borderLeft:`3px solid ${C.violet}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>Expansion</div><div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'Space Mono',monospace"}}>{fmt(s.expansionARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.expansionDeals)} deals × {fmt(inputs.expansionAvgDeal)} • {inputs.expansionSqoToWon}% close</div></Card>
     </div>}
     <div style={{display:"flex",gap:8,marginBottom:24}}>
-      {["quarterly","pipeline","annual"].map(v=>(<button key={v} onClick={()=>setView(v)} style={{padding:"8px 18px",borderRadius:8,border:`1px solid ${view===v?C.accent:C.border}`,background:view===v?C.accentD:"transparent",color:view===v?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600,textTransform:"capitalize",fontFamily:"'Oxanium',sans-serif"}}>{v}</button>))}
+      {["quarterly","pipeline","annual"].map(v=>(<button key={v} onClick={()=>setView(v)} style={{padding:"8px 18px",borderRadius:0,border:`1px solid ${view===v?C.accent:C.border}`,background:view===v?C.accentD:"transparent",color:view===v?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600,textTransform:"capitalize",fontFamily:"'Oxanium',sans-serif"}}>{v}</button>))}
     </div>
 
     {/* ── PIPELINE VIEW ── */}
@@ -1453,7 +1453,7 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
               <td style={{padding:"10px",color:C.accent,fontFamily:"'Space Mono',monospace",textAlign:"right",fontWeight:700}}>{fmt(q.pipeTarget)}</td>
               <td style={{padding:"10px",color:C.green,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(q.mktgPipeTarget)}</td>
               <td style={{padding:"10px",color:C.violet,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(q.aePipeTarget)}</td>
-              <td style={{padding:"10px",textAlign:"right"}}><span style={{padding:"3px 8px",borderRadius:12,fontSize:10,fontWeight:700,background:q.coverageActual>=inputs.coverageGreen?C.greenD:q.coverageActual>=inputs.coverageYellow?C.amberD:C.roseD,color:q.coverageActual>=inputs.coverageGreen?C.green:q.coverageActual>=inputs.coverageYellow?C.amber:C.rose}}>{q.coverageActual.toFixed(0)}%</span></td>
+              <td style={{padding:"10px",textAlign:"right"}}><span style={{padding:"3px 8px",borderRadius:0,fontSize:10,fontWeight:700,background:q.coverageActual>=inputs.coverageGreen?C.greenD:q.coverageActual>=inputs.coverageYellow?C.amberD:C.roseD,color:q.coverageActual>=inputs.coverageGreen?C.green:q.coverageActual>=inputs.coverageYellow?C.amber:C.rose}}>{q.coverageActual.toFixed(0)}%</span></td>
             </tr>
           ))}</tbody>
         </table></div>
@@ -1507,7 +1507,7 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
     {/* ── QUARTERLY VIEW ── */}
     {view==="quarterly"&&(<div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>
-        {quarterlyTargets.map((q,i)=>(<Card key={q.quarter} style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:700,color:C.ch[i],marginBottom:4}}>{q.quarter}</div><div style={{fontSize:9,color:C.dim,marginBottom:6}}>{q.seasonalPct}% of annual</div><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Target</div><div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fmt(q.target)}</div><div style={{height:1,background:C.border,margin:"10px 0"}}/><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Projected</div><div style={{fontSize:16,fontWeight:700,color:q.actual>=q.target?C.green:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(q.actual)}</div><div style={{marginTop:8,padding:"4px 12px",borderRadius:20,display:"inline-block",fontSize:10,fontWeight:700,background:q.gap>=0?C.greenD:C.roseD,color:q.gap>=0?C.green:C.rose}}>{q.pctOfTarget.toFixed(0)}%</div></Card>))}
+        {quarterlyTargets.map((q,i)=>(<Card key={q.quarter} style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:700,color:C.ch[i],marginBottom:4}}>{q.quarter}</div><div style={{fontSize:9,color:C.dim,marginBottom:6}}>{q.seasonalPct}% of annual</div><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Target</div><div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fmt(q.target)}</div><div style={{height:1,background:C.border,margin:"10px 0"}}/><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Projected</div><div style={{fontSize:16,fontWeight:700,color:q.actual>=q.target?C.green:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(q.actual)}</div><div style={{marginTop:8,padding:"4px 12px",borderRadius:0,display:"inline-block",fontSize:10,fontWeight:700,background:q.gap>=0?C.greenD:C.roseD,color:q.gap>=0?C.green:C.rose}}>{q.pctOfTarget.toFixed(0)}%</div></Card>))}
       </div>
       <Card><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>Quarterly: Target vs Projected</h3>
         <ResponsiveContainer width="100%" height={280}><BarChart data={quarterlyTargets}><CartesianGrid strokeDasharray="3 3" stroke={C.border}/><XAxis dataKey="quarter" stroke={C.dim} fontSize={11} tickLine={false}/><YAxis stroke={C.dim} fontSize={11} tickFormatter={v=>fmt(v)} tickLine={false} axisLine={false}/><Tooltip content={<TT/>}/>
@@ -1518,8 +1518,8 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
     <Card style={{marginTop:18}}>
       <h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:12}}>Pipeline Quality Rules</h3>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-        <div style={{padding:16,background:C.bg,borderRadius:10,border:`1px solid ${C.amber}22`}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Shield size={14} style={{color:C.amber}}/><span style={{fontSize:12,fontWeight:700,color:C.amber}}>Stage 1 — Discovery</span></div><div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Non-forecastable. Amount ≥ {inputs.stage1MinPct}% of ADS ({fmt(model.summary.stage1MinAmount)}). Tracks early engagement without inflating forecast.</div></div>
-        <div style={{padding:16,background:C.bg,borderRadius:10,border:`1px solid ${C.green}22`}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Shield size={14} style={{color:C.green}}/><span style={{fontSize:12,fontWeight:700,color:C.green}}>Stage 2 — SQO (Forecastable)</span></div><div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Board-safe pipeline. AE manually promoted. Discovery held, buyer confirmed, realistic amount. No auto-promotion.</div></div>
+        <div style={{padding:16,background:C.bg,borderRadius:0,border:`1px solid ${C.amber}22`}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Shield size={14} style={{color:C.amber}}/><span style={{fontSize:12,fontWeight:700,color:C.amber}}>Stage 1 — Discovery</span></div><div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Non-forecastable. Amount ≥ {inputs.stage1MinPct}% of ADS ({fmt(model.summary.stage1MinAmount)}). Tracks early engagement without inflating forecast.</div></div>
+        <div style={{padding:16,background:C.bg,borderRadius:0,border:`1px solid ${C.green}22`}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Shield size={14} style={{color:C.green}}/><span style={{fontSize:12,fontWeight:700,color:C.green}}>Stage 2 — SQO (Forecastable)</span></div><div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Board-safe pipeline. AE manually promoted. Discovery held, buyer confirmed, realistic amount. No auto-promotion.</div></div>
       </div>
     </Card>
   </div>);
@@ -1546,12 +1546,12 @@ function SalesPage({model,inputs,setInputs,onInfoClick}){
         <Card style={{marginBottom:16}}>
           <h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:12}}>Pipeline Sourcing</h3>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-            <div style={{padding:14,background:C.bg,borderRadius:10,textAlign:"center"}}>
+            <div style={{padding:14,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.04em"}}>Marketing Sourced</div>
               <div style={{fontSize:26,fontWeight:700,color:C.text,marginTop:4}}>{inputs.mktgSourcedPct}%</div>
               <div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.mktgSQOs)} SQOs → {fN(s.mktgInquiriesNeeded)} inquiries</div>
             </div>
-            <div style={{padding:14,background:C.bg,borderRadius:10,textAlign:"center"}}>
+            <div style={{padding:14,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,fontWeight:700,color:C.violet,textTransform:"uppercase",letterSpacing:"0.04em"}}>AE Self-Sourced</div>
               <div style={{fontSize:26,fontWeight:700,color:C.text,marginTop:4}}>{100-inputs.mktgSourcedPct}%</div>
               <div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.aeSelfSourcedSQOs)} SQOs (outbound, referral, partner)</div>
@@ -1577,12 +1577,12 @@ function FunnelPage({model,inputs,setInputs,onInfoClick}){
         <Input label="Mktg Sourced %" value={inputs.mktgSourcedPct} onChange={v=>setInputs(p=>({...p,mktgSourcedPct:v}))} suffix="%" min={10} max={100} step={5}/>
         <Input label="SQO Lead Time" value={inputs.sqoLeadQuarters} onChange={v=>setInputs(p=>({...p,sqoLeadQuarters:v}))} suffix="Qtrs" min={1} max={4}/>
         <Input label="MQL Lead Time" value={inputs.mqlLeadQuarters} onChange={v=>setInputs(p=>({...p,mqlLeadQuarters:v}))} suffix="Qtrs" min={1} max={3}/>
-        <div style={{marginTop:12,padding:12,background:C.bg,borderRadius:8,textAlign:"center"}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase"}}>Mktg Inquiry-to-Close</div><div style={{fontSize:28,fontWeight:700,color:C.accent}}>{fP(s.effectiveFunnelYield)}</div><div style={{fontSize:10,color:C.dim,marginTop:4}}>{fN(s.mktgInquiriesNeeded)} mktg inquiries needed</div></div>
+        <div style={{marginTop:12,padding:12,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase"}}>Mktg Inquiry-to-Close</div><div style={{fontSize:28,fontWeight:700,color:C.accent}}>{fP(s.effectiveFunnelYield)}</div><div style={{fontSize:10,color:C.dim,marginTop:4}}>{fN(s.mktgInquiriesNeeded)} mktg inquiries needed</div></div>
       </Card>
       <div>
         {/* Funnel waterfall — now shows mktg-sourced counts */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:20}}>
-          {stages.map((st,i)=>(<div key={st.name} style={{position:"relative"}}><div style={{background:`${C.ch[i]}10`,border:`1px solid ${C.ch[i]}25`,borderRadius:10,padding:"14px 8px",textAlign:"center"}}><div style={{fontSize:8,fontWeight:700,color:C.ch[i],textTransform:"uppercase",letterSpacing:"0.04em"}}>{st.name}</div><div style={{fontSize:20,fontWeight:700,color:C.text,marginTop:5}}>{fN(st.count)}</div>{st.mktgCount!=null&&st.mktgCount!==st.count&&<div style={{fontSize:9,color:C.accent,marginTop:2}}>mktg: {fN(st.mktgCount)}</div>}<div style={{fontSize:8,color:C.dim,marginTop:2}}>{st.owner}</div>{i<stages.length-1&&<div style={{fontSize:9,color:C.muted,marginTop:3}}>{st.nextRate}%→</div>}</div>{i<stages.length-1&&<div style={{position:"absolute",right:-6,top:"50%",transform:"translateY(-50%)",zIndex:2}}><ChevronRight size={12} style={{color:C.dim}}/></div>}</div>))}
+          {stages.map((st,i)=>(<div key={st.name} style={{position:"relative"}}><div style={{background:`${C.ch[i]}10`,border:`1px solid ${C.ch[i]}25`,borderRadius:0,padding:"14px 8px",textAlign:"center"}}><div style={{fontSize:8,fontWeight:700,color:C.ch[i],textTransform:"uppercase",letterSpacing:"0.04em"}}>{st.name}</div><div style={{fontSize:20,fontWeight:700,color:C.text,marginTop:5}}>{fN(st.count)}</div>{st.mktgCount!=null&&st.mktgCount!==st.count&&<div style={{fontSize:9,color:C.accent,marginTop:2}}>mktg: {fN(st.mktgCount)}</div>}<div style={{fontSize:8,color:C.dim,marginTop:2}}>{st.owner}</div>{i<stages.length-1&&<div style={{fontSize:9,color:C.muted,marginTop:3}}>{st.nextRate}%→</div>}</div>{i<stages.length-1&&<div style={{position:"absolute",right:-6,top:"50%",transform:"translateY(-50%)",zIndex:2}}><ChevronRight size={12} style={{color:C.dim}}/></div>}</div>))}
         </div>
 
         {/* Phase-Shifted Funnel Timeline */}
@@ -1650,7 +1650,7 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
       ].map(m=>{
         const isActive=activeMotion===m.key;
         const color=MOTION_COLORS[m.key];
-        return(<button key={m.key} onClick={()=>setActiveMotion(m.key)} style={{flex:1,padding:"14px 16px",borderRadius:10,
+        return(<button key={m.key} onClick={()=>setActiveMotion(m.key)} style={{flex:1,padding:"14px 16px",borderRadius:0,
           border:`2px solid ${isActive?color:C.border}`,background:isActive?`${color}10`:"transparent",cursor:"pointer",textAlign:"left",fontFamily:"'Oxanium',sans-serif"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
@@ -1692,7 +1692,7 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
             <div key={ch.name} style={{marginBottom:12,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
                 <span style={{fontSize:11,fontWeight:600,color:C.text}}>{ch.name}</span>
-                <span style={{fontSize:9,padding:"2px 6px",borderRadius:3,background:`${MOTION_COLORS[activeMotion]}15`,color:MOTION_COLORS[activeMotion],fontWeight:600}}>{ch.intent}</span>
+                <span style={{fontSize:9,padding:"2px 6px",borderRadius:0,background:`${MOTION_COLORS[activeMotion]}15`,color:MOTION_COLORS[activeMotion],fontWeight:600}}>{ch.intent}</span>
               </div>
               <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:3}}>
                 <span style={{fontSize:9,color:C.dim}}>Mix %</span>
@@ -1701,15 +1701,15 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
               </div>
               {activeMotion==="create" && <div style={{display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:9,color:C.dim}}>CPL $</span>
-                <input type="number" value={ch.cpl} onChange={e=>uMC(activeMotion,i,"cpl",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:4,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace"}}/>
+                <input type="number" value={ch.cpl} onChange={e=>uMC(activeMotion,i,"cpl",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace"}}/>
               </div>}
               {activeMotion==="convert" && <div style={{display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:9,color:C.dim}}>$/SQL</span>
-                <input type="number" value={ch.costPerSql} onChange={e=>uMC(activeMotion,i,"costPerSql",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:4,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace"}}/>
+                <input type="number" value={ch.costPerSql} onChange={e=>uMC(activeMotion,i,"costPerSql",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace"}}/>
               </div>}
               {activeMotion==="accelerate" && <div style={{display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:9,color:C.dim}}>$/Acct</span>
-                <input type="number" value={ch.costPerAccount} onChange={e=>uMC(activeMotion,i,"costPerAccount",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:4,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace"}}/>
+                <input type="number" value={ch.costPerAccount} onChange={e=>uMC(activeMotion,i,"costPerAccount",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace"}}/>
               </div>}
             </div>
           ))}
@@ -1777,19 +1777,19 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
           <h3 style={{fontSize:11,fontWeight:700,color:MOTION_COLORS.accelerate,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>🟥 Deal Acceleration — Velocity & Win Rate</h3>
           <div style={{fontSize:10,color:C.muted,marginBottom:12}}>What collapses time and risk? No CPL. No fake attribution.</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:14}}>
-            <div style={{padding:10,background:C.bg,borderRadius:8,textAlign:"center"}}>
+            <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Accounts Touched</div>
               <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'Space Mono',monospace"}}>{fN(mot.accelerate.totals.accountsTouched)}</div>
             </div>
-            <div style={{padding:10,background:C.bg,borderRadius:8,textAlign:"center"}}>
+            <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Opps Influenced</div>
               <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'Space Mono',monospace"}}>{fN(mot.accelerate.totals.oppsInfluenced)}</div>
             </div>
-            <div style={{padding:10,background:C.bg,borderRadius:8,textAlign:"center"}}>
+            <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Avg Days Reduced</div>
               <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Space Mono',monospace"}}>{mot.accelerate.totals.daysReduced}</div>
             </div>
-            <div style={{padding:10,background:C.bg,borderRadius:8,textAlign:"center"}}>
+            <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Rev Pulled Forward</div>
               <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Space Mono',monospace"}}>{fmt(mot.accelerate.totals.revenuePulledForward)}</div>
             </div>
@@ -1808,7 +1808,7 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
               </tr>)}
             </tbody>
           </table></div>
-          <div style={{marginTop:12,padding:10,background:`${MOTION_COLORS.accelerate}08`,borderRadius:8,border:`1px solid ${MOTION_COLORS.accelerate}15`}}>
+          <div style={{marginTop:12,padding:10,background:`${MOTION_COLORS.accelerate}08`,borderRadius:0,border:`1px solid ${MOTION_COLORS.accelerate}15`}}>
             <div style={{fontSize:11,color:C.text}}>
               <strong style={{color:MOTION_COLORS.accelerate}}>CFO-grade:</strong> We spent {fmt(mot.accelerate.totals.spend)} to influence {fN(mot.accelerate.totals.oppsInfluenced)} opportunities, 
               pull {fmt(mot.accelerate.totals.revenuePulledForward)} of revenue forward by {mot.accelerate.totals.daysReduced} days, 
@@ -1856,7 +1856,7 @@ function PipelinePage({model,inputs,onInfoClick}){
           {label:"Channel Spend", value:p.programmaticBudget, color:C.green, sub:"buys inquiries"},
         ].map((step,i,arr)=>(
           <div key={step.label} style={{display:"flex",alignItems:"center",flex:1,gap:0}}>
-            <div style={{flex:1,padding:12,background:`${step.color}08`,borderRadius:10,border:`1px solid ${step.color}20`,textAlign:"center",position:"relative"}}>
+            <div style={{flex:1,padding:12,background:`${step.color}08`,borderRadius:0,border:`1px solid ${step.color}20`,textAlign:"center",position:"relative"}}>
               {step.negative && <div style={{position:"absolute",top:4,right:8,fontSize:9,color:C.rose,fontWeight:700}}>−</div>}
               <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",fontWeight:700}}>{step.label}</div>
               <div style={{fontSize:16,fontWeight:700,color:step.color,fontFamily:"'Space Mono',monospace",marginTop:4}}>{fmt(step.value)}</div>
@@ -1867,7 +1867,7 @@ function PipelinePage({model,inputs,onInfoClick}){
         ))}
       </div>
       {p.fixedMktgIsFloorBound && (
-        <div style={{marginTop:10,padding:8,background:`${C.amber}08`,borderRadius:6,border:`1px solid ${C.amber}15`}}>
+        <div style={{marginTop:10,padding:8,background:`${C.amber}08`,borderRadius:0,border:`1px solid ${C.amber}15`}}>
           <span style={{fontSize:10,color:C.amber,fontWeight:600}}>⚠ Floor-bound:</span>
           <span style={{fontSize:10,color:C.muted,marginLeft:6}}>
             Headcount floor ({fmt(p.floorTotal)}) exceeds formula overhead. VP alone = {((p.leadershipInMktg||455000)/p.totalRevenue*100).toFixed(1)}% of revenue. 
@@ -1894,9 +1894,9 @@ function PipelinePage({model,inputs,onInfoClick}){
             </div>
           </div>
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
-            <div style={{flex:1,height:28,background:C.bg,borderRadius:6,overflow:"hidden",position:"relative"}}>
+            <div style={{flex:1,height:28,background:C.bg,borderRadius:0,overflow:"hidden",position:"relative"}}>
               <motion.div initial={{width:0}} animate={{width:`${Math.max(w,2)}%`}} transition={{duration:0.6,delay:i*0.08}}
-                style={{height:"100%",background:`linear-gradient(90deg,${C.ch[i]},${C.ch[i]}66)`,borderRadius:6,display:"flex",alignItems:"center",paddingLeft:10}}>
+                style={{height:"100%",background:`linear-gradient(90deg,${C.ch[i]},${C.ch[i]}66)`,borderRadius:0,display:"flex",alignItems:"center",paddingLeft:10}}>
                 <span style={{fontSize:9,fontWeight:700,color:"#fff"}}>{w.toFixed(0)}%</span>
               </motion.div>
             </div>
@@ -1969,7 +1969,7 @@ function VelocityPage({model,inputs,setInputs,onInfoClick}){
     <div style={{display:"grid",gridTemplateColumns:"300px 1fr",gap:24}}>
       <Card><h3 style={{fontSize:12,fontWeight:700,color:C.accent,margin:0,marginBottom:16,textTransform:"uppercase",letterSpacing:"0.06em"}}>Stage Duration (days)</h3>
         <Input label="Stage 1→2 (Discovery→SQO)" value={inputs.velStage1to2} onChange={v=>setInputs(p=>({...p,velStage1to2:v}))} suffix="days" min={1}/><Input label="Stage 2→3 (Tech)" value={inputs.velStage2to3} onChange={v=>setInputs(p=>({...p,velStage2to3:v}))} suffix="days" min={1}/><Input label="Stage 3→4 (Biz Case)" value={inputs.velStage3to4} onChange={v=>setInputs(p=>({...p,velStage3to4:v}))} suffix="days" min={1}/><Input label="Stage 4→5 (Legal)" value={inputs.velStage4to5} onChange={v=>setInputs(p=>({...p,velStage4to5:v}))} suffix="days" min={1}/><Input label="Stage 5→Close" value={inputs.velStage5toClose} onChange={v=>setInputs(p=>({...p,velStage5toClose:v}))} suffix="days" min={1}/>
-        <div style={{marginTop:12,padding:12,background:C.bg,borderRadius:8,textAlign:"center"}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase"}}>Total Cycle</div><div style={{fontSize:22,fontWeight:700,color:C.accent,marginTop:4}}>{totalDays} days</div></div>
+        <div style={{marginTop:12,padding:12,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase"}}>Total Cycle</div><div style={{fontSize:22,fontWeight:700,color:C.accent,marginTop:4}}>{totalDays} days</div></div>
       </Card>
       <div>
         <Card style={{marginBottom:18}}><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:16}}>Stage Duration Breakdown</h3>
@@ -1979,7 +1979,7 @@ function VelocityPage({model,inputs,setInputs,onInfoClick}){
         <Card><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:12}}>Velocity Diagnostic</h3>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             {[{label:"High conv + long time",signal:"Process friction",color:C.amber,fix:"Streamline approvals"},{label:"Short time + low conv",signal:"Premature promotion",color:C.rose,fix:"Tighten stage entry"},{label:"High conv + short time",signal:"Healthy velocity",color:C.green,fix:"Scale this motion"},{label:"Low conv + long time",signal:"Dead pipeline",color:C.rose,fix:"Kill faster"}].map(r=>(
-              <div key={r.label} style={{padding:12,background:C.bg,borderRadius:8,border:`1px solid ${r.color}22`}}><div style={{fontSize:11,fontWeight:700,color:r.color,marginBottom:4}}>{r.signal}</div><div style={{fontSize:10,color:C.muted,marginBottom:4}}>{r.label}</div><div style={{fontSize:10,color:C.dim}}>→ {r.fix}</div></div>
+              <div key={r.label} style={{padding:12,background:C.bg,borderRadius:0,border:`1px solid ${r.color}22`}}><div style={{fontSize:11,fontWeight:700,color:r.color,marginBottom:4}}>{r.signal}</div><div style={{fontSize:10,color:C.muted,marginBottom:4}}>{r.label}</div><div style={{fontSize:10,color:C.dim}}>→ {r.fix}</div></div>
             ))}
           </div>
         </Card>
@@ -1991,8 +1991,8 @@ function VelocityPage({model,inputs,setInputs,onInfoClick}){
 function RampPage({model,inputs,setInputs,onInfoClick}){return(<div><Header title="Seller Ramp" sub="AE productivity curve with attrition" icon={TrendingUp} moduleId="sellerRamp" onInfoClick={onInfoClick}/><div style={{display:"grid",gridTemplateColumns:"240px 1fr",gap:24}}><Card><Input label="AEs" value={inputs.aeCount} onChange={v=>setInputs(p=>({...p,aeCount:v}))} min={1}/><Input label="Quota" value={inputs.aeQuota} onChange={v=>setInputs(p=>({...p,aeQuota:v}))} prefix="$" step={25000}/><Input label="Ramp" value={inputs.aeRampMonths} onChange={v=>setInputs(p=>({...p,aeRampMonths:v}))} suffix="mo" min={1} max={12}/><Input label="Attrition" value={inputs.aeAttritionRate} onChange={v=>setInputs(p=>({...p,aeAttritionRate:v}))} suffix="% yr" step={5}/>
     <div style={{height:1,background:C.border,margin:"10px 0"}}/>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-      <div style={{padding:8,background:C.bg,borderRadius:6,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Ramp Loss</div><div style={{fontSize:13,fontWeight:700,color:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(model.summary.totalRampLoss)}</div></div>
-      <div style={{padding:8,background:C.bg,borderRadius:6,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Attrition Loss</div><div style={{fontSize:13,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>{fmt(model.summary.totalAttrLoss)}</div></div>
+      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Ramp Loss</div><div style={{fontSize:13,fontWeight:700,color:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(model.summary.totalRampLoss)}</div></div>
+      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Attrition Loss</div><div style={{fontSize:13,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>{fmt(model.summary.totalAttrLoss)}</div></div>
     </div>
     {inputs.aeAttritionRate > 0 && <div style={{marginTop:8,fontSize:9,color:C.muted}}>Eff. AEs by Dec: {model.sellerRamp[11]?.effectiveAEs}</div>}
   </Card>
@@ -2073,7 +2073,7 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
           {/* Functional P&L */}
           <Card>
             <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.04em"}}>Functional View</h3>
-            {funcItems.map((it,i)=>{if(it.l?.startsWith("---"))return<div key={i} style={{height:1,background:C.border,margin:"3px 0"}}/>;return(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 10px",borderRadius:5,background:it.b?C.bg:"transparent"}}>
+            {funcItems.map((it,i)=>{if(it.l?.startsWith("---"))return<div key={i} style={{height:1,background:C.border,margin:"3px 0"}}/>;return(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 10px",borderRadius:0,background:it.b?C.bg:"transparent"}}>
               <div style={{display:"flex",gap:6,alignItems:"center"}}>{it.i&&<div style={{width:14}}/>}<span style={{fontSize:12,fontWeight:it.b?700:400,color:it.b?C.text:C.muted}}>{it.l}</span>{it.pct!=null&&<span style={{fontSize:9,color:C.dim}}>({it.pct}%)</span>}</div>
               <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'Space Mono',monospace"}}>{it.v<0?`(${fmt(Math.abs(it.v))})`:fmt(it.v)}</span>
             </div>);})}
@@ -2082,7 +2082,7 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
           {/* Behavioral view */}
           <Card>
             <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.04em"}}>Behavioral View (Fixed / Variable)</h3>
-            {behavItems.map((it,i)=>{if(it.l?.startsWith("---"))return<div key={i} style={{height:1,background:C.border,margin:"3px 0"}}/>;return(<div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 10px",borderRadius:5,background:it.b?C.bg:"transparent"}}>
+            {behavItems.map((it,i)=>{if(it.l?.startsWith("---"))return<div key={i} style={{height:1,background:C.border,margin:"3px 0"}}/>;return(<div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 10px",borderRadius:0,background:it.b?C.bg:"transparent"}}>
               <span style={{fontSize:12,fontWeight:it.b?700:400,color:it.b?C.text:C.muted}}>{it.l}</span>
               <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'Space Mono',monospace"}}>{fmt(it.v)}</span>
             </div>);})}
@@ -2116,13 +2116,13 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
                   <span style={{fontSize:10,fontWeight:600,color:b.delta>0?C.amber:C.blue,fontFamily:"'Space Mono',monospace"}}>{b.deltaLabel}</span>
                 </div>
               </div>
-              <div style={{position:"relative",height:16,background:C.bg,borderRadius:6,overflow:"hidden"}}>
+              <div style={{position:"relative",height:16,background:C.bg,borderRadius:0,overflow:"hidden"}}>
                 {/* Benchmark range */}
-                <div style={{position:"absolute",left:0,right:0,top:0,bottom:0,background:`linear-gradient(90deg, ${C.blueD} 0%, ${C.greenD} 30%, ${C.greenD} 70%, ${C.amberD} 100%)`,borderRadius:6}}/>
+                <div style={{position:"absolute",left:0,right:0,top:0,bottom:0,background:`linear-gradient(90deg, ${C.blueD} 0%, ${C.greenD} 30%, ${C.greenD} 70%, ${C.amberD} 100%)`,borderRadius:0}}/>
                 {/* Mid marker */}
                 <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:1,background:C.dim,zIndex:2}}/>
                 {/* Actual position */}
-                <div style={{position:"absolute",left:`${Math.max(0,Math.min(100,pctPos))}%`,top:1,bottom:1,width:10,marginLeft:-5,background:barColor,borderRadius:4,zIndex:3,border:`1px solid ${barColor}`}}/>
+                <div style={{position:"absolute",left:`${Math.max(0,Math.min(100,pctPos))}%`,top:1,bottom:1,width:10,marginLeft:-5,background:barColor,borderRadius:0,zIndex:3,border:`1px solid ${barColor}`}}/>
               </div>
               <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
                 <span style={{fontSize:8,color:C.dim}}>{b.benchLow}%</span>
@@ -2131,7 +2131,7 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
             </div>);
           })}
           {/* CP-SQO benchmark */}
-          <div style={{marginTop:8,padding:10,background:C.bg,borderRadius:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{marginTop:8,padding:10,background:C.bg,borderRadius:0,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div><div style={{fontSize:9,color:C.dim,textTransform:"uppercase"}}>CP-SQO Actual vs Benchmark</div>
               <div style={{fontSize:16,fontWeight:700,color:p.cpSqoRatio<=1?C.green:p.cpSqoRatio<=1.5?C.amber:C.rose,fontFamily:"'Space Mono',monospace"}}>{fmt(p.actualCpSqo)}</div></div>
             <div style={{textAlign:"right"}}><div style={{fontSize:9,color:C.dim}}>Benchmark: {fmt(inputs.cpSqoBenchmark)}</div>
@@ -2164,7 +2164,7 @@ function GlideslopePage({model,inputs,setInputs,onInfoClick}){
       <h3 style={{fontSize:11,fontWeight:700,color:C.dim,margin:0,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.04em"}}>Multi-Year Plan</h3>
       <div style={{display:"grid",gridTemplateColumns:`repeat(${ny},1fr)`,gap:12}}>
         {model.yearTargets.map((yt,i)=>(
-          <div key={yt.label} style={{padding:14,background:C.bg,borderRadius:10,borderLeft:`3px solid ${i===0?C.accent:C.violet}`}}>
+          <div key={yt.label} style={{padding:14,background:C.bg,borderRadius:0,borderLeft:`3px solid ${i===0?C.accent:C.violet}`}}>
             <div style={{fontSize:14,fontWeight:700,color:i===0?C.accent:C.violet,marginBottom:8}}>{yt.label}</div>
             {[{l:"Start ARR",v:fmt(yt.startARR)},{l:"Target ARR",v:fmt(yt.targetARR)},{l:"New ARR Needed",v:fmt(yt.newARRNeeded)},{l:"Growth",v:`${yt.growthRate.toFixed(0)}%`},{l:"Deals",v:fN(yt.dealsNeeded)},{l:"SQOs",v:fN(yt.sqosNeeded)}].map(r=>(
               <div key={r.l} style={{display:"flex",justifyContent:"space-between",padding:"3px 0",borderBottom:`1px solid ${C.border}`}}>
@@ -2186,7 +2186,7 @@ function GlideslopePage({model,inputs,setInputs,onInfoClick}){
       <div style={{display:"flex",gap:4,alignItems:"flex-end",height:60,marginBottom:14}}>
         {model.monthWeights.map((w,i)=>(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
           <span style={{fontSize:8,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{(w*100).toFixed(0)}%</span>
-          <div style={{width:"100%",background:C.accentD,borderRadius:3,height:`${Math.max(w*100*8,4)}px`,border:`1px solid ${C.accent}44`}}/>
+          <div style={{width:"100%",background:C.accentD,borderRadius:0,height:`${Math.max(w*100*8,4)}px`,border:`1px solid ${C.accent}44`}}/>
           <span style={{fontSize:8,color:C.dim}}>{MONTHS[i]}</span>
         </div>))}
       </div>
@@ -2204,7 +2204,7 @@ function QBRPage({model,inputs,onInfoClick}){const isSplit=inputs.revenueMode===
   const qbr=model.qbrData.filter(q=>q.yearIndex===yr);
   return(<div><Header title="QBR Metrics" sub={ny>1?`Quarterly operating scorecard — Y${yr+1}`:"Quarterly operating scorecard"} icon={BarChart3} moduleId="qbr" onInfoClick={onInfoClick}/>
     {ny>1&&<div style={{display:"flex",gap:8,marginBottom:16}}>
-      {Array.from({length:ny},(_,i)=>(<button key={i} onClick={()=>setYr(i)} style={{padding:"6px 16px",borderRadius:8,border:`1px solid ${yr===i?C.accent:C.border}`,background:yr===i?C.accentD:"transparent",color:yr===i?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600}}>{`Y${i+1}`}</button>))}
+      {Array.from({length:ny},(_,i)=>(<button key={i} onClick={()=>setYr(i)} style={{padding:"6px 16px",borderRadius:0,border:`1px solid ${yr===i?C.accent:C.border}`,background:yr===i?C.accentD:"transparent",color:yr===i?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600}}>{`Y${i+1}`}</button>))}
     </div>}
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>{qbr.map((q,i)=><Card key={q.quarter}><div style={{fontSize:16,fontWeight:700,color:C.ch[i],marginBottom:10}}>{q.quarter}</div>{[{l:"Revenue",v:fmt(q.revenue)},{l:"New ARR",v:fmt(q.newARR)},isSplit&&{l:"New Logo",v:fmt(q.newLogoARR)},isSplit&&{l:"Expansion",v:fmt(q.expansionARR)},{l:"Won",v:fN(q.deals)},{l:"Inquiries",v:fN(q.inquiries)},{l:"MQLs",v:fN(q.mqls)},{l:"SQLs",v:fN(q.sqls)},{l:"Meetings",v:fN(q.meetings)},{l:"SQOs",v:fN(q.sqos)},{l:"Pipeline",v:fmt(q.pipeline)},{l:"Stage 2",v:fmt(q.stage2Pipe)}].filter(Boolean).map(m=><div key={m.l} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${C.border}`}}><span style={{fontSize:10,color:C.muted}}>{m.l}</span><span style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Space Mono',monospace"}}>{m.v}</span></div>)}</Card>)}</div></div>);}
 
@@ -2237,7 +2237,7 @@ function NavSection({section,items,page,setPage}){
       const I=n.icon, a=page===n.id;
       return(
         <button key={n.id} onClick={()=>setPage(n.id)} style={{display:"flex",alignItems:"center",gap:9,width:"100%",
-          padding:section?"7px 10px 7px 18px":"8px 10px",marginBottom:1,border:"none",borderRadius:7,
+          padding:section?"7px 10px 7px 18px":"8px 10px",marginBottom:1,border:"none",borderRadius:0,
           background:a?C.accentD:"transparent",color:a?C.accent:C.muted,cursor:"pointer",fontSize:12,
           fontWeight:a?600:400,textAlign:"left",transition:"all 0.15s",fontFamily:"'Oxanium',sans-serif"}}
           onMouseEnter={e=>{if(!a){e.currentTarget.style.background=C.card;e.currentTarget.style.color=C.text}}}
@@ -2349,7 +2349,7 @@ function OnboardingWizard({onComplete}){
     <div style={{display:"grid",gridTemplateColumns:`repeat(${columns},1fr)`,gap:10}}>
       {options.map(o=>{
         const isActive=value===o.value;
-        return(<button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"16px 14px",borderRadius:10,
+        return(<button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"16px 14px",borderRadius:0,
           border:`2px solid ${isActive?C.accent:C.border}`,background:isActive?C.accentD:"transparent",
           cursor:"pointer",textAlign:"left",fontFamily:"'Oxanium',sans-serif",transition:"all 0.15s"}}>
           <div style={{fontSize:13,fontWeight:700,color:isActive?C.accent:C.text}}>{o.label}</div>
@@ -2363,7 +2363,7 @@ function OnboardingWizard({onComplete}){
     <div style={{marginBottom:14}}>
       <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{label}</div>
       {desc&&<div style={{fontSize:10,color:C.dim,marginBottom:6}}>{desc}</div>}
-      <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 12px",background:C.bg,borderRadius:8,border:`1px solid ${C.border}`}}>
+      <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 12px",background:C.bg,borderRadius:0,border:`1px solid ${C.border}`}}>
         {prefix&&<span style={{color:C.dim,fontSize:13}}>{prefix}</span>}
         <input type="number" value={value} step={s} onChange={e=>onChange(parseFloat(e.target.value)||0)}
           style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:14,fontFamily:"'Space Mono',monospace"}}/>
@@ -2429,7 +2429,7 @@ function OnboardingWizard({onComplete}){
               {value:"seriesC",label:"Series C+"},
             ]}/>
           </div>
-          <div style={{padding:12,background:`${C.accent}08`,borderRadius:8,border:`1px solid ${C.accent}15`}}>
+          <div style={{padding:12,background:`${C.accent}08`,borderRadius:0,border:`1px solid ${C.accent}15`}}>
             <div style={{fontSize:10,color:C.dim,marginBottom:4}}>Implied Growth Rate</div>
             <div style={{fontSize:20,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>
               {answers.startingARR>0?((answers.targetARR-answers.startingARR)/answers.startingARR*100).toFixed(0):0}%
@@ -2445,7 +2445,7 @@ function OnboardingWizard({onComplete}){
         <div>
           <NumberInput label="Max Active Opps per AE" value={answers.maxOppsPerAE} onChange={v=>u("maxOppsPerAE",v)} desc="Before quality degrades. Be honest." step={1}/>
           <NumberInput label="Max Meetings per SDR/week" value={answers.maxMeetingsPerSDR} onChange={v=>u("maxMeetingsPerSDR",v)} suffix="/wk" desc="Actual throughput, not target." step={1}/>
-          <div style={{padding:10,background:C.bg,borderRadius:8,marginTop:8}}>
+          <div style={{padding:10,background:C.bg,borderRadius:0,marginTop:8}}>
             <div style={{fontSize:10,color:C.dim}}>These are not preferences — they're physics.</div>
           </div>
         </div>
@@ -2467,7 +2467,7 @@ function OnboardingWizard({onComplete}){
           {value:"growth",label:"Growth",desc:"Invest in GTM. Acceptable burn for market position."},
           {value:"capture",label:"Market Capture",desc:"Win at all costs. Speed > margin. Land grab."},
         ]}/>
-        <div style={{marginTop:20,padding:14,background:C.bg,borderRadius:8,border:`1px solid ${C.border}`}}>
+        <div style={{marginTop:20,padding:14,background:C.bg,borderRadius:0,border:`1px solid ${C.border}`}}>
           <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
             {answers.growthIntent==="efficiency"&&"Efficiency mode tightens all cost ratios. The model will flag any spend that doesn't directly produce pipeline. Expect 35-45% S&M as a % of revenue."}
             {answers.growthIntent==="growth"&&"Growth mode balances burn against progress. The model allows higher S&M ratios (45-55% of rev) in exchange for pipeline velocity. Standard for Series A-B."}
@@ -2486,7 +2486,7 @@ function OnboardingWizard({onComplete}){
               {label:"Operating Mode",value:`${motionLabel} × ${buyerLabel}`,color:C.accent},
               {label:"Growth Intent",value:intentLabel,color:answers.growthIntent==="capture"?C.rose:answers.growthIntent==="growth"?C.amber:C.green},
               {label:"Funding Stage",value:answers.fundingStage.replace("series","Series "),color:C.violet},
-            ].map(b=>(<div key={b.label} style={{padding:14,background:C.bg,borderRadius:10,border:`1px solid ${C.border}`}}>
+            ].map(b=>(<div key={b.label} style={{padding:14,background:C.bg,borderRadius:0,border:`1px solid ${C.border}`}}>
               <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.05em"}}>{b.label}</div>
               <div style={{fontSize:15,fontWeight:700,color:b.color,marginTop:4}}>{b.value}</div>
             </div>))}
@@ -2501,12 +2501,12 @@ function OnboardingWizard({onComplete}){
               {label:"AE Quota",value:fmt(overrides.aeQuota||750000)},
               {label:"Win Rate",value:`${overrides.sqoToWonRate||30}%`},
               {label:"Mktg Sourced",value:`${overrides.mktgSourcedPct||50}%`},
-            ].map(b=>(<div key={b.label} style={{display:"flex",justifyContent:"space-between",padding:"8px 12px",background:C.bg,borderRadius:6}}>
+            ].map(b=>(<div key={b.label} style={{display:"flex",justifyContent:"space-between",padding:"8px 12px",background:C.bg,borderRadius:0}}>
               <span style={{fontSize:11,color:C.muted}}>{b.label}</span>
               <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{b.value}</span>
             </div>))}
           </div>
-          <div style={{padding:12,background:`${C.green}08`,borderRadius:8,border:`1px solid ${C.green}20`}}>
+          <div style={{padding:12,background:`${C.green}08`,borderRadius:0,border:`1px solid ${C.green}20`}}>
             <div style={{fontSize:11,color:C.green,fontWeight:600,marginBottom:4}}>These defaults anchor the model.</div>
             <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>Everything can be tuned later in Global Drivers. But these values represent your declared operating reality — change them when reality changes, not when someone doesn't like the output.</div>
           </div>
@@ -2530,7 +2530,7 @@ function OnboardingWizard({onComplete}){
         {/* Progress bar */}
         <div style={{display:"flex",gap:4,marginBottom:32}}>
           {ONBOARDING_STEPS.map((_,i)=>(
-            <div key={i} style={{flex:1,height:3,borderRadius:2,background:i<=step?C.accent:C.border,transition:"all 0.3s"}}/>
+            <div key={i} style={{flex:1,height:3,borderRadius:0,background:i<=step?C.accent:C.border,transition:"all 0.3s"}}/>
           ))}
         </div>
 
@@ -2552,18 +2552,18 @@ function OnboardingWizard({onComplete}){
 
         {/* Nav buttons */}
         <div style={{display:"flex",justifyContent:"space-between",marginTop:32}}>
-          <button onClick={()=>canBack&&setStep(step-1)} style={{padding:"10px 20px",borderRadius:8,border:`1px solid ${C.border}`,
+          <button onClick={()=>canBack&&setStep(step-1)} style={{padding:"10px 20px",borderRadius:0,border:`1px solid ${C.border}`,
             background:"transparent",color:canBack?C.text:C.dim,cursor:canBack?"pointer":"default",fontSize:12,fontWeight:600,
             fontFamily:"'Oxanium',sans-serif",opacity:canBack?1:0.3}}>
             Back
           </button>
           {step===ONBOARDING_STEPS.length-1 ? (
-            <button onClick={()=>onComplete(buildOverrides())} style={{padding:"10px 28px",borderRadius:8,border:"none",
+            <button onClick={()=>onComplete(buildOverrides())} style={{padding:"10px 28px",borderRadius:0,border:"none",
               background:C.accent,color:"#fff",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"'Oxanium',sans-serif"}}>
               Launch Engine →
             </button>
           ) : (
-            <button onClick={()=>setStep(step+1)} style={{padding:"10px 24px",borderRadius:8,border:"none",
+            <button onClick={()=>setStep(step+1)} style={{padding:"10px 24px",borderRadius:0,border:"none",
               background:C.accentD,color:C.accent,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"'Oxanium',sans-serif"}}>
               Continue →
             </button>
@@ -2588,6 +2588,7 @@ export default function App(){
   const[infoPanel,setInfoPanel]=useState(null);
   const[inputs,setInputs]=useState(DEFAULT_INPUTS);
   const[navOpen,setNavOpen]=useState(false);
+  const[mobSiteNav,setMobSiteNav]=useState(false);
   const mobile=useMediaQuery("(max-width:768px)");
   const tablet=useMediaQuery("(max-width:1024px)");
   const model=useMemo(()=>computeModel(inputs),[inputs]);
@@ -2603,18 +2604,62 @@ export default function App(){
 
   if(!onboarded) return <OnboardingWizard onComplete={handleOnboardComplete}/>;
 
-  return(<div style={{display:"flex",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'Oxanium',sans-serif",color:C.text}}>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  return(<div style={{display:"flex",flexDirection:"column",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'Oxanium',sans-serif",color:C.text}}>
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
 
-    {/* Mobile top bar */}
+    {/* ─── Heretics Site Nav Bar ─── */}
+    <div style={{position:"sticky",top:0,zIndex:200,padding:"0 20px",height:48,display:"flex",alignItems:"center",background:C.card,borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
+      <a href="/" style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none",color:C.text}}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" style={{width:20,height:20}}><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:400,letterSpacing:"0.02em",textTransform:"lowercase"}}>governed revenue</span>
+      </a>
+      {!mobile && <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:2}}>
+        {[
+          {href:"/",label:"home"},
+          {href:"/spine-v4",label:"spine"},
+          {href:"/sovereignty-map",label:"sovereignty"},
+          {href:"/split-funnel-map",label:"motion"},
+          {href:"/lexicon",label:"lexicon"},
+          {href:"/identity-graph",label:"identity"},
+          {href:"/provenance",label:"provenance"},
+          {href:"/agent-specs",label:"agent specs"},
+          {href:"/infrastructure",label:"infrastructure"},
+        ].map(l=>(
+          <a key={l.href} href={l.href} style={{fontFamily:"'Space Mono',monospace",fontSize:9,padding:"5px 8px",color:C.muted,textDecoration:"none",whiteSpace:"nowrap",transition:"color .3s",textTransform:"lowercase",letterSpacing:"0.02em"}}
+            onMouseEnter={e=>e.target.style.color=C.text} onMouseLeave={e=>e.target.style.color=C.muted}>{l.label}</a>
+        ))}
+        <span style={{fontFamily:"'Space Mono',monospace",fontSize:9,padding:"5px 8px",color:C.accent,whiteSpace:"nowrap",textTransform:"lowercase",letterSpacing:"0.02em"}}>physics engine</span>
+      </div>}
+      {mobile && <button onClick={()=>{setMobSiteNav(!mobSiteNav);setNavOpen(false);}} aria-label="Site menu" style={{marginLeft:"auto",display:"flex",background:"none",border:"none",cursor:"pointer",padding:8,flexDirection:"column",gap:3.5}}>
+        <span style={{display:"block",width:16,height:1.5,background:C.text}}/><span style={{display:"block",width:16,height:1.5,background:C.text}}/><span style={{display:"block",width:16,height:1.5,background:C.text}}/>
+      </button>}
+    </div>
+
+    {/* Mobile site nav overlay */}
+    {mobSiteNav && mobile && (
+      <div style={{position:"fixed",top:48,left:0,right:0,bottom:0,background:C.card,padding:"24px 20px",zIndex:199,display:"flex",flexDirection:"column",gap:4,overflowY:"auto"}}>
+        {[
+          {href:"/",label:"home"},{href:"/spine-v4",label:"spine"},{href:"/sovereignty-map",label:"sovereignty map"},
+          {href:"/split-funnel-map",label:"motion map"},{href:"/lexicon",label:"lexicon"},{href:"/identity-graph",label:"identity graph"},
+          {href:"/provenance",label:"provenance"},{href:"/agent-specs",label:"agent specs"},{href:"/infrastructure",label:"infrastructure"},
+        ].map(l=>(
+          <a key={l.href} href={l.href} style={{fontFamily:"'Space Mono',monospace",fontSize:12,padding:"14px 0",color:C.muted,borderBottom:`1px solid ${C.border}`,textTransform:"lowercase",letterSpacing:"0.02em",display:"block",textDecoration:"none"}}>{l.label}</a>
+        ))}
+        <div style={{fontFamily:"'Space Mono',monospace",fontSize:12,padding:"14px 0",color:C.accent,textTransform:"lowercase",letterSpacing:"0.02em"}}>physics engine (current)</div>
+      </div>
+    )}
+
+    <div style={{display:"flex",flex:1,overflow:"hidden"}}>
+
+    {/* Mobile engine bar */}
     {mobile && (
-      <div style={{position:"fixed",top:0,left:0,right:0,height:48,background:C.bgAlt,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",zIndex:100}}>
+      <div style={{position:"fixed",top:48,left:0,right:0,height:44,background:C.bgAlt,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",zIndex:100}}>
         <button onClick={()=>setNavOpen(!navOpen)} style={{background:"transparent",border:"none",color:C.text,cursor:"pointer",padding:4}}>
-          <Layers size={20}/>
+          <Layers size={18}/>
         </button>
-        <div style={{fontSize:10,color:C.dim,letterSpacing:"0.06em",textTransform:"uppercase"}}>Heretic Engine</div>
+        <div style={{fontSize:9,color:C.dim,letterSpacing:"0.06em",textTransform:"uppercase"}}>Revenue Physics Engine</div>
         <button onClick={()=>setDrivers(!drivers)} style={{background:"transparent",border:"none",color:drivers?C.violet:C.muted,cursor:"pointer",padding:4}}>
-          <Settings size={18}/>
+          <Settings size={16}/>
         </button>
       </div>
     )}
@@ -2635,10 +2680,10 @@ export default function App(){
             ))}
           </nav>
           <div style={{padding:"8px 6px",borderTop:`1px solid ${C.border}`}}>
-            <button onClick={()=>{setDrivers(!drivers);if(mobile)setNavOpen(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:7,background:drivers?C.violetD:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Oxanium',sans-serif"}}>
+            <button onClick={()=>{setDrivers(!drivers);if(mobile)setNavOpen(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:drivers?C.violetD:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Oxanium',sans-serif"}}>
               <Settings size={13}/>Global Drivers
             </button>
-            <button onClick={()=>setOnboarded(false)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:7,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'Oxanium',sans-serif"}}>
+            <button onClick={()=>setOnboarded(false)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'Oxanium',sans-serif"}}>
               Re-run Setup
             </button>
           </div>
@@ -2654,7 +2699,7 @@ export default function App(){
       </>
     )}
 
-    <div style={{flex:1,display:"flex",overflow:"hidden",marginTop:mobile?48:0}}>
+    <div style={{flex:1,display:"flex",overflow:"hidden",marginTop:mobile?44:0}}>
       <main style={{flex:1,overflowY:"auto",padding:mobile?"16px 12px 80px":tablet?"20px 20px 60px":"24px 32px 60px"}}>
         <AnimatePresence mode="wait"><motion.div key={page} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:0.2}}>
           {pages[page]}
@@ -2683,7 +2728,7 @@ export default function App(){
               <Input compact label="Growth Rate" value={inputs.targetGrowthRate} onChange={v=>setInputs(p=>({...p,targetGrowthRate:v}))} suffix="%" step={5}/>
             )}
             <Input compact label="Starting ARR" value={inputs.startingARR} onChange={v=>setInputs(p=>({...p,startingARR:v}))} prefix="$" step={100000}/>
-            {inputs.targetMode==="growthRate"&&<div style={{padding:8,background:C.bg,borderRadius:6,marginBottom:8}}><div style={{fontSize:9,color:C.dim}}>Implied Target</div><div style={{fontSize:14,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(model.summary.targetARR)}</div></div>}
+            {inputs.targetMode==="growthRate"&&<div style={{padding:8,background:C.bg,borderRadius:0,marginBottom:8}}><div style={{fontSize:9,color:C.dim}}>Implied Target</div><div style={{fontSize:14,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(model.summary.targetARR)}</div></div>}
             <Input compact label="Avg Deal" value={inputs.avgDealSize} onChange={v=>setInputs(p=>({...p,avgDealSize:v}))} prefix="$" step={5000}/>
             <div style={{height:1,background:C.border,margin:"8px 0"}}/>
             <div style={{fontSize:9,fontWeight:700,color:C.violet,textTransform:"uppercase",marginBottom:6}}>Planning Horizon</div>
@@ -2743,7 +2788,7 @@ export default function App(){
                     <div style={{fontSize:8,color:C.dim}}>{m}</div>
                     <input type="number" value={inputs.seasonalWeights[i]} min={1} max={20} step={1}
                       onChange={e=>{const nw=[...inputs.seasonalWeights];nw[i]=parseInt(e.target.value)||1;setInputs(p=>({...p,seasonalWeights:nw}));}}
-                      style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:4,padding:"3px 2px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace",textAlign:"center"}}/>
+                      style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"3px 2px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace",textAlign:"center"}}/>
                   </div>
                 ))}
               </div>
@@ -2751,7 +2796,7 @@ export default function App(){
             {inputs.seasonalityMode!=="custom"&&<div style={{marginTop:6}}>
               <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:2}}>
                 {QUARTERS.map((q,qi)=>{const qw=model.monthWeights.slice(qi*3,qi*3+3).reduce((s,w)=>s+w,0);return(
-                  <div key={q} style={{textAlign:"center",padding:"4px 0",background:C.bg,borderRadius:4}}>
+                  <div key={q} style={{textAlign:"center",padding:"4px 0",background:C.bg,borderRadius:0}}>
                     <div style={{fontSize:8,color:C.dim}}>{q}</div>
                     <div style={{fontSize:11,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{(qw*100).toFixed(0)}%</div>
                   </div>
@@ -2773,7 +2818,7 @@ export default function App(){
       {page.startsWith("legal:")&&(
         <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center"}}
           onClick={()=>setPage("dashboard")}>
-          <motion.div initial={{y:20}} animate={{y:0}} style={{width:640,maxHeight:"80vh",background:C.bgAlt,borderRadius:14,border:`1px solid ${C.border}`,overflow:"hidden"}}
+          <motion.div initial={{y:20}} animate={{y:0}} style={{width:640,maxHeight:"80vh",background:C.bgAlt,borderRadius:0,border:`1px solid ${C.border}`,overflow:"hidden"}}
             onClick={e=>e.stopPropagation()}>
             <div style={{padding:"18px 24px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div style={{fontSize:15,fontWeight:700,color:C.text}}>
@@ -2817,5 +2862,6 @@ export default function App(){
         </motion.div>
       )}
     </AnimatePresence>
+  </div>
   </div>);
 }
