@@ -1,47 +1,47 @@
-// ─── Heretic Engine Design System Tokens ───
+// ─── Heretic Engine Design System Tokens — Scorecard.io Light ───
 // Shared design language across all Heretic Engine properties
 
 export const colors = {
   // Backgrounds
-  bg:        '#0A0E17',
-  bgAlt:     '#0d1117',
-  surface:   '#111827',
-  surfaceHover: '#1a2235',
+  bg:        '#f0f0f0',
+  bgAlt:     '#f8f8f8',
+  surface:   '#ffffff',
+  surfaceHover: '#f8f8f8',
 
   // Borders
-  border:    '#1e293b',
-  borderL:   '#334155',
+  border:    '#d9d9d9',
+  borderL:   '#ccc',
 
   // Brand accent
-  accent:    '#22d3ee',
-  accentDim: 'rgba(34, 211, 238, 0.12)',
-  accentGlow: 'rgba(34, 211, 238, 0.25)',
+  accent:    '#ff6e3e',
+  accentDim: 'rgba(255, 110, 62, 0.10)',
+  accentGlow: 'rgba(255, 110, 62, 0.20)',
 
   // Semantic
-  green:     '#10b981',
-  greenDim:  'rgba(16, 185, 129, 0.12)',
-  amber:     '#f59e0b',
-  amberDim:  'rgba(245, 158, 11, 0.12)',
-  rose:      '#f43f5e',
-  roseDim:   'rgba(244, 63, 94, 0.12)',
-  violet:    '#8b5cf6',
-  violetDim: 'rgba(139, 92, 246, 0.12)',
-  blue:      '#3b82f6',
-  blueDim:   'rgba(59, 130, 246, 0.12)',
+  green:     '#2d8a56',
+  greenDim:  'rgba(45, 138, 86, 0.10)',
+  amber:     '#c07800',
+  amberDim:  'rgba(192, 120, 0, 0.10)',
+  rose:      '#d42e4a',
+  roseDim:   'rgba(212, 46, 74, 0.10)',
+  violet:    '#7c4ddb',
+  violetDim: 'rgba(124, 77, 219, 0.10)',
+  blue:      '#2563eb',
+  blueDim:   'rgba(37, 99, 235, 0.10)',
 
   // Typography
-  text:      '#f1f5f9',
-  muted:     '#94a3b8',
-  dim:       '#64748b',
+  text:      '#1a1918',
+  muted:     '#747474',
+  dim:       '#a3a3a3',
 
   // Chart palette
-  chart: ['#22d3ee', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#3b82f6', '#ec4899', '#14b8a6'],
+  chart: ['#ff6e3e', '#2d8a56', '#c07800', '#d42e4a', '#7c4ddb', '#2563eb', '#b45bc0', '#1a8a7a'],
 };
 
 export const fonts = {
-  display: "'Space Grotesk', system-ui, sans-serif",
-  body:    "'DM Sans', system-ui, sans-serif",
-  mono:    "'DM Mono', monospace",
+  display: "'Oxanium', system-ui, sans-serif",
+  body:    "'Oxanium', system-ui, sans-serif",
+  mono:    "'Space Mono', monospace",
 };
 
 export const radii = {
