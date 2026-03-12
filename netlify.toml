@@ -1,0 +1,25 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# SPA redirect (existing)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# API adapter routes (Phase 2 — uncomment when functions are deployed)
+# [[redirects]]
+#   from = "/api/adapters/*"
+#   to = "/.netlify/functions/:splat"
+#   status = 200
+
+# Environment variables needed for API adapters (set in Netlify dashboard):
+# HUBSPOT_ACCESS_TOKEN — HubSpot private app token
+# SALESFORCE_CLIENT_ID — Salesforce Connected App client ID
+# SALESFORCE_CLIENT_SECRET — Salesforce Connected App client secret
+# SALESFORCE_INSTANCE_URL — e.g. https://yourorg.my.salesforce.com
