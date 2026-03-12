@@ -2716,7 +2716,7 @@ export default function App(){
         <>
         {mobile && <div onClick={()=>setDrivers(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:199}}/>}
         <motion.aside initial={{width:0,opacity:0}} animate={{width:mobile?"100%":280,opacity:1}} exit={{width:0,opacity:0}} transition={{duration:0.2}}
-          style={{height:"100vh",borderLeft:mobile?"none":`1px solid ${C.border}`,background:C.bgAlt,overflow:"hidden",flexShrink:0,
+          style={{height:"100%",borderLeft:mobile?"none":`1px solid ${C.border}`,background:C.bgAlt,overflow:"hidden",flexShrink:0,
             ...(mobile?{position:"fixed",right:0,top:0,zIndex:200,width:"100%",maxWidth:320}:{})}}>
           <div style={{width:mobile?320:280,padding:"20px 16px",overflowY:"auto",height:"100%"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
