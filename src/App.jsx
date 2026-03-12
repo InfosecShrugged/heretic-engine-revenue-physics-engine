@@ -243,8 +243,8 @@ function DocPanel({moduleId, onClose}){
   if(!doc) return null;
   return(
     <motion.div initial={{x:320,opacity:0}} animate={{x:0,opacity:1}} exit={{x:320,opacity:0}} transition={{duration:0.2,ease:"easeOut"}}
-      style={{position:"fixed",top:0,right:0,width:360,height:"100vh",background:C.bgAlt,borderLeft:`1px solid ${C.border}`,
-        zIndex:100,display:"flex",flexDirection:"column",boxShadow:"-2px 0 8px rgba(0,0,0,0.08)"}}>
+      style={{position:"fixed",top:48,right:0,width:360,height:"calc(100vh - 48px)",background:C.bgAlt,borderLeft:`1px solid ${C.border}`,
+        zIndex:201,display:"flex",flexDirection:"column",boxShadow:"-2px 0 8px rgba(0,0,0,0.08)"}}>
       {/* Header */}
       <div style={{padding:"16px 18px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div>
