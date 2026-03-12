@@ -4,7 +4,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, Link2, Edit3, Trash2, Download, ChevronRight, Check, AlertTriangle, X, Database } from 'lucide-react';
+import { Upload, FileText, Link2, Edit3, Trash2, Download, ChevronRight, Check, AlertTriangle, X, Database, Zap } from 'lucide-react';
 import { parseCSV, guessColumnMapping, csvAdapter, sheetsAdapter, manualAdapter, MANUAL_FIELDS } from './adapters';
 import { actualsStore, adapterConfigStore } from './actuals';
 
