@@ -13,6 +13,7 @@ import { computeModel, DEFAULT_INPUTS, MONTHS, QUARTERS } from './engine';
 import ArchitectureDiagram from './ArchitectureDiagram';
 import SpinePage from './SpinePage';
 import DataIngestionPage from './DataIngestionPage';
+import AlphaGate, { hasAlphaAccess } from './AlphaGate';
 
 // ─── TOKENS — Scorecard.io Light Design System ───
 const C = {
@@ -2590,6 +2591,7 @@ function OnboardingWizard({onComplete}){
 }
 
 export default function App(){
+  const[gated,setGated]=useState(!hasAlphaAccess());
   const[onboarded,setOnboarded]=useState(false);
   const[page,setPage]=useState("dashboard");
   const[drivers,setDrivers]=useState(false);
@@ -2610,6 +2612,7 @@ export default function App(){
   };
   const navTo=(pg)=>{setPage(pg);if(mobile)setNavOpen(false);};
 
+  if(gated) return <AlphaGate onAccessGranted={()=>setGated(false)}/>;
   if(!onboarded) return <OnboardingWizard onComplete={handleOnboardComplete}/>;
 
   return(<div style={{display:"flex",flexDirection:"column",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'Oxanium',sans-serif",color:C.text}}>
