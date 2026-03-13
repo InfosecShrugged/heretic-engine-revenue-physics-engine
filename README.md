@@ -1,74 +1,113 @@
-# Revenue Physics Engine
+# NetherOps
 
-Interactive GTM planning application for marketing leaders. Transforms static spreadsheet revenue models into a real-time, interactive experience with live calculations across Sales, Marketing, Pipeline, P&L, and more.
+**GTM Engineering for Governed Revenue**
 
-## Quick Start
+NetherOps builds tools and frameworks that treat B2B SaaS revenue as a governed system — not a dashboard to stare at, but a control surface to operate.
 
-```bash
-# Install dependencies
-npm install
+---
 
-# Start development server
-npm run dev
-```
+## What is Governed Revenue Architecture?
 
-Opens at `http://localhost:3000`
+Traditional RevOps observes. NetherOps governs.
 
-## Deploy to Vercel (recommended — free)
+The **Governed Revenue Architecture (GRA)** is a systems-thinking framework for B2B go-to-market. It models revenue as a physics problem: inputs have constraints, processes have feedback loops, and outcomes are causally traceable. The architecture has four bands:
 
-### Option A: One-click deploy
-1. Push this folder to a GitHub repository
-2. Go to [vercel.com](https://vercel.com) → "New Project"
-3. Import your repo → Deploy
+1. **Capital & Economic Constraints** — P&L boundaries, budget constraints, unit economics
+2. **Governance Authority** — ICP definitions, stage criteria, coverage models, attribution rules
+3. **Agents** — Coverage agents, attribution agents, signal processors
+4. **Execution Domains** — CRM, orchestration, intent platforms, market interface
 
-### Option B: CLI deploy
-```bash
-npm install -g vercel
-vercel
-```
+---
 
-That's it. You'll get a live URL like `revenue-engine.vercel.app`.
+## OpptyCon
 
-## Deploy to Netlify
+**OpptyCon** is the interactive simulation and control surface for the Governed Revenue Architecture. It lets revenue leaders model scenarios, stress-test assumptions, and see how constraint changes cascade through the full funnel — from CAC targets to closed-won revenue.
 
-```bash
-npm run build
-# Upload the `dist` folder to netlify.com/drop
-```
+### What it does
+- Full-funnel revenue simulation from ICP → pipeline → close → revenue
+- Constraint-based modeling (change a CAC target, see what breaks downstream)
+- Multi-channel attribution and coverage modeling
+- Governance visualization (who controls what, and how changes propagate)
 
-Or connect your GitHub repo at netlify.com for auto-deploys.
-
-## What's Inside
-
-| Page | Sheet Equivalent | What It Does |
-|------|-----------------|--------------|
-| Command Center | README/Overview | Executive dashboard with all KPIs |
-| Sales Model | Sales Model | AE capacity, quota, ramp-adjusted projections |
-| Marketing Funnel | Marketing Funnel | Inverse model: target → deals → SQLs → MQAs → leads |
-| Channel Mix | Marketing Channels | Budget allocation, CPL, channel ROI |
-| Pipeline | Pipeline Progression | Stage-by-stage conversion waterfall |
-| Seller Ramp | Seller Ramp | Productivity curve, ramp capacity loss |
-| P&L | steady-state / ss with actuals | Full income statement, Rule of 40, burn multiple |
-| Glideslope | Glideslope Planning | Projected vs target ARR with gap analysis |
-| QBR Metrics | QBR Metrics | Quarterly scorecards |
-| Weekly Tracker | Weekly Sheet | Weekly activity targets and cumulative tracking |
-
-## How the Model Works
-
-Everything is **inverse-driven**: you set your ARR target and the engine calculates backwards through conversion rates to tell you exactly how many leads, MQAs, SQLs, and deals you need.
-
-Change any input → every chart, table, and metric recalculates instantly.
-
-### Key Metrics
-- **LTV:CAC** — Customer lifetime value vs acquisition cost
-- **CAC Payback** — Months to recover acquisition cost
-- **Magic Number** — Net new ARR / S&M spend (efficiency)
-- **Rule of 40** — Growth rate + profit margin (SaaS health)
-- **Burn Multiple** — Cash burn / net new ARR
-
-## Tech Stack
-- React 18 + Vite
-- Recharts (data visualization)
-- Framer Motion (animations)
+### Stack
+- React + Vite
 - Tailwind CSS
-- Lucide Icons
+- Chart.js for data visualization
+- Pure computation engine (`engine.js`) — no external data dependencies
+
+---
+
+## Repository Structure
+
+```
+netherops-site/          Marketing site, GRA methodology content
+├── index.html           Home page
+├── spine.html           The GRA Spine
+├── sovereignty.html     Data sovereignty
+├── tools/
+│   └── opptycon/        Built engine (from opptycon repo)
+└── ...
+
+opptycon/                Revenue simulation engine
+├── src/
+│   ├── App.jsx          Main application (UI + state)
+│   ├── engine.js        Pure computation engine
+│   ├── tokens.js        Design system tokens
+│   └── index.css        Base styles
+├── vite.config.js
+├── tailwind.config.js
+└── package.json
+```
+
+---
+
+## Design System
+
+NetherOps uses the **BigFilter Signal Architecture** design system — derived from scorecard.io.
+
+- **Display**: TWK Everett Light (300) — self-hosted
+- **Functional**: Chivo Mono — Google Fonts
+- **Ground**: Warm light gray `#EBEBEB`
+- **Ink**: Near-black `#111111`
+- **Accent**: Black CTA `#111111` + Lime attention `#C8FF6E`
+
+See [DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md) for the full token spec.
+
+---
+
+## Development
+
+### Prerequisites
+- Node.js 18+
+- npm
+
+### OpptyCon (local development)
+```bash
+cd opptycon
+npm install
+npm run dev      # dev server at localhost:5173
+npm run build    # production build → dist/
+```
+
+### Deploy
+```bash
+# Build OpptyCon → copy to site → push
+cd opptycon && npm run build
+cd ../netherops-site
+rm -rf tools/opptycon && mkdir -p tools/opptycon
+cp -r ../opptycon/dist/* tools/opptycon/
+git add -A && git commit -m "Deploy OpptyCon update" && git push
+```
+
+Netlify auto-deploys from `main`.
+
+---
+
+## Links
+
+- **Site**: [netherops.io](https://netherops.io)
+- **OpptyCon**: [netherops.io/tools/opptycon](https://netherops.io/tools/opptycon)
+
+---
+
+*Revenue isn't a metric. It's a system. Govern it.*
