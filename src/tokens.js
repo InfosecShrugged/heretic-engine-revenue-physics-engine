@@ -1,47 +1,55 @@
-// ─── Heretic Engine Design System Tokens — Scorecard.io Light ───
-// Shared design language across all Heretic Engine properties
+// ─── NetherOps OpptyCon Design System Tokens — BigFilter Signal Architecture ───
+// Shared design language across all NetherOps properties
 
 export const colors = {
   // Backgrounds
-  bg:        '#f0f0f0',
-  bgAlt:     '#f8f8f8',
-  surface:   '#ffffff',
-  surfaceHover: '#f8f8f8',
+  bg:        '#EBEBEB',
+  bgAlt:     '#F4F4F2',
+  surface:   '#FFFFFF',
+  surfaceHover: '#F4F4F2',
 
   // Borders
-  border:    '#d9d9d9',
-  borderL:   '#ccc',
+  border:    'rgba(0, 0, 0, 0.13)',
+  borderL:   'rgba(0, 0, 0, 0.07)',
 
   // Brand accent
-  accent:    '#ff6e3e',
-  accentDim: 'rgba(255, 110, 62, 0.10)',
-  accentGlow: 'rgba(255, 110, 62, 0.20)',
+  accent:    '#111111',
+  accentDim: 'rgba(0, 0, 0, 0.06)',
+  accentGlow: 'rgba(0, 0, 0, 0.12)',
+
+  // Lime (attention color)
+  lime:      '#C8FF6E',
+  limeDim:   'rgba(200, 255, 110, 0.15)',
 
   // Semantic
-  green:     '#2d8a56',
-  greenDim:  'rgba(45, 138, 86, 0.10)',
-  amber:     '#c07800',
-  amberDim:  'rgba(192, 120, 0, 0.10)',
-  rose:      '#d42e4a',
-  roseDim:   'rgba(212, 46, 74, 0.10)',
-  violet:    '#7c4ddb',
-  violetDim: 'rgba(124, 77, 219, 0.10)',
-  blue:      '#2563eb',
+  green:     '#2E7D32',
+  greenDim:  'rgba(46, 125, 50, 0.10)',
+  amber:     '#E89F0C',
+  amberDim:  'rgba(232, 159, 12, 0.10)',
+  rose:      '#D44C38',
+  roseDim:   'rgba(212, 76, 56, 0.10)',
+  violet:    '#6D28D9',
+  violetDim: 'rgba(109, 40, 217, 0.10)',
+  blue:      '#2563EB',
   blueDim:   'rgba(37, 99, 235, 0.10)',
 
   // Typography
-  text:      '#1a1918',
-  muted:     '#747474',
-  dim:       '#a3a3a3',
+  text:      '#111111',
+  muted:     '#555555',
+  dim:       '#909090',
+
+  // Inverse
+  inv:       '#F5F5F3',
+  invMid:    '#AAAAAA',
 
   // Chart palette
-  chart: ['#ff6e3e', '#2d8a56', '#c07800', '#d42e4a', '#7c4ddb', '#2563eb', '#b45bc0', '#1a8a7a'],
+  chart: ['#111111', '#2E7D32', '#2563EB', '#6D28D9', '#E89F0C', '#D44C38', '#C8FF6E', '#0891B2'],
 };
 
 export const fonts = {
-  display: "'Oxanium', system-ui, sans-serif",
-  body:    "'Oxanium', system-ui, sans-serif",
-  mono:    "'Space Mono', monospace",
+  display: "'TWK Everett', 'Helvetica Neue', sans-serif",
+  body:    "'TWK Everett', 'Helvetica Neue', sans-serif",
+  mono:    "'Chivo Mono', 'Space Mono', monospace",
 };
 
 export const radii = {
@@ -64,10 +72,10 @@ export const spacing = {
 };
 
 export const shadows = {
-  card: '0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2)',
-  elevated: '0 4px 24px rgba(0, 0, 0, 0.4)',
-  glow: '0 0 40px rgba(34, 211, 238, 0.15)',
-  glowStrong: '0 0 80px rgba(34, 211, 238, 0.25)',
+  card: '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+  elevated: '0 4px 16px rgba(0, 0, 0, 0.08)',
+  glow: '0 0 40px rgba(200, 255, 110, 0.15)',
+  glowStrong: '0 0 80px rgba(200, 255, 110, 0.25)',
 };
 
-export const LOGO_URL = "https://images.squarespace-cdn.com/content/v1/63d155fa93aba8529a061c8c/14b364ab-fc95-4c2d-ba6c-bca81e58a50f/HERETICS-LO.png?format=300w";
+export const LOGO_URL = "/netherops-logo.svg";

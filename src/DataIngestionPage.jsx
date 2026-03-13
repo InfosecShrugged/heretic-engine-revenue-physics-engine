@@ -1,4 +1,4 @@
-// ─── Revenue Physics Engine — Data Ingestion Page ───
+// ─── NetherOps OpptyCon — Data Ingestion Page ───
 // CSV upload, Google Sheets connection, manual entry, actuals history.
 // Built against adapters.js + actuals.js interfaces.
 
@@ -10,14 +10,18 @@ import { actualsStore, adapterConfigStore } from './actuals';
 
 // ─── TOKENS (match App.jsx) ───
 const C = {
-  bg:"#f0f0f0", bgAlt:"#f8f8f8", card:"#ffffff", border:"#d9d9d9", borderL:"#ccc",
-  accent:"#ff6e3e", accentD:"rgba(255,110,62,0.10)",
-  green:"#2d8a56", greenD:"rgba(45,138,86,0.10)",
-  amber:"#c07800", amberD:"rgba(192,120,0,0.10)",
-  rose:"#d42e4a", roseD:"rgba(212,46,74,0.10)",
-  violet:"#7c4ddb", violetD:"rgba(124,77,219,0.10)",
-  blue:"#2563eb", blueD:"rgba(37,99,235,0.10)",
-  text:"#1a1918", muted:"#747474", dim:"#a3a3a3",
+  bg:"#EBEBEB", bgAlt:"#F4F4F2", card:"#FFFFFF",
+  border:"rgba(0,0,0,0.13)", borderL:"rgba(0,0,0,0.07)",
+  accent:"#111111", accentD:"rgba(0,0,0,0.06)",
+  lime:"#C8FF6E", limeD:"rgba(200,255,110,0.15)",
+  green:"#2E7D32", greenD:"rgba(46,125,50,0.10)",
+  amber:"#E89F0C", amberD:"rgba(232,159,12,0.10)",
+  rose:"#D44C38", roseD:"rgba(212,76,56,0.10)",
+  violet:"#6D28D9", violetD:"rgba(109,40,217,0.10)",
+  blue:"#2563EB", blueD:"rgba(37,99,235,0.10)",
+  text:"#111111", muted:"#555555", dim:"#909090",
+  inv:"#F5F5F3", invMid:"#AAAAAA", code:"#C8FF6E",
+  ch:["#111111","#2E7D32","#2563EB","#6D28D9","#E89F0C","#D44C38","#C8FF6E","#0891B2"],
 };
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -68,7 +72,7 @@ function SectionHeader({ icon: Icon, label, sub }) {
     <div style={{ marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         {Icon && <Icon size={14} style={{ color: C.accent }} />}
-        <span style={{ fontSize: 12, fontWeight: 700, color: C.text, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'Oxanium',sans-serif" }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.text, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'TWK Everett',sans-serif" }}>{label}</span>
       </div>
       {sub && <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{sub}</div>}
     </div>
@@ -82,7 +86,7 @@ function TabButton({ active, label, icon: Icon, onClick }) {
       border: `1px solid ${active ? C.accent : C.border}`,
       background: active ? C.accentD : C.card, borderRadius: 0, cursor: 'pointer',
       color: active ? C.accent : C.muted, fontSize: 11, fontWeight: 600,
-      fontFamily: "'Oxanium',sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase',
+      fontFamily: "'TWK Everett',sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase',
       transition: 'all 150ms ease',
     }}>
       {Icon && <Icon size={13} />}{label}
@@ -101,7 +105,7 @@ function StatusBadge({ type, label }) {
   return (
     <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
       padding: '3px 8px', borderRadius: 3, background: s.bg, color: s.color, border: s.border,
-      fontFamily: "'Oxanium',sans-serif" }}>
+      fontFamily: "'TWK Everett',sans-serif" }}>
       {label}
     </span>
   );
@@ -230,11 +234,11 @@ function CSVUploadTab({ onImport }) {
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <select value={period.month} onChange={e => setPeriod(p => ({ ...p, month: parseInt(e.target.value) }))}
-                  style={{ padding: '5px 8px', fontSize: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 0, color: C.text, fontFamily: "'Space Mono',monospace" }}>
+                  style={{ padding: '5px 8px', fontSize: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 0, color: C.text, fontFamily: "'Chivo Mono',monospace" }}>
                   {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
                 </select>
                 <input type="number" value={period.year} onChange={e => setPeriod(p => ({ ...p, year: parseInt(e.target.value) }))}
-                  style={{ width: 70, padding: '5px 8px', fontSize: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 0, color: C.text, fontFamily: "'Space Mono',monospace" }} />
+                  style={{ width: 70, padding: '5px 8px', fontSize: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 0, color: C.text, fontFamily: "'Chivo Mono',monospace" }} />
               </div>
             </div>
           )}
@@ -250,13 +254,13 @@ function CSVUploadTab({ onImport }) {
               <div key={header} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 120px', padding: '6px 14px',
                 borderBottom: i < parsed.headers.length - 1 ? `1px solid ${C.border}` : 'none',
                 alignItems: 'center', background: mapping[header] ? `${C.green}05` : 'transparent' }}>
-                <span style={{ fontSize: 12, color: C.text, fontFamily: "'Space Mono',monospace", fontWeight: 500 }}>{header}</span>
+                <span style={{ fontSize: 12, color: C.text, fontFamily: "'Chivo Mono',monospace", fontWeight: 500 }}>{header}</span>
                 <select value={mapping[header] || ''} onChange={e => updateMapping(header, e.target.value)}
                   style={{ padding: '4px 6px', fontSize: 11, background: C.card, border: `1px solid ${mapping[header] ? C.green + '40' : C.border}`,
-                    borderRadius: 0, color: mapping[header] ? C.green : C.muted, fontFamily: "'Oxanium',sans-serif" }}>
+                    borderRadius: 0, color: mapping[header] ? C.green : C.muted, fontFamily: "'TWK Everett',sans-serif" }}>
                   {ALL_FIELDS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </select>
-                <span style={{ fontSize: 11, color: C.dim, fontFamily: "'Space Mono',monospace", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 11, color: C.dim, fontFamily: "'Chivo Mono',monospace", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {parsed.rows[0]?.[header] || '—'}
                 </span>
               </div>
@@ -267,13 +271,13 @@ function CSVUploadTab({ onImport }) {
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
             <button onClick={() => { setStep('upload'); setFile(null); setParsed(null); setStatus(null); }}
               style={{ padding: '8px 16px', fontSize: 11, fontWeight: 600, background: 'transparent', border: `1px solid ${C.border}`,
-                borderRadius: 0, color: C.muted, cursor: 'pointer', fontFamily: "'Oxanium',sans-serif" }}>
+                borderRadius: 0, color: C.muted, cursor: 'pointer', fontFamily: "'TWK Everett',sans-serif" }}>
               Cancel
             </button>
             <button onClick={doImport} disabled={mappedCount === 0}
               style={{ padding: '8px 20px', fontSize: 11, fontWeight: 700, background: mappedCount > 0 ? C.accent : C.dim,
                 border: 'none', borderRadius: 0, color: '#fff', cursor: mappedCount > 0 ? 'pointer' : 'not-allowed',
-                fontFamily: "'Oxanium',sans-serif", textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                fontFamily: "'TWK Everett',sans-serif", textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Import {mappedCount} field{mappedCount !== 1 ? 's' : ''}
             </button>
           </div>
@@ -344,10 +348,10 @@ function SheetsTab({ onImport }) {
         <input type="text" placeholder="https://docs.google.com/spreadsheets/d/..." value={url}
           onChange={e => setUrl(e.target.value)}
           style={{ flex: 1, padding: '9px 12px', fontSize: 12, background: C.card, border: `1px solid ${C.border}`,
-            borderRadius: 0, color: C.text, fontFamily: "'Space Mono',monospace", outline: 'none' }} />
+            borderRadius: 0, color: C.text, fontFamily: "'Chivo Mono',monospace", outline: 'none' }} />
         <button onClick={handleConnect} disabled={loading}
           style={{ padding: '9px 20px', fontSize: 11, fontWeight: 700, background: C.accent, border: 'none',
-            borderRadius: 0, color: '#fff', cursor: 'pointer', fontFamily: "'Oxanium',sans-serif",
+            borderRadius: 0, color: '#fff', cursor: 'pointer', fontFamily: "'TWK Everett',sans-serif",
             textTransform: 'uppercase', letterSpacing: '0.06em', opacity: loading ? 0.6 : 1 }}>
           {loading ? 'Fetching…' : 'Connect'}
         </button>
@@ -362,14 +366,14 @@ function SheetsTab({ onImport }) {
             {parsed.headers.map(h => (
               <span key={h} style={{ fontSize: 10, padding: '3px 8px', background: mapping[h] ? C.greenD : C.bgAlt,
                 border: `1px solid ${mapping[h] ? C.green + '30' : C.border}`, borderRadius: 3,
-                color: mapping[h] ? C.green : C.muted, fontFamily: "'Space Mono',monospace" }}>
+                color: mapping[h] ? C.green : C.muted, fontFamily: "'Chivo Mono',monospace" }}>
                 {h}{mapping[h] ? ` → ${mapping[h].split('.').pop()}` : ''}
               </span>
             ))}
           </div>
           <button onClick={doImport}
             style={{ padding: '8px 20px', fontSize: 11, fontWeight: 700, background: C.accent, border: 'none',
-              borderRadius: 0, color: '#fff', cursor: 'pointer', fontFamily: "'Oxanium',sans-serif",
+              borderRadius: 0, color: '#fff', cursor: 'pointer', fontFamily: "'TWK Everett',sans-serif",
               textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Import Data
           </button>
@@ -454,14 +458,14 @@ function ManualEntryTab({ onImport }) {
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 20 }}>
         <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase' }}>Period:</span>
         <select value={period.month} onChange={e => setPeriod(p => ({ ...p, month: parseInt(e.target.value) }))}
-          style={{ padding: '6px 10px', fontSize: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 0, color: C.text, fontFamily: "'Space Mono',monospace" }}>
+          style={{ padding: '6px 10px', fontSize: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 0, color: C.text, fontFamily: "'Chivo Mono',monospace" }}>
           {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
         </select>
         <input type="number" value={period.year} onChange={e => setPeriod(p => ({ ...p, year: parseInt(e.target.value) }))}
-          style={{ width: 70, padding: '6px 10px', fontSize: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 0, color: C.text, fontFamily: "'Space Mono',monospace" }} />
+          style={{ width: 70, padding: '6px 10px', fontSize: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 0, color: C.text, fontFamily: "'Chivo Mono',monospace" }} />
         <button onClick={loadExisting}
           style={{ marginLeft: 8, padding: '6px 12px', fontSize: 10, fontWeight: 600, background: 'transparent',
-            border: `1px solid ${C.border}`, borderRadius: 0, color: C.muted, cursor: 'pointer', fontFamily: "'Oxanium',sans-serif" }}>
+            border: `1px solid ${C.border}`, borderRadius: 0, color: C.muted, cursor: 'pointer', fontFamily: "'TWK Everett',sans-serif" }}>
           Load Existing
         </button>
       </div>
@@ -487,7 +491,7 @@ function ManualEntryTab({ onImport }) {
                     onChange={e => updateField(f.key, e.target.value)}
                     step={f.type === 'currency' ? 1000 : f.type === 'percent' ? 0.5 : 1}
                     style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: C.text,
-                      fontSize: 13, fontFamily: "'Space Mono',monospace", width: '100%' }} />
+                      fontSize: 13, fontFamily: "'Chivo Mono',monospace", width: '100%' }} />
                   {f.type === 'percent' && <span style={{ color: C.dim, fontSize: 11 }}>%</span>}
                 </div>
               </div>
@@ -500,13 +504,13 @@ function ManualEntryTab({ onImport }) {
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button onClick={() => { setForm({}); setStatus(null); }}
           style={{ padding: '8px 16px', fontSize: 11, fontWeight: 600, background: 'transparent', border: `1px solid ${C.border}`,
-            borderRadius: 0, color: C.muted, cursor: 'pointer', fontFamily: "'Oxanium',sans-serif" }}>
+            borderRadius: 0, color: C.muted, cursor: 'pointer', fontFamily: "'TWK Everett',sans-serif" }}>
           Clear
         </button>
         <button onClick={doSave} disabled={filledCount === 0}
           style={{ padding: '8px 20px', fontSize: 11, fontWeight: 700, background: filledCount > 0 ? C.accent : C.dim,
             border: 'none', borderRadius: 0, color: '#fff', cursor: filledCount > 0 ? 'pointer' : 'not-allowed',
-            fontFamily: "'Oxanium',sans-serif", textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            fontFamily: "'TWK Everett',sans-serif", textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Save {filledCount} Field{filledCount !== 1 ? 's' : ''}
         </button>
       </div>
@@ -570,13 +574,13 @@ function HistoryTab({ actuals, onClear, onDelete, onExport }) {
           return (
             <div key={key} style={{ display: 'grid', gridTemplateColumns: '80px repeat(5, 1fr) 40px', padding: '8px 14px',
               background: C.card, borderTop: `1px solid ${C.border}`, alignItems: 'center' }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.text, fontFamily: "'Space Mono',monospace" }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: C.text, fontFamily: "'Chivo Mono',monospace" }}>
                 {MONTHS[snap.period.month - 1]} {String(snap.period.year).slice(2)}
               </span>
-              <span style={{ fontSize: 12, color: C.text, fontFamily: "'Space Mono',monospace" }}>{fN(snap.funnel?.dealsWon)}</span>
-              <span style={{ fontSize: 12, color: C.text, fontFamily: "'Space Mono',monospace" }}>{fmt(snap.revenue?.newLogoARR)}</span>
-              <span style={{ fontSize: 12, color: C.text, fontFamily: "'Space Mono',monospace" }}>{fmt(snap.pipeline?.total?.value)}</span>
-              <span style={{ fontSize: 12, color: C.text, fontFamily: "'Space Mono',monospace" }}>{fN(snap.funnel?.mqls)}</span>
+              <span style={{ fontSize: 12, color: C.text, fontFamily: "'Chivo Mono',monospace" }}>{fN(snap.funnel?.dealsWon)}</span>
+              <span style={{ fontSize: 12, color: C.text, fontFamily: "'Chivo Mono',monospace" }}>{fmt(snap.revenue?.newLogoARR)}</span>
+              <span style={{ fontSize: 12, color: C.text, fontFamily: "'Chivo Mono',monospace" }}>{fmt(snap.pipeline?.total?.value)}</span>
+              <span style={{ fontSize: 12, color: C.text, fontFamily: "'Chivo Mono',monospace" }}>{fN(snap.funnel?.mqls)}</span>
               <span style={{ fontSize: 10, color: C.dim }}>{snap.source}</span>
               <button onClick={() => onDelete(snap.period.year, snap.period.month)}
                 style={{ background: 'transparent', border: 'none', color: C.dim, cursor: 'pointer', padding: 2 }}
@@ -593,13 +597,13 @@ function HistoryTab({ actuals, onClear, onDelete, onExport }) {
         <button onClick={onExport}
           style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', fontSize: 10, fontWeight: 600,
             background: 'transparent', border: `1px solid ${C.border}`, borderRadius: 0, color: C.muted, cursor: 'pointer',
-            fontFamily: "'Oxanium',sans-serif" }}>
+            fontFamily: "'TWK Everett',sans-serif" }}>
           <Download size={12} /> Export JSON
         </button>
         <button onClick={onClear}
           style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', fontSize: 10, fontWeight: 600,
             background: 'transparent', border: `1px solid ${C.rose}40`, borderRadius: 0, color: C.rose, cursor: 'pointer',
-            fontFamily: "'Oxanium',sans-serif" }}>
+            fontFamily: "'TWK Everett',sans-serif" }}>
           <Trash2 size={12} /> Clear All
         </button>
       </div>
@@ -636,7 +640,7 @@ export default function DataIngestionPage({ onDataImported, mobile }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `rpe-actuals-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `opptycon-actuals-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -649,7 +653,7 @@ export default function DataIngestionPage({ onDataImported, mobile }) {
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
           <Zap size={16} style={{ color: C.accent }} />
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: C.text, margin: 0, fontFamily: "'Oxanium',sans-serif" }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: C.text, margin: 0, fontFamily: "'TWK Everett',sans-serif" }}>
             Data Sources
           </h2>
           {summary.count > 0 && <StatusBadge type="success" label={`${summary.count} periods loaded`} />}

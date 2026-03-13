@@ -1,4 +1,4 @@
-// ─── Revenue Physics Engine — Actuals Store + Comparator ───
+// ─── NetherOps OpptyCon — Actuals Store + Comparator ───
 // Stores observed data alongside plan projections.
 // Provides plan-vs-actual comparison for governance verdicts.
 //
@@ -7,8 +7,8 @@
 //   actualsStore.save(snapshot);
 //   const comparison = comparePlanToActuals(model, actualsStore.getAll());
 
-const STORAGE_KEY = 'rpe_actuals';
-const CONFIG_KEY = 'rpe_adapter_config';
+const STORAGE_KEY = 'opptycon_actuals';
+const CONFIG_KEY = 'opptycon_adapter_config';
 
 // ════════════════════════════════════════════════════════════
 // ACTUALS STORE (localStorage-backed, Phase 1)

@@ -15,17 +15,20 @@ import SpinePage from './SpinePage';
 import DataIngestionPage from './DataIngestionPage';
 import AlphaGate, { hasAlphaAccess } from './AlphaGate';
 
-// ─── TOKENS — Scorecard.io Light Design System ───
+// ─── TOKENS — BigFilter Signal Architecture ───
 const C = {
-  bg:"#f0f0f0", bgAlt:"#f8f8f8", card:"#ffffff", border:"#d9d9d9", borderL:"#ccc",
-  accent:"#ff6e3e", accentD:"rgba(255,110,62,0.10)",
-  green:"#2d8a56", greenD:"rgba(45,138,86,0.10)",
-  amber:"#c07800", amberD:"rgba(192,120,0,0.10)",
-  rose:"#d42e4a", roseD:"rgba(212,46,74,0.10)",
-  violet:"#7c4ddb", violetD:"rgba(124,77,219,0.10)",
-  blue:"#2563eb", blueD:"rgba(37,99,235,0.10)",
-  text:"#1a1918", muted:"#747474", dim:"#a3a3a3",
-  ch:["#ff6e3e","#2d8a56","#c07800","#d42e4a","#7c4ddb","#2563eb","#b45bc0","#1a8a7a"],
+  bg:"#EBEBEB", bgAlt:"#F4F4F2", card:"#FFFFFF",
+  border:"rgba(0,0,0,0.13)", borderL:"rgba(0,0,0,0.07)",
+  accent:"#111111", accentD:"rgba(0,0,0,0.06)",
+  lime:"#C8FF6E", limeD:"rgba(200,255,110,0.15)",
+  green:"#2E7D32", greenD:"rgba(46,125,50,0.10)",
+  amber:"#E89F0C", amberD:"rgba(232,159,12,0.10)",
+  rose:"#D44C38", roseD:"rgba(212,76,56,0.10)",
+  violet:"#6D28D9", violetD:"rgba(109,40,217,0.10)",
+  blue:"#2563EB", blueD:"rgba(37,99,235,0.10)",
+  text:"#111111", muted:"#555555", dim:"#909090",
+  inv:"#F5F5F3", invMid:"#AAAAAA", code:"#C8FF6E",
+  ch:["#111111","#2E7D32","#2563EB","#6D28D9","#E89F0C","#D44C38","#C8FF6E","#0891B2"],
 };
 
 const fmt=(n,d=0)=>{if(n==null||isNaN(n))return"$0";const s=n<0?"-":"",a=Math.abs(n);if(a>=1e6)return`${s}$${(a/1e6).toFixed(1)}M`;if(a>=1e3)return`${s}$${(a/1e3).toFixed(d>0?d:0)}K`;return`${s}$${a.toFixed(d)}`;};
@@ -68,7 +71,7 @@ const Input=({label,value,onChange,prefix="",suffix="",min,max,step=1,compact})=
       {prefix&&<span style={{color:C.dim,fontSize:13}}>{prefix}</span>}
       <input type="number" value={value} min={min} max={max} step={step}
         onChange={e=>onChange(parseFloat(e.target.value)||0)}
-        style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Space Mono',monospace",width:"100%"}}/>
+        style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%"}}/>
       {suffix&&<span style={{color:C.dim,fontSize:11}}>{suffix}</span>}
     </div>
   </div>
@@ -343,7 +346,7 @@ const TT=({active,payload,label})=>{
   return(<div style={{background:"#d9d9d9",border:`1px solid ${C.borderL}`,borderRadius:0,padding:"10px 14px",boxShadow:"none"}}>
     <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:6}}>{label}</div>
     {payload.map((p,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.muted,marginBottom:2}}>
-      <div style={{width:7,height:7,borderRadius:"50%",background:p.color}}/>{p.name}: <span style={{color:C.text,fontWeight:600,fontFamily:"'Space Mono',monospace"}}>{typeof p.value==="number"&&Math.abs(p.value)>100?fmt(p.value):fN(p.value)}</span>
+      <div style={{width:7,height:7,borderRadius:"50%",background:p.color}}/>{p.name}: <span style={{color:C.text,fontWeight:600,fontFamily:"'Chivo Mono',monospace"}}>{typeof p.value==="number"&&Math.abs(p.value)>100?fmt(p.value):fN(p.value)}</span>
     </div>))}
   </div>);
 };
@@ -357,7 +360,7 @@ const Badge=({label,status="neutral"})=>{
 const SegmentToggle=({options,value,onChange})=>(
   <div style={{display:"flex",gap:2,padding:3,background:C.bg,borderRadius:0,border:`1px solid ${C.border}`}}>
     {options.map(o=>(
-      <button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"6px 14px",borderRadius:0,border:"none",background:value===o.value?C.accentD:"transparent",color:value===o.value?C.accent:C.dim,cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"'Oxanium',sans-serif",textTransform:"uppercase",letterSpacing:"0.04em",transition:"all 0.15s"}}>{o.label}</button>
+      <button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"6px 14px",borderRadius:0,border:"none",background:value===o.value?C.accentD:"transparent",color:value===o.value?C.accent:C.dim,cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"'TWK Everett',sans-serif",textTransform:"uppercase",letterSpacing:"0.04em",transition:"all 0.15s"}}>{o.label}</button>
     ))}
   </div>
 );
@@ -396,7 +399,7 @@ const NAV_SECTIONS=[
   ]},
 ];
 
-const LOGO_URL = "https://images.squarespace-cdn.com/content/v1/63d155fa93aba8529a061c8c/14b364ab-fc95-4c2d-ba6c-bca81e58a50f/HERETICS-LO.png?format=300w";
+const LOGO_URL = "/netherops-logo.svg";
 
 // ════════════════════════════════════════════════════════════
 // DASHBOARD
@@ -439,23 +442,23 @@ function DashboardPage({model,inputs,onInfoClick,mobile,tablet}){
     <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:mobile?8:10,marginBottom:18}}>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.accent}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → SQO</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.green}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → Won</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.green,fontFamily:"'Space Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.amber}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / SQO</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.violet}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / Won</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.violet,fontFamily:"'Space Mono',monospace"}}>{fmt(s.costPerWon)}</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.costPerWon)}</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.text}`,gridColumn:mobile?"span 2":"auto"}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Required Inquiries</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
       </div>
     </div>
     <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:16}}>
@@ -496,27 +499,27 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10}}>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Inquiry → SQO</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>1 SQO per {Math.round(100/s.inquiryToSqoRate)} inquiries</div>
         </div>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Inquiry → Won</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Space Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>1 deal per {Math.round(100/s.inquiryToWonRate)} inquiries</div>
         </div>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Cost / SQO</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>Programmatic spend ÷ SQOs</div>
         </div>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Cost / Won</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Space Mono',monospace"}}>{fmt(s.costPerWon)}</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.costPerWon)}</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>Programmatic spend ÷ deals</div>
         </div>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Required Inquiries</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>To hit {fmt(s.targetARR)} new ARR</div>
         </div>
       </div>
@@ -536,7 +539,7 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
                 <Badge label={f.status} status={f.status}/>
                 {f.def && <span title={f.def} style={{fontSize:10,color:C.dim,cursor:"help"}}>ⓘ</span>}
               </div>
-              <span style={{fontSize:14,fontWeight:700,color:f.status==="great"?C.green:f.status==="good"?C.accent:C.rose,fontFamily:"'Space Mono',monospace"}}>{f.rate}%</span>
+              <span style={{fontSize:14,fontWeight:700,color:f.status==="great"?C.green:f.status==="good"?C.accent:C.rose,fontFamily:"'Chivo Mono',monospace"}}>{f.rate}%</span>
             </div>
             <div style={{position:"relative",height:20,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <div style={{position:"absolute",left:`${f.bench.good/f.bench.great*100}%`,top:0,bottom:0,width:1,background:C.amber,zIndex:2}}/>
@@ -556,7 +559,7 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
               <span style={{fontSize:10,fontWeight:600,color:C.muted}}>Meeting Show Rate</span>
               <span title="SQL→Meeting tracks held meetings. Show rate converts set→held internally." style={{fontSize:10,color:C.dim,cursor:"help",marginLeft:4}}>ⓘ</span>
             </div>
-            <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{s.meetingShowRate}%</span>
+            <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{s.meetingShowRate}%</span>
           </div>
           <div style={{fontSize:8,color:C.dim,marginTop:2}}>
             {fN(s.meetingsSetNeeded)} meetings set → {fN(s.meetingsNeeded)} held ({100-s.meetingShowRate}% no-show/cancel)
@@ -585,12 +588,12 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
               <div style={{display:"flex",alignItems:"center",gap:3,background:C.bg,borderRadius:0,padding:"3px 6px"}}>
                 <span style={{fontSize:8,color:C.amber}}>G</span>
                 <input type="number" value={inputs.funnelBenchmarks[key].good} onChange={e=>setInputs(p=>({...p,funnelBenchmarks:{...p.funnelBenchmarks,[key]:{...p.funnelBenchmarks[key],good:parseInt(e.target.value)||0}}}))}
-                  style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'Space Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
+                  style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'Chivo Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
               </div>
               <div style={{display:"flex",alignItems:"center",gap:3,background:C.bg,borderRadius:0,padding:"3px 6px"}}>
                 <span style={{fontSize:8,color:C.green}}>★</span>
                 <input type="number" value={inputs.funnelBenchmarks[key].great} onChange={e=>setInputs(p=>({...p,funnelBenchmarks:{...p.funnelBenchmarks,[key]:{...p.funnelBenchmarks[key],great:parseInt(e.target.value)||0}}}))}
-                  style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'Space Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
+                  style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'Chivo Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
               </div>
             </div>
           ))}
@@ -627,7 +630,7 @@ function CACBreakdownPage({model,inputs,onInfoClick}){
         {Object.entries(cacBreakdown).map(([k,v],i)=>(
           <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:8,height:8,borderRadius:"50%",background:C.ch[i]}}/><span style={{fontSize:11,color:C.text}}>{v.label}</span></div>
-            <div style={{textAlign:"right"}}><div style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fmt(v.spend)}</div><div style={{fontSize:9,color:C.dim}}>{v.pctOfTotal.toFixed(0)}% • {fmt(v.perDeal)}/deal</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(v.spend)}</div><div style={{fontSize:9,color:C.dim}}>{v.pctOfTotal.toFixed(0)}% • {fmt(v.perDeal)}/deal</div></div>
           </div>
         ))}
       </Card>
@@ -637,14 +640,14 @@ function CACBreakdownPage({model,inputs,onInfoClick}){
           <thead><tr>{["Channel","Spend","Deals","CAC","$/MQL","$/SQL","$/SQO","Payback","LTV:CAC"].map(h=><th key={h} style={{textAlign:"right",padding:"7px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>{h}</th>)}</tr></thead>
           <tbody>{channels.map((c,i)=><tr key={c.name}>
             <td style={{padding:"7px",textAlign:"right"}}><div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}><div style={{width:5,height:5,borderRadius:"50%",background:C.ch[i]}}/><span style={{color:C.text,fontWeight:600}}>{c.name}</span></div></td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(c.spend)}</td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fN(c.deals)}</td>
-            <td style={{padding:"7px",color:c.cac<s.blendedCAC?C.green:C.rose,fontWeight:700,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(c.cac)}</td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(c.costPerMql)}</td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(c.costPerSql)}</td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(c.costPerSqo)}</td>
-            <td style={{padding:"7px",color:c.cacPayback<18?C.green:C.rose,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{c.cacPayback.toFixed(1)}mo</td>
-            <td style={{padding:"7px",color:c.ltvCac>3?C.green:C.amber,fontWeight:700,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{c.ltvCac.toFixed(1)}x</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.spend)}</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fN(c.deals)}</td>
+            <td style={{padding:"7px",color:c.cac<s.blendedCAC?C.green:C.rose,fontWeight:700,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.cac)}</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.costPerMql)}</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.costPerSql)}</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.costPerSqo)}</td>
+            <td style={{padding:"7px",color:c.cacPayback<18?C.green:C.rose,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{c.cacPayback.toFixed(1)}mo</td>
+            <td style={{padding:"7px",color:c.ltvCac>3?C.green:C.amber,fontWeight:700,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{c.ltvCac.toFixed(1)}x</td>
           </tr>)}</tbody>
         </table></div>
       </Card>
@@ -690,7 +693,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
     <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",borderRadius:0,marginBottom:20,
       background:`${healthColor}08`,border:`1px solid ${healthColor}20`}}>
       <div style={{padding:"6px 14px",borderRadius:0,background:healthColor,color:"#fff",fontSize:11,fontWeight:700}}>{healthLabel}</div>
-      <div style={{fontSize:13,color:C.text}}>Total S&M: <strong style={{fontFamily:"'Space Mono',monospace"}}>{fmt(totalSandM)}</strong> = <strong>{sandMPctRev.toFixed(1)}%</strong> of revenue</div>
+      <div style={{fontSize:13,color:C.text}}>Total S&M: <strong style={{fontFamily:"'Chivo Mono',monospace"}}>{fmt(totalSandM)}</strong> = <strong>{sandMPctRev.toFixed(1)}%</strong> of revenue</div>
       <div style={{marginLeft:"auto",fontSize:10,color:C.dim}}>Benchmark: 35-55% growth stage • &gt;60% = burn risk</div>
     </div>
 
@@ -720,7 +723,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
                 {si.isFloorBound && <span style={{fontSize:8,color:C.amber,fontWeight:700}}>▲ FLOOR</span>}
                 {si.headcount && <span style={{fontSize:9,color:C.dim}}>({si.headcount} × {fmt(si.perHead)})</span>}
               </div>
-              <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(si.amount)}</span>
+              <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(si.amount)}</span>
             </div>
             <div style={{height:16,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <div style={{height:"100%",width:`${barW}%`,background:si.isFloorBound?`linear-gradient(90deg,${C.accent},${C.amber})`:C.accent,borderRadius:0,opacity:0.7}}/>
@@ -731,7 +734,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
         <div style={{height:1,background:C.border,margin:"10px 0"}}/>
         <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}>
           <span style={{fontSize:11,fontWeight:600,color:C.text}}>Total Sales</span>
-          <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(totalSales)}</span>
+          <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(totalSales)}</span>
         </div>
         <div style={{fontSize:9,color:C.dim}}>Formula ({inputs.salesOpexPct}% of rev): {fmt(p.salesOpex)} • Actual: {fmt(totalSales)}{p.salesIsFloorBound?" — headcount exceeds formula":""}</div>
       </Card>
@@ -755,7 +758,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
                 <span style={{fontSize:11,fontWeight:600,color:C.text}}>{item.name}</span>
                 {item.isFloor && <span style={{fontSize:8,color:C.amber,fontWeight:700}}>▲ FLOOR</span>}
               </div>
-              <span style={{fontSize:12,fontWeight:600,color:item.color,fontFamily:"'Space Mono',monospace"}}>{fmt(item.amount)}</span>
+              <span style={{fontSize:12,fontWeight:600,color:item.color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(item.amount)}</span>
             </div>
             <div style={{height:12,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:0,opacity:0.6}}/>
@@ -765,7 +768,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
         <div style={{height:1,background:C.border,margin:"10px 0"}}/>
         <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}>
           <span style={{fontSize:11,fontWeight:600,color:C.text}}>Total Marketing</span>
-          <span style={{fontSize:13,fontWeight:700,color:C.violet,fontFamily:"'Space Mono',monospace"}}>{fmt(totalMktg)}</span>
+          <span style={{fontSize:13,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(totalMktg)}</span>
         </div>
       </Card>
     </div>
@@ -787,7 +790,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           const maxVal = p.totalRevenue;
           const h = maxVal > 0 ? Math.abs(bar.value) / maxVal * 160 : 0;
           return(<div key={bar.label} style={{flex:1,textAlign:"center"}}>
-            <div style={{fontSize:10,fontWeight:700,color:bar.color,fontFamily:"'Space Mono',monospace",marginBottom:4}}>{fmt(bar.value)}</div>
+            <div style={{fontSize:10,fontWeight:700,color:bar.color,fontFamily:"'Chivo Mono',monospace",marginBottom:4}}>{fmt(bar.value)}</div>
             <div style={{height:h,background:bar.neg?`${bar.color}40`:bar.color,borderRadius:0,marginBottom:2,opacity:bar.full?1:0.7}}/>
             <div style={{fontSize:8,color:C.dim,marginTop:4,lineHeight:1.2}}>{bar.label}</div>
           </div>);
@@ -803,7 +806,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           <div style={{fontSize:10,color:C.muted}}>Step function — driven by funding stage, not revenue. Board-mandated comp bands.</div>
         </div>
         <div style={{padding:"6px 12px",borderRadius:0,background:`${C.rose}12`,border:`1px solid ${C.rose}30`}}>
-          <div style={{fontSize:14,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</div>
+          <div style={{fontSize:14,fontWeight:700,color:C.rose,fontFamily:"'Chivo Mono',monospace"}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</div>
           <div style={{fontSize:8,color:C.dim}}>of revenue</div>
         </div>
       </div>
@@ -816,7 +819,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           return(<button key={fs} onClick={()=>setInputs(prev=>({...prev,fundingStage:fs}))}
             style={{padding:"6px 14px",borderRadius:0,border:`1px solid ${isActive?C.accent:C.border}`,
               background:isActive?C.accentD:"transparent",color:isActive?C.accent:C.muted,
-              cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Oxanium',sans-serif"}}>
+              cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'TWK Everett',sans-serif"}}>
             {labels[fs]}
           </button>);
         })}
@@ -833,10 +836,10 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
             const sitsColor = l.sitsIn==="Sales"?C.accent:l.sitsIn==="Marketing"?C.violet:l.sitsIn==="R&D"?C.blue:C.dim;
             return(<tr key={l.role} style={{opacity:l.enabled?1:0.35}}>
               <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:l.enabled?C.text:C.dim}}>{l.role}</td>
-              <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(l.ote)}</td>
-              <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700,color:l.enabled?C.text:C.dim}}>{fmt(l.loaded)}</td>
+              <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(l.ote)}</td>
+              <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:l.enabled?C.text:C.dim}}>{fmt(l.loaded)}</td>
               <td style={{padding:"10px",textAlign:"right"}}><span style={{padding:"2px 8px",borderRadius:0,background:`${sitsColor}15`,color:sitsColor,fontSize:9,fontWeight:600}}>{l.sitsIn}</span></td>
-              <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:pctRev>5?C.rose:C.text}}>{l.enabled?pctRev.toFixed(1)+"%":"—"}</td>
+              <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:pctRev>5?C.rose:C.text}}>{l.enabled?pctRev.toFixed(1)+"%":"—"}</td>
               <td style={{padding:"10px",textAlign:"right"}}>
                 <button onClick={()=>setInputs(prev=>{
                   const roles = {...(prev.leadershipRoles||{vpSales:true,vpMarketing:true,vpCS:true,vpOps:false,vpProduct:false})};
@@ -845,7 +848,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
                   return {...prev, leadershipRoles: roles};
                 })} style={{padding:"3px 10px",borderRadius:0,border:`1px solid ${l.enabled?C.green:C.border}`,
                   background:l.enabled?`${C.green}15`:"transparent",color:l.enabled?C.green:C.dim,
-                  cursor:"pointer",fontSize:9,fontWeight:600,fontFamily:"'Oxanium',sans-serif"}}>
+                  cursor:"pointer",fontSize:9,fontWeight:600,fontFamily:"'TWK Everett',sans-serif"}}>
                   {l.enabled?"Active":"Add"}
                 </button>
               </td>
@@ -854,9 +857,9 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           <tr style={{borderTop:`2px solid ${C.border}`}}>
             <td style={{padding:"10px",textAlign:"right",fontWeight:700,color:C.text}}>Total Leadership</td>
             <td style={{padding:"10px"}}/>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700,color:C.rose}}>{fmt(p.totalLeadershipCost)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:C.rose}}>{fmt(p.totalLeadershipCost)}</td>
             <td style={{padding:"10px"}}/>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700,color:(p.leadershipPctOfRev||0)>15?C.rose:C.text}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:(p.leadershipPctOfRev||0)>15?C.rose:C.text}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</td>
             <td style={{padding:"10px"}}/>
           </tr>
         </tbody>
@@ -869,7 +872,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           {label:"In R&D", value:p.leadershipInRD, color:C.blue},
         ].map(b=>(<div key={b.label} style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}>
           <div style={{fontSize:9,color:C.dim}}>{b.label}</div>
-          <div style={{fontSize:14,fontWeight:700,color:b.color,fontFamily:"'Space Mono',monospace"}}>{fmt(b.value)}</div>
+          <div style={{fontSize:14,fontWeight:700,color:b.color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(b.value)}</div>
         </div>))}
       </div>
     </Card>
@@ -884,39 +887,39 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
         <tbody>
           <tr>
             <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:C.accent}}>AEs</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{p.aeCount}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(p.aeFullyLoaded)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700}}>{fmt(p.aeCompFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fmt(p.aeCompFloor * (1 - inputs.salesVariablePct/100))}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.amber}}>{fmt(p.aeCompFloor * (inputs.salesVariablePct/100))}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:p.aeCompFloor/p.totalRevenue>0.3?C.rose:C.text}}>{(p.aeCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{p.aeCount}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.aeFullyLoaded)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(p.aeCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(p.aeCompFloor * (1 - inputs.salesVariablePct/100))}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.amber}}>{fmt(p.aeCompFloor * (inputs.salesVariablePct/100))}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:p.aeCompFloor/p.totalRevenue>0.3?C.rose:C.text}}>{(p.aeCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
           </tr>
           <tr>
             <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:C.blue}}>SDRs/BDRs</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{p.sdrCount}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(p.sdrFullyLoaded)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700}}>{fmt(p.sdrCompFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fmt(p.sdrCompFloor * 0.7)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.amber}}>{fmt(p.sdrCompFloor * 0.3)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{(p.sdrCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{p.sdrCount}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.sdrFullyLoaded)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(p.sdrCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(p.sdrCompFloor * 0.7)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.amber}}>{fmt(p.sdrCompFloor * 0.3)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{(p.sdrCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
           </tr>
           <tr>
             <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:C.green}}>SEs</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{p.seCount}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(p.seFullyLoaded)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700}}>{fmt(p.seCompFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fmt(p.seCompFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.dim}}>—</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{(p.seCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{p.seCount}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.seFullyLoaded)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(p.seCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(p.seCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.dim}}>—</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{(p.seCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
           </tr>
           <tr style={{borderTop:`2px solid ${C.border}`}}>
             <td style={{padding:"10px",textAlign:"right",fontWeight:700,color:C.text}}>Total GTM</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700}}>{salesHeads}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{salesHeads}</td>
             <td style={{padding:"10px"}}/>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700,color:C.accent}}>{fmt(p.salesHeadcountFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700}}>{fmt(p.totalSalesFixedComp)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700,color:C.amber}}>{fmt(p.totalSalesVariableComp)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700,color:p.salesHeadcountFloor/p.totalRevenue>0.4?C.rose:C.text}}>{(p.salesHeadcountFloor/p.totalRevenue*100).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:C.accent}}>{fmt(p.salesHeadcountFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(p.totalSalesFixedComp)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:C.amber}}>{fmt(p.totalSalesVariableComp)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:p.salesHeadcountFloor/p.totalRevenue>0.4?C.rose:C.text}}>{(p.salesHeadcountFloor/p.totalRevenue*100).toFixed(1)}%</td>
           </tr>
         </tbody>
       </table></div>
@@ -962,7 +965,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           return(<div key={item.label} style={{marginBottom:8}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
               <span style={{fontSize:10,color:C.text}}>{item.label}</span>
-              <span style={{fontSize:11,fontWeight:600,color:item.color,fontFamily:"'Space Mono',monospace"}}>{fmt(item.value)}</span>
+              <span style={{fontSize:11,fontWeight:600,color:item.color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(item.value)}</span>
             </div>
             <div style={{height:10,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:0,opacity:0.6}}/>
@@ -1063,7 +1066,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             }}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
               <span style={{fontSize:13,fontWeight:700,color:isActive?mode.color:C.muted}}>{mode.label}</span>
-              <span style={{fontSize:18,fontWeight:700,color:mode.color,fontFamily:"'Space Mono',monospace"}}>{mode.fixedPct}%</span>
+              <span style={{fontSize:18,fontWeight:700,color:mode.color,fontFamily:"'Chivo Mono',monospace"}}>{mode.fixedPct}%</span>
             </div>
             <div style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{mode.desc}</div>
           </div>);
@@ -1094,7 +1097,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               <span style={{fontSize:indent?11:12,fontWeight:indent?400:600,color:indent?C.muted:C.text}}>{item.name.trim()}</span>
             </div>
             <div style={{textAlign:"right"}}>
-              <span style={{fontSize:12,fontWeight:600,color:item.fill,fontFamily:"'Space Mono',monospace"}}>{fmt(item.value)}</span>
+              <span style={{fontSize:12,fontWeight:600,color:item.fill,fontFamily:"'Chivo Mono',monospace"}}>{fmt(item.value)}</span>
               <span style={{fontSize:9,color:C.dim,marginLeft:8}}>{pctOfTotal.toFixed(0)}%</span>
             </div>
           </div>);
@@ -1118,7 +1121,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           return(<div key={cac.label} style={{marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
               <span style={{fontSize:12,fontWeight:600,color:C.text}}>{cac.label}</span>
-              <span style={{fontSize:14,fontWeight:700,color:cac.color,fontFamily:"'Space Mono',monospace"}}>{fmt(cac.value)}</span>
+              <span style={{fontSize:14,fontWeight:700,color:cac.color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(cac.value)}</span>
             </div>
             <div style={{height:20,background:C.bg,borderRadius:0,overflow:"hidden",position:"relative"}}>
               <div style={{height:"100%",width:`${barW}%`,background:cac.color,borderRadius:0,opacity:0.7}}/>
@@ -1130,11 +1133,11 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
             <span style={{fontSize:10,color:C.dim}}>CAC Payback (Programmatic)</span>
-            <span style={{fontSize:12,fontWeight:700,color:s.cacPayback<18?C.green:C.rose,fontFamily:"'Space Mono',monospace"}}>{s.cacPayback.toFixed(1)} mo</span>
+            <span style={{fontSize:12,fontWeight:700,color:s.cacPayback<18?C.green:C.rose,fontFamily:"'Chivo Mono',monospace"}}>{s.cacPayback.toFixed(1)} mo</span>
           </div>
           <div style={{display:"flex",justifyContent:"space-between"}}>
             <span style={{fontSize:10,color:C.dim}}>CAC Payback (Fully Burdened)</span>
-            <span style={{fontSize:12,fontWeight:700,color:adjustedPayback<24?C.green:C.rose,fontFamily:"'Space Mono',monospace"}}>{adjustedPayback.toFixed(1)} mo</span>
+            <span style={{fontSize:12,fontWeight:700,color:adjustedPayback<24?C.green:C.rose,fontFamily:"'Chivo Mono',monospace"}}>{adjustedPayback.toFixed(1)} mo</span>
           </div>
         </div>
       </Card>
@@ -1150,7 +1153,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             manual workarounds, undocumented tribal knowledge. Applied as a surcharge on fixed overhead.
           </div>
         </div>
-        <div style={{fontSize:28,fontWeight:700,color:debtTax>0?C.rose:C.dim,fontFamily:"'Space Mono',monospace"}}>{debtTax}%</div>
+        <div style={{fontSize:28,fontWeight:700,color:debtTax>0?C.rose:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{debtTax}%</div>
       </div>
       <div style={{marginBottom:14}}>
         <input type="range" min={0} max={20} step={2} value={debtTax} onChange={e=>setDebtTax(Number(e.target.value))}
@@ -1165,15 +1168,15 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
           <div style={{padding:10,background:`${C.rose}08`,borderRadius:0}}>
             <div style={{fontSize:9,color:C.dim}}>Debt Tax Cost</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>{fmt(debtTaxAmount)}</div>
+            <div style={{fontSize:16,fontWeight:700,color:C.rose,fontFamily:"'Chivo Mono',monospace"}}>{fmt(debtTaxAmount)}</div>
           </div>
           <div style={{padding:10,background:`${C.rose}08`,borderRadius:0}}>
             <div style={{fontSize:9,color:C.dim}}>Burdened CAC Impact</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>+{fmt(adjustedBurdenedCAC - p.fullyBurdenedCAC)}</div>
+            <div style={{fontSize:16,fontWeight:700,color:C.rose,fontFamily:"'Chivo Mono',monospace"}}>+{fmt(adjustedBurdenedCAC - p.fullyBurdenedCAC)}</div>
           </div>
           <div style={{padding:10,background:`${C.rose}08`,borderRadius:0}}>
             <div style={{fontSize:9,color:C.dim}}>Payback Impact</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>+{(adjustedPayback - (p.fullyBurdenedCAC/(inputs.avgDealSize/12))).toFixed(1)} mo</div>
+            <div style={{fontSize:16,fontWeight:700,color:C.rose,fontFamily:"'Chivo Mono',monospace"}}>+{(adjustedPayback - (p.fullyBurdenedCAC/(inputs.avgDealSize/12))).toFixed(1)} mo</div>
           </div>
         </div>
       )}
@@ -1195,12 +1198,12 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           const statusColor = !marginOk ? C.rose : !sandMOk ? C.rose : !paybackOk ? C.amber : C.green;
           return(<tr key={row.id} style={{background:row.isActive?`${row.color}08`:"transparent"}}>
             <td style={{padding:"10px",textAlign:"right"}}><span style={{fontWeight:700,color:row.color}}>{row.label}</span>{row.isActive&&<span style={{fontSize:8,color:C.dim,marginLeft:4}}>●</span>}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.text}}>{row.fixedPct}%</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:600,color:C.text}}>{fmt(row.totalMktg)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",fontWeight:700,color:row.cac<p.programmaticCAC*2?C.text:C.rose}}>{fmt(row.cac)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:paybackOk?C.green:C.rose}}>{row.payback.toFixed(1)} mo</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:marginOk?C.green:C.rose}}>{row.opMargin.toFixed(1)}%</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:sandMOk?C.text:C.rose}}>{row.sandMPct.toFixed(0)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{row.fixedPct}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:600,color:C.text}}>{fmt(row.totalMktg)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:row.cac<p.programmaticCAC*2?C.text:C.rose}}>{fmt(row.cac)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:paybackOk?C.green:C.rose}}>{row.payback.toFixed(1)} mo</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:marginOk?C.green:C.rose}}>{row.opMargin.toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:sandMOk?C.text:C.rose}}>{row.sandMPct.toFixed(0)}%</td>
             <td style={{padding:"10px",textAlign:"right",fontSize:10,color:statusColor,fontWeight:600}}>{status}</td>
           </tr>);
         })}</tbody>
@@ -1218,7 +1221,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
           {p.fixedMktgIsFloorBound ? (
-            <button onClick={()=>setDebtTax(dt=>dt===0?1:0)} style={{padding:"5px 10px",borderRadius:0,border:`1px solid ${debtTax>0?"#2d8a56":"#c07800"}`,background:debtTax>0?"#2d8a5612":"#c0780012",color:debtTax>0?"#2d8a56":"#c07800",cursor:"pointer",fontSize:9,fontWeight:700,fontFamily:"'Oxanium',sans-serif"}}>
+            <button onClick={()=>setDebtTax(dt=>dt===0?1:0)} style={{padding:"5px 10px",borderRadius:0,border:`1px solid ${debtTax>0?"#2d8a56":"#c07800"}`,background:debtTax>0?"#2d8a5612":"#c0780012",color:debtTax>0?"#2d8a56":"#c07800",cursor:"pointer",fontSize:9,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
               {debtTax>0?"Strategic Overbuild":"Compression Active"}
             </button>
           ) : (
@@ -1244,7 +1247,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           <div style={{marginBottom:8}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
               <span style={{fontSize:9,color:C.dim,fontWeight:600}}>Revenue-Driven Budget (formula at {inputs.fixedMktgPct}%)</span>
-              <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(formulaBudget)}</span>
+              <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(formulaBudget)}</span>
             </div>
             <div style={{position:"relative",height:22,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <motion.div initial={{width:0}} animate={{width:`${formulaW}%`}} transition={{duration:0.6}}
@@ -1254,7 +1257,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           <div style={{marginBottom:8}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
               <span style={{fontSize:9,color:C.dim,fontWeight:600}}>Structural Minimum (commitments)</span>
-              <span style={{fontSize:10,fontWeight:700,color:overflow?C.amber:C.green,fontFamily:"'Space Mono',monospace"}}>{fmt(structBudget)}</span>
+              <span style={{fontSize:10,fontWeight:700,color:overflow?C.amber:C.green,fontFamily:"'Chivo Mono',monospace"}}>{fmt(structBudget)}</span>
             </div>
             <div style={{position:"relative",height:22,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <motion.div initial={{width:0}} animate={{width:`${Math.min(formulaW,structW)}%`}} transition={{duration:0.6}}
@@ -1296,10 +1299,10 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               const isA=(inputs.executiveTier||"fullVP")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,executiveTier:key}))}
                 style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
-                  border:`1px solid ${isA?"#7c4ddb":C.border}`,background:isA?"#7c4ddb12":"transparent",cursor:"pointer",fontFamily:"'Oxanium',sans-serif"}}>
+                  border:`1px solid ${isA?"#7c4ddb":C.border}`,background:isA?"#7c4ddb12":"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#7c4ddb":C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:9,fontWeight:700,color:isA?"#7c4ddb":C.dim,fontFamily:"'Space Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?"#7c4ddb":C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
               </button>);
             })}
@@ -1312,10 +1315,10 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               const isA=(inputs.pmmTier||"full")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,pmmTier:key}))}
                 style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
-                  border:`1px solid ${isA?"#3b82f6":C.border}`,background:isA?"#3b82f612":"transparent",cursor:"pointer",fontFamily:"'Oxanium',sans-serif"}}>
+                  border:`1px solid ${isA?"#3b82f6":C.border}`,background:isA?"#3b82f612":"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#3b82f6":C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:9,fontWeight:700,color:isA?"#3b82f6":C.dim,fontFamily:"'Space Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?"#3b82f6":C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
               </button>);
             })}
@@ -1329,10 +1332,10 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               const isA=(inputs.coreMarTechTier||"standard")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,coreMarTechTier:key}))}
                 style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
-                  border:`1px solid ${isA?"#a3a3a3":C.border}`,background:isA?"#a3a3a312":"transparent",cursor:"pointer",fontFamily:"'Oxanium',sans-serif"}}>
+                  border:`1px solid ${isA?"#a3a3a3":C.border}`,background:isA?"#a3a3a312":"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#a3a3a3":C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:9,fontWeight:700,color:isA?"#a3a3a3":C.dim,fontFamily:"'Space Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?"#a3a3a3":C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
               </button>);
             })}
@@ -1356,7 +1359,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               return(<div key={item.key} style={{marginBottom:8}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
                   <span style={{fontSize:9,fontWeight:600,color:item.color}}>{item.label}</span>
-                  <span style={{fontSize:9,color:item.color,fontFamily:"'Space Mono',monospace"}}>{emb[item.key]||0}%</span>
+                  <span style={{fontSize:9,color:item.color,fontFamily:"'Chivo Mono',monospace"}}>{emb[item.key]||0}%</span>
                 </div>
                 <input type="range" min={5} max={70} value={emb[item.key]||0}
                   onChange={e=>setInputs(pr=>({...pr,elasticMktgBreakdown:{...(pr.elasticMktgBreakdown||emb),[item.key]:parseInt(e.target.value)}}))}
@@ -1376,7 +1379,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
                   <span style={{fontSize:10,fontWeight:700,color:colors[i]}}>{fi.name}</span>
                   <span style={{fontSize:7,padding:"1px 5px",borderRadius:0,background:`${hc}15`,color:hc,fontWeight:600}}>{hs==="at-risk"?"At Risk":hs==="thin"?"Thin":"Stable"}</span>
                 </div>
-                <div style={{fontSize:15,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fmt(fi.amount)}</div>
+                <div style={{fontSize:15,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(fi.amount)}</div>
                 <div style={{fontSize:8,color:C.dim,marginTop:2}}>{fi.pctOfRev?.toFixed(1)}% of rev</div>
                 {ghosts.length>0 && <div style={{marginTop:4}}>{ghosts.map(g=>(<div key={g} style={{fontSize:7,color:`${C.muted}60`,fontStyle:"italic"}}>○ {g}</div>))}<div style={{fontSize:7,color:C.dim,marginTop:1}}>Capability gaps at current funding</div></div>}
               </div>);
@@ -1389,7 +1392,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
       <div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
           <span style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase"}}>Gravity Simulator</span>
-          <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>${simArr}M ARR</span>
+          <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>${simArr}M ARR</span>
         </div>
         <input type="range" min={2} max={50} value={simArr} onChange={e=>setSimArr(parseInt(e.target.value))}
           style={{width:"100%",accentColor:C.accent,marginBottom:8}}/>
@@ -1400,7 +1403,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             const isYou = Math.abs(s.targetARR / 1000000 - pt) < 1;
             return(<div key={pt} style={{padding:6,background:isYou?`${C.accent}12`:C.bg,borderRadius:0,textAlign:"center",border:isYou?`1px solid ${C.accent}30`:"1px solid transparent"}}>
               <div style={{fontSize:8,color:isYou?C.accent:C.dim,fontWeight:isYou?700:400}}>{isYou?"▸ ":""}${pt}M</div>
-              <div style={{fontSize:14,fontWeight:700,color:pct>15?"#d42e4a":pct>8?"#c07800":"#2d8a56",fontFamily:"'Space Mono',monospace"}}>{pct.toFixed(1)}%</div>
+              <div style={{fontSize:14,fontWeight:700,color:pct>15?"#d42e4a":pct>8?"#c07800":"#2d8a56",fontFamily:"'Chivo Mono',monospace"}}>{pct.toFixed(1)}%</div>
               <div style={{fontSize:7,color:C.dim}}>{pct>12?"heavy":pct>6?"moderate":"lift wins"}</div>
             </div>);
           })}
@@ -1429,11 +1432,11 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
   return(<div>
     <Header title="Target Tracker" sub="ARR targets + pipeline targets by source and stage" icon={Target} moduleId="targets" onInfoClick={onInfoClick}/>
     {isSplit&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:20}}>
-      <Card style={{borderLeft:`3px solid ${C.accent}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>New Logo</div><div style={{fontSize:22,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(s.newLogoARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.dealsNeeded)} deals × {fmt(inputs.avgDealSize)}</div></Card>
-      <Card style={{borderLeft:`3px solid ${C.violet}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>Expansion</div><div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'Space Mono',monospace"}}>{fmt(s.expansionARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.expansionDeals)} deals × {fmt(inputs.expansionAvgDeal)} • {inputs.expansionSqoToWon}% close</div></Card>
+      <Card style={{borderLeft:`3px solid ${C.accent}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>New Logo</div><div style={{fontSize:22,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.newLogoARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.dealsNeeded)} deals × {fmt(inputs.avgDealSize)}</div></Card>
+      <Card style={{borderLeft:`3px solid ${C.violet}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>Expansion</div><div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.expansionARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.expansionDeals)} deals × {fmt(inputs.expansionAvgDeal)} • {inputs.expansionSqoToWon}% close</div></Card>
     </div>}
     <div style={{display:"flex",gap:8,marginBottom:24}}>
-      {["quarterly","pipeline","annual"].map(v=>(<button key={v} onClick={()=>setView(v)} style={{padding:"8px 18px",borderRadius:0,border:`1px solid ${view===v?C.accent:C.border}`,background:view===v?C.accentD:"transparent",color:view===v?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600,textTransform:"capitalize",fontFamily:"'Oxanium',sans-serif"}}>{v}</button>))}
+      {["quarterly","pipeline","annual"].map(v=>(<button key={v} onClick={()=>setView(v)} style={{padding:"8px 18px",borderRadius:0,border:`1px solid ${view===v?C.accent:C.border}`,background:view===v?C.accentD:"transparent",color:view===v?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600,textTransform:"capitalize",fontFamily:"'TWK Everett',sans-serif"}}>{v}</button>))}
     </div>
 
     {/* ── PIPELINE VIEW ── */}
@@ -1453,15 +1456,15 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
           <tbody>{quarterlyTargets.map((q,i)=>(
             <tr key={q.quarter}>
               <td style={{padding:"10px",fontWeight:700,color:C.ch[i],fontSize:13,textAlign:"right"}}>{q.quarter}</td>
-              <td style={{padding:"10px",color:C.text,fontFamily:"'Space Mono',monospace",textAlign:"right",fontWeight:600}}>{fN(q.dealsTarget)}</td>
-              <td style={{padding:"10px",color:C.text,fontFamily:"'Space Mono',monospace",textAlign:"right",fontWeight:600}}>{fN(q.sqoTarget)}</td>
-              <td style={{padding:"10px",color:C.green,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fN(q.mktgSqoTarget)}</td>
-              <td style={{padding:"10px",color:C.violet,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fN(q.aeSqoTarget)}</td>
-              <td style={{padding:"10px",color:C.green,fontFamily:"'Space Mono',monospace",textAlign:"right",fontWeight:600}}>{fmt(q.stage2Target)}</td>
-              <td style={{padding:"10px",color:C.amber,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(q.stage1Target)}</td>
-              <td style={{padding:"10px",color:C.accent,fontFamily:"'Space Mono',monospace",textAlign:"right",fontWeight:700}}>{fmt(q.pipeTarget)}</td>
-              <td style={{padding:"10px",color:C.green,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(q.mktgPipeTarget)}</td>
-              <td style={{padding:"10px",color:C.violet,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{fmt(q.aePipeTarget)}</td>
+              <td style={{padding:"10px",color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"right",fontWeight:600}}>{fN(q.dealsTarget)}</td>
+              <td style={{padding:"10px",color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"right",fontWeight:600}}>{fN(q.sqoTarget)}</td>
+              <td style={{padding:"10px",color:C.green,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fN(q.mktgSqoTarget)}</td>
+              <td style={{padding:"10px",color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fN(q.aeSqoTarget)}</td>
+              <td style={{padding:"10px",color:C.green,fontFamily:"'Chivo Mono',monospace",textAlign:"right",fontWeight:600}}>{fmt(q.stage2Target)}</td>
+              <td style={{padding:"10px",color:C.amber,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(q.stage1Target)}</td>
+              <td style={{padding:"10px",color:C.accent,fontFamily:"'Chivo Mono',monospace",textAlign:"right",fontWeight:700}}>{fmt(q.pipeTarget)}</td>
+              <td style={{padding:"10px",color:C.green,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(q.mktgPipeTarget)}</td>
+              <td style={{padding:"10px",color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(q.aePipeTarget)}</td>
               <td style={{padding:"10px",textAlign:"right"}}><span style={{padding:"3px 8px",borderRadius:0,fontSize:10,fontWeight:700,background:q.coverageActual>=inputs.coverageGreen?C.greenD:q.coverageActual>=inputs.coverageYellow?C.amberD:C.roseD,color:q.coverageActual>=inputs.coverageGreen?C.green:q.coverageActual>=inputs.coverageYellow?C.amber:C.rose}}>{q.coverageActual.toFixed(0)}%</span></td>
             </tr>
           ))}</tbody>
@@ -1516,7 +1519,7 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
     {/* ── QUARTERLY VIEW ── */}
     {view==="quarterly"&&(<div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>
-        {quarterlyTargets.map((q,i)=>(<Card key={q.quarter} style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:700,color:C.ch[i],marginBottom:4}}>{q.quarter}</div><div style={{fontSize:9,color:C.dim,marginBottom:6}}>{q.seasonalPct}% of annual</div><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Target</div><div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{fmt(q.target)}</div><div style={{height:1,background:C.border,margin:"10px 0"}}/><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Projected</div><div style={{fontSize:16,fontWeight:700,color:q.actual>=q.target?C.green:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(q.actual)}</div><div style={{marginTop:8,padding:"4px 12px",borderRadius:0,display:"inline-block",fontSize:10,fontWeight:700,background:q.gap>=0?C.greenD:C.roseD,color:q.gap>=0?C.green:C.rose}}>{q.pctOfTarget.toFixed(0)}%</div></Card>))}
+        {quarterlyTargets.map((q,i)=>(<Card key={q.quarter} style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:700,color:C.ch[i],marginBottom:4}}>{q.quarter}</div><div style={{fontSize:9,color:C.dim,marginBottom:6}}>{q.seasonalPct}% of annual</div><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Target</div><div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(q.target)}</div><div style={{height:1,background:C.border,margin:"10px 0"}}/><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Projected</div><div style={{fontSize:16,fontWeight:700,color:q.actual>=q.target?C.green:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(q.actual)}</div><div style={{marginTop:8,padding:"4px 12px",borderRadius:0,display:"inline-block",fontSize:10,fontWeight:700,background:q.gap>=0?C.greenD:C.roseD,color:q.gap>=0?C.green:C.rose}}>{q.pctOfTarget.toFixed(0)}%</div></Card>))}
       </div>
       <Card><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>Quarterly: Target vs Projected</h3>
         <ResponsiveContainer width="100%" height={280}><BarChart data={quarterlyTargets}><CartesianGrid strokeDasharray="3 3" stroke={C.border}/><XAxis dataKey="quarter" stroke={C.dim} fontSize={11} tickLine={false}/><YAxis stroke={C.dim} fontSize={11} tickFormatter={v=>fmt(v)} tickLine={false} axisLine={false}/><Tooltip content={<TT/>}/>
@@ -1609,11 +1612,11 @@ function FunnelPage({model,inputs,setInputs,onInfoClick}){
               <tbody>{phaseShiftedFunnel.map((q,i)=>(
                 <tr key={q.quarter} style={{background:q.isCurrentYear?"transparent":C.bg}}>
                   <td style={{padding:"8px",fontWeight:700,color:q.isCurrentYear?C.accent:C.dim,textAlign:"right"}}>{q.quarter}</td>
-                  <td style={{padding:"8px",color:q.closingDeals>0?C.green:C.dim,fontWeight:700,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{q.closingDeals>0?fN(q.closingDeals):"-"}</td>
-                  <td style={{padding:"8px",color:q.sqosNeeded>0?C.amber:C.dim,fontWeight:600,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{q.sqosNeeded>0?fN(q.sqosNeeded):"-"}</td>
-                  <td style={{padding:"8px",color:q.mktgSqos>0?C.accent:C.dim,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{q.mktgSqos>0?fN(q.mktgSqos):"-"}</td>
-                  <td style={{padding:"8px",color:q.aeSqos>0?C.violet:C.dim,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{q.aeSqos>0?fN(q.aeSqos):"-"}</td>
-                  <td style={{padding:"8px",color:q.mqlsNeeded>0?C.rose:C.dim,fontWeight:600,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{q.mqlsNeeded>0?fN(q.mqlsNeeded):"-"}</td>
+                  <td style={{padding:"8px",color:q.closingDeals>0?C.green:C.dim,fontWeight:700,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.closingDeals>0?fN(q.closingDeals):"-"}</td>
+                  <td style={{padding:"8px",color:q.sqosNeeded>0?C.amber:C.dim,fontWeight:600,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.sqosNeeded>0?fN(q.sqosNeeded):"-"}</td>
+                  <td style={{padding:"8px",color:q.mktgSqos>0?C.accent:C.dim,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.mktgSqos>0?fN(q.mktgSqos):"-"}</td>
+                  <td style={{padding:"8px",color:q.aeSqos>0?C.violet:C.dim,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.aeSqos>0?fN(q.aeSqos):"-"}</td>
+                  <td style={{padding:"8px",color:q.mqlsNeeded>0?C.rose:C.dim,fontWeight:600,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.mqlsNeeded>0?fN(q.mqlsNeeded):"-"}</td>
                 </tr>
               ))}</tbody>
             </table></div>
@@ -1660,14 +1663,14 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
         const isActive=activeMotion===m.key;
         const color=MOTION_COLORS[m.key];
         return(<button key={m.key} onClick={()=>setActiveMotion(m.key)} style={{flex:1,padding:"14px 16px",borderRadius:0,
-          border:`2px solid ${isActive?color:C.border}`,background:isActive?`${color}10`:"transparent",cursor:"pointer",textAlign:"left",fontFamily:"'Oxanium',sans-serif"}}>
+          border:`2px solid ${isActive?color:C.border}`,background:isActive?`${color}10`:"transparent",cursor:"pointer",textAlign:"left",fontFamily:"'TWK Everett',sans-serif"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
               <div style={{fontSize:13,fontWeight:700,color:isActive?color:C.text}}>{m.icon} {m.label}</div>
               <div style={{fontSize:10,color:C.muted,marginTop:2}}>{m.desc}</div>
             </div>
             <div style={{textAlign:"right"}}>
-              <div style={{fontSize:16,fontWeight:700,color,fontFamily:"'Space Mono',monospace"}}>{fmt(m.budget)}</div>
+              <div style={{fontSize:16,fontWeight:700,color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(m.budget)}</div>
               <div style={{fontSize:9,color:C.dim}}>{totalBudget>0?(m.budget/totalBudget*100).toFixed(0):0}%</div>
             </div>
           </div>
@@ -1685,7 +1688,7 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
             return(<div key={key} style={{marginBottom:10}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
                 <span style={{fontSize:11,fontWeight:600,color:MOTION_COLORS[key]}}>{key==="create"?"Creation":key==="convert"?"Conversion":"Acceleration"}</span>
-                <span style={{fontSize:11,color:MOTION_COLORS[key],fontFamily:"'Space Mono',monospace"}}>{val}%</span>
+                <span style={{fontSize:11,color:MOTION_COLORS[key],fontFamily:"'Chivo Mono',monospace"}}>{val}%</span>
               </div>
               <input type="range" min={5} max={70} value={val} onChange={e=>uMA(key,parseInt(e.target.value))} style={{width:"100%",accentColor:MOTION_COLORS[key]}}/>
             </div>);
@@ -1706,19 +1709,19 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
               <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:3}}>
                 <span style={{fontSize:9,color:C.dim}}>Mix %</span>
                 <input type="range" min={0} max={60} value={ch.pct} onChange={e=>uMC(activeMotion,i,"pct",parseInt(e.target.value))} style={{flex:1,accentColor:MOTION_COLORS[activeMotion]}}/>
-                <span style={{fontSize:10,color:C.accent,fontFamily:"'Space Mono',monospace",width:30,textAlign:"right"}}>{ch.pct}%</span>
+                <span style={{fontSize:10,color:C.accent,fontFamily:"'Chivo Mono',monospace",width:30,textAlign:"right"}}>{ch.pct}%</span>
               </div>
               {activeMotion==="create" && <div style={{display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:9,color:C.dim}}>CPL $</span>
-                <input type="number" value={ch.cpl} onChange={e=>uMC(activeMotion,i,"cpl",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace"}}/>
+                <input type="number" value={ch.cpl} onChange={e=>uMC(activeMotion,i,"cpl",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Chivo Mono',monospace"}}/>
               </div>}
               {activeMotion==="convert" && <div style={{display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:9,color:C.dim}}>$/SQL</span>
-                <input type="number" value={ch.costPerSql} onChange={e=>uMC(activeMotion,i,"costPerSql",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace"}}/>
+                <input type="number" value={ch.costPerSql} onChange={e=>uMC(activeMotion,i,"costPerSql",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Chivo Mono',monospace"}}/>
               </div>}
               {activeMotion==="accelerate" && <div style={{display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:9,color:C.dim}}>$/Acct</span>
-                <input type="number" value={ch.costPerAccount} onChange={e=>uMC(activeMotion,i,"costPerAccount",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace"}}/>
+                <input type="number" value={ch.costPerAccount} onChange={e=>uMC(activeMotion,i,"costPerAccount",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Chivo Mono',monospace"}}/>
               </div>}
             </div>
           ))}
@@ -1737,17 +1740,17 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
               {mot.create.channels.map((c,i)=><tr key={c.name}>
                 <td style={{padding:"7px",textAlign:"right",fontWeight:600,color:C.text}}>{c.name}</td>
                 {[fmt(c.spend),fN(c.inquiries),fmt(c.cpl),fN(c.mqls),fmt(c.sqos*inputs.avgDealSize),fmt(c.cac)].map((v,j)=>
-                  <td key={j} style={{padding:"7px",color:C.muted,fontFamily:"'Space Mono',monospace",textAlign:"right"}}>{v}</td>)}
-                <td style={{padding:"7px",fontWeight:700,fontFamily:"'Space Mono',monospace",textAlign:"right",color:c.roi>5?C.green:c.roi>2?C.amber:C.rose}}>{c.roi.toFixed(1)}x</td>
+                  <td key={j} style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{v}</td>)}
+                <td style={{padding:"7px",fontWeight:700,fontFamily:"'Chivo Mono',monospace",textAlign:"right",color:c.roi>5?C.green:c.roi>2?C.amber:C.rose}}>{c.roi.toFixed(1)}x</td>
               </tr>)}
               <tr style={{borderTop:`2px solid ${C.border}`,fontWeight:700}}>
                 <td style={{padding:"7px",textAlign:"right",color:MOTION_COLORS.create}}>Total</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(mot.create.totals.spend)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fN(mot.create.totals.inquiries)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(mot.create.totals.blendedCPL)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fN(mot.create.totals.mqls)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(mot.create.totals.pipeline)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(mot.create.totals.cacCreation)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.create.totals.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.create.totals.inquiries)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.create.totals.blendedCPL)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.create.totals.mqls)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.create.totals.pipeline)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.create.totals.cacCreation)}</td>
                 <td style={{padding:"7px"}}/>
               </tr>
             </tbody>
@@ -1763,18 +1766,18 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
             <tbody>
               {mot.convert.channels.map((c,i)=><tr key={c.name}>
                 <td style={{padding:"7px",textAlign:"right",fontWeight:600,color:C.text}}>{c.name}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fN(c.sqlsProcessed)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fN(c.sqosCreated)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fmt(c.costPerSqo)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:c.capacityUtil>80?C.green:c.capacityUtil>50?C.amber:C.rose}}>{c.capacityUtil.toFixed(0)}%</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fN(c.sqlsProcessed)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fN(c.sqosCreated)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(c.costPerSqo)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:c.capacityUtil>80?C.green:c.capacityUtil>50?C.amber:C.rose}}>{c.capacityUtil.toFixed(0)}%</td>
               </tr>)}
               <tr style={{borderTop:`2px solid ${C.border}`,fontWeight:700}}>
                 <td style={{padding:"7px",textAlign:"right",color:MOTION_COLORS.convert}}>Total</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(mot.convert.totals.spend)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fN(mot.convert.totals.sqlsProcessed)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fN(mot.convert.totals.sqosCreated)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace"}}>{fmt(mot.convert.totals.costPerSqo)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.convert.totals.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.convert.totals.sqlsProcessed)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.convert.totals.sqosCreated)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.convert.totals.costPerSqo)}</td>
                 <td style={{padding:"7px"}}/>
               </tr>
             </tbody>
@@ -1788,19 +1791,19 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:14}}>
             <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Accounts Touched</div>
-              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'Space Mono',monospace"}}>{fN(mot.accelerate.totals.accountsTouched)}</div>
+              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.accelerate.totals.accountsTouched)}</div>
             </div>
             <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Opps Influenced</div>
-              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'Space Mono',monospace"}}>{fN(mot.accelerate.totals.oppsInfluenced)}</div>
+              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.accelerate.totals.oppsInfluenced)}</div>
             </div>
             <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Avg Days Reduced</div>
-              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Space Mono',monospace"}}>{mot.accelerate.totals.daysReduced}</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{mot.accelerate.totals.daysReduced}</div>
             </div>
             <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Rev Pulled Forward</div>
-              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Space Mono',monospace"}}>{fmt(mot.accelerate.totals.revenuePulledForward)}</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.accelerate.totals.revenuePulledForward)}</div>
             </div>
           </div>
           <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
@@ -1808,11 +1811,11 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
             <tbody>
               {mot.accelerate.channels.map((c,i)=><tr key={c.name}>
                 <td style={{padding:"7px",textAlign:"right",fontWeight:600,color:C.text}}>{c.name}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fN(c.accountsTouched)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.muted}}>{fN(c.oppsInfluenced)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.green}}>{c.avgDaysReduced}d</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:C.green}}>+{c.winRateDelta}%</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fN(c.accountsTouched)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fN(c.oppsInfluenced)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.green}}>{c.avgDaysReduced}d</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.green}}>+{c.winRateDelta}%</td>
                 <td style={{padding:"7px",textAlign:"right",fontSize:9,color:C.dim}}>{c.intent}</td>
               </tr>)}
             </tbody>
@@ -1868,7 +1871,7 @@ function PipelinePage({model,inputs,onInfoClick}){
             <div style={{flex:1,padding:12,background:`${step.color}08`,borderRadius:0,border:`1px solid ${step.color}20`,textAlign:"center",position:"relative"}}>
               {step.negative && <div style={{position:"absolute",top:4,right:8,fontSize:9,color:C.rose,fontWeight:700}}>−</div>}
               <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",fontWeight:700}}>{step.label}</div>
-              <div style={{fontSize:16,fontWeight:700,color:step.color,fontFamily:"'Space Mono',monospace",marginTop:4}}>{fmt(step.value)}</div>
+              <div style={{fontSize:16,fontWeight:700,color:step.color,fontFamily:"'Chivo Mono',monospace",marginTop:4}}>{fmt(step.value)}</div>
               <div style={{fontSize:9,color:C.muted,marginTop:2}}>{step.sub}</div>
             </div>
             {i<arr.length-1 && <div style={{padding:"0 4px",color:C.dim,fontSize:14}}>→</div>}
@@ -1898,7 +1901,7 @@ function PipelinePage({model,inputs,onInfoClick}){
               <span style={{fontSize:9,color:C.dim,marginLeft:8}}>{st.question} • {st.owner}</span>
             </div>
             <div style={{textAlign:"right"}}>
-              <span style={{fontSize:14,fontWeight:700,color:C.ch[i],fontFamily:"'Space Mono',monospace"}}>{fN(st.count)}</span>
+              <span style={{fontSize:14,fontWeight:700,color:C.ch[i],fontFamily:"'Chivo Mono',monospace"}}>{fN(st.count)}</span>
               <span style={{fontSize:10,color:C.muted,marginLeft:10}}>{fmt(st.costPer)}/ea</span>
             </div>
           </div>
@@ -1909,7 +1912,7 @@ function PipelinePage({model,inputs,onInfoClick}){
                 <span style={{fontSize:9,fontWeight:700,color:"#fff"}}>{w.toFixed(0)}%</span>
               </motion.div>
             </div>
-            <div style={{width:80,textAlign:"right",fontSize:10,color:C.dim,fontFamily:"'Space Mono',monospace"}}>
+            <div style={{width:80,textAlign:"right",fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>
               {i===0 ? fmt(totalChannelSpend) : ""}
             </div>
           </div>
@@ -1931,7 +1934,7 @@ function PipelinePage({model,inputs,onInfoClick}){
         ].map(r=>(
           <div key={r.label} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
             <div><span style={{fontSize:11,color:C.text}}>{r.label}</span><span style={{fontSize:8,color:C.dim,marginLeft:6}}>{r.bench}</span></div>
-            <span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(r.value)}</span>
+            <span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(r.value)}</span>
           </div>
         ))}
       </Card>
@@ -1946,7 +1949,7 @@ function PipelinePage({model,inputs,onInfoClick}){
         ].map(r=>(
           <div key={r.label} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
             <span style={{fontSize:11,color:C.text}}>{r.label}</span>
-            <div style={{textAlign:"right"}}><span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{r.value}</span><span style={{fontSize:9,color:C.dim,marginLeft:6}}>{r.desc}</span></div>
+            <div style={{textAlign:"right"}}><span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{r.value}</span><span style={{fontSize:9,color:C.dim,marginLeft:6}}>{r.desc}</span></div>
           </div>
         ))}
       </Card>
@@ -1961,7 +1964,7 @@ function PipelinePage({model,inputs,onInfoClick}){
         ].map(r=>(
           <div key={r.label} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
             <span style={{fontSize:11,color:C.text}}>{r.label}</span>
-            <span style={{fontSize:12,fontWeight:700,color:r.color,fontFamily:"'Space Mono',monospace"}}>{r.value}</span>
+            <span style={{fontSize:12,fontWeight:700,color:r.color,fontFamily:"'Chivo Mono',monospace"}}>{r.value}</span>
           </div>
         ))}
       </Card>
@@ -2000,8 +2003,8 @@ function VelocityPage({model,inputs,setInputs,onInfoClick}){
 function RampPage({model,inputs,setInputs,onInfoClick}){return(<div><Header title="Seller Ramp" sub="AE productivity curve with attrition" icon={TrendingUp} moduleId="sellerRamp" onInfoClick={onInfoClick}/><div style={{display:"grid",gridTemplateColumns:"240px 1fr",gap:24}}><Card><Input label="AEs" value={inputs.aeCount} onChange={v=>setInputs(p=>({...p,aeCount:v}))} min={1}/><Input label="Quota" value={inputs.aeQuota} onChange={v=>setInputs(p=>({...p,aeQuota:v}))} prefix="$" step={25000}/><Input label="Ramp" value={inputs.aeRampMonths} onChange={v=>setInputs(p=>({...p,aeRampMonths:v}))} suffix="mo" min={1} max={12}/><Input label="Attrition" value={inputs.aeAttritionRate} onChange={v=>setInputs(p=>({...p,aeAttritionRate:v}))} suffix="% yr" step={5}/>
     <div style={{height:1,background:C.border,margin:"10px 0"}}/>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Ramp Loss</div><div style={{fontSize:13,fontWeight:700,color:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(model.summary.totalRampLoss)}</div></div>
-      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Attrition Loss</div><div style={{fontSize:13,fontWeight:700,color:C.rose,fontFamily:"'Space Mono',monospace"}}>{fmt(model.summary.totalAttrLoss)}</div></div>
+      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Ramp Loss</div><div style={{fontSize:13,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(model.summary.totalRampLoss)}</div></div>
+      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Attrition Loss</div><div style={{fontSize:13,fontWeight:700,color:C.rose,fontFamily:"'Chivo Mono',monospace"}}>{fmt(model.summary.totalAttrLoss)}</div></div>
     </div>
     {inputs.aeAttritionRate > 0 && <div style={{marginTop:8,fontSize:9,color:C.muted}}>Eff. AEs by Dec: {model.sellerRamp[11]?.effectiveAEs}</div>}
   </Card>
@@ -2084,7 +2087,7 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
             <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.04em"}}>Functional View</h3>
             {funcItems.map((it,i)=>{if(it.l?.startsWith("---"))return<div key={i} style={{height:1,background:C.border,margin:"3px 0"}}/>;return(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 10px",borderRadius:0,background:it.b?C.bg:"transparent"}}>
               <div style={{display:"flex",gap:6,alignItems:"center"}}>{it.i&&<div style={{width:14}}/>}<span style={{fontSize:12,fontWeight:it.b?700:400,color:it.b?C.text:C.muted}}>{it.l}</span>{it.pct!=null&&<span style={{fontSize:9,color:C.dim}}>({it.pct}%)</span>}</div>
-              <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'Space Mono',monospace"}}>{it.v<0?`(${fmt(Math.abs(it.v))})`:fmt(it.v)}</span>
+              <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'Chivo Mono',monospace"}}>{it.v<0?`(${fmt(Math.abs(it.v))})`:fmt(it.v)}</span>
             </div>);})}
           </Card>
 
@@ -2093,7 +2096,7 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
             <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.04em"}}>Behavioral View (Fixed / Variable)</h3>
             {behavItems.map((it,i)=>{if(it.l?.startsWith("---"))return<div key={i} style={{height:1,background:C.border,margin:"3px 0"}}/>;return(<div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 10px",borderRadius:0,background:it.b?C.bg:"transparent"}}>
               <span style={{fontSize:12,fontWeight:it.b?700:400,color:it.b?C.text:C.muted}}>{it.l}</span>
-              <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'Space Mono',monospace"}}>{fmt(it.v)}</span>
+              <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'Chivo Mono',monospace"}}>{fmt(it.v)}</span>
             </div>);})}
             <div style={{marginTop:12}}>
               <ResponsiveContainer width="100%" height={140}>
@@ -2102,8 +2105,8 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
                 </Pie><Tooltip formatter={v=>fmt(v)}/></PieChart>
               </ResponsiveContainer>
               <div style={{display:"flex",justifyContent:"center",gap:20}}>
-                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.dim}}>Fixed</div><div style={{fontSize:14,fontWeight:700,color:C.violet,fontFamily:"'Space Mono',monospace"}}>{fmt(p.totalFixedCosts)}</div></div>
-                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.dim}}>Variable</div><div style={{fontSize:14,fontWeight:700,color:C.amber,fontFamily:"'Space Mono',monospace"}}>{fmt(p.totalVariableCosts)}</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.dim}}>Fixed</div><div style={{fontSize:14,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.totalFixedCosts)}</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.dim}}>Variable</div><div style={{fontSize:14,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.totalVariableCosts)}</div></div>
               </div>
             </div>
           </Card>
@@ -2120,9 +2123,9 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                 <span style={{fontSize:11,fontWeight:600,color:C.text}}>{b.label}</span>
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  <span style={{fontSize:12,fontWeight:700,color:barColor,fontFamily:"'Space Mono',monospace"}}>{b.actual.toFixed(1)}%</span>
+                  <span style={{fontSize:12,fontWeight:700,color:barColor,fontFamily:"'Chivo Mono',monospace"}}>{b.actual.toFixed(1)}%</span>
                   <span style={{fontSize:9,color:C.dim}}>vs {b.benchMid}% mid</span>
-                  <span style={{fontSize:10,fontWeight:600,color:b.delta>0?C.amber:C.blue,fontFamily:"'Space Mono',monospace"}}>{b.deltaLabel}</span>
+                  <span style={{fontSize:10,fontWeight:600,color:b.delta>0?C.amber:C.blue,fontFamily:"'Chivo Mono',monospace"}}>{b.deltaLabel}</span>
                 </div>
               </div>
               <div style={{position:"relative",height:16,background:C.bg,borderRadius:0,overflow:"hidden"}}>
@@ -2142,7 +2145,7 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
           {/* CP-SQO benchmark */}
           <div style={{marginTop:8,padding:10,background:C.bg,borderRadius:0,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div><div style={{fontSize:9,color:C.dim,textTransform:"uppercase"}}>CP-SQO Actual vs Benchmark</div>
-              <div style={{fontSize:16,fontWeight:700,color:p.cpSqoRatio<=1?C.green:p.cpSqoRatio<=1.5?C.amber:C.rose,fontFamily:"'Space Mono',monospace"}}>{fmt(p.actualCpSqo)}</div></div>
+              <div style={{fontSize:16,fontWeight:700,color:p.cpSqoRatio<=1?C.green:p.cpSqoRatio<=1.5?C.amber:C.rose,fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.actualCpSqo)}</div></div>
             <div style={{textAlign:"right"}}><div style={{fontSize:9,color:C.dim}}>Benchmark: {fmt(inputs.cpSqoBenchmark)}</div>
               <div style={{fontSize:13,fontWeight:700,color:p.cpSqoRatio<=1?C.green:p.cpSqoRatio<=1.5?C.amber:C.rose}}>{p.cpSqoRatio.toFixed(1)}×</div></div>
           </div>
@@ -2178,7 +2181,7 @@ function GlideslopePage({model,inputs,setInputs,onInfoClick}){
             {[{l:"Start ARR",v:fmt(yt.startARR)},{l:"Target ARR",v:fmt(yt.targetARR)},{l:"New ARR Needed",v:fmt(yt.newARRNeeded)},{l:"Growth",v:`${yt.growthRate.toFixed(0)}%`},{l:"Deals",v:fN(yt.dealsNeeded)},{l:"SQOs",v:fN(yt.sqosNeeded)}].map(r=>(
               <div key={r.l} style={{display:"flex",justifyContent:"space-between",padding:"3px 0",borderBottom:`1px solid ${C.border}`}}>
                 <span style={{fontSize:10,color:C.muted}}>{r.l}</span>
-                <span style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Space Mono',monospace"}}>{r.v}</span>
+                <span style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{r.v}</span>
               </div>
             ))}
           </div>
@@ -2194,7 +2197,7 @@ function GlideslopePage({model,inputs,setInputs,onInfoClick}){
     <Card style={{marginBottom:18}}><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:6}}>Monthly Seasonal Weights</h3>
       <div style={{display:"flex",gap:4,alignItems:"flex-end",height:60,marginBottom:14}}>
         {model.monthWeights.map((w,i)=>(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-          <span style={{fontSize:8,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{(w*100).toFixed(0)}%</span>
+          <span style={{fontSize:8,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{(w*100).toFixed(0)}%</span>
           <div style={{width:"100%",background:C.accentD,borderRadius:0,height:`${Math.max(w*100*8,4)}px`,border:`1px solid ${C.accent}44`}}/>
           <span style={{fontSize:8,color:C.dim}}>{MONTHS[i]}</span>
         </div>))}
@@ -2215,7 +2218,7 @@ function QBRPage({model,inputs,onInfoClick}){const isSplit=inputs.revenueMode===
     {ny>1&&<div style={{display:"flex",gap:8,marginBottom:16}}>
       {Array.from({length:ny},(_,i)=>(<button key={i} onClick={()=>setYr(i)} style={{padding:"6px 16px",borderRadius:0,border:`1px solid ${yr===i?C.accent:C.border}`,background:yr===i?C.accentD:"transparent",color:yr===i?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600}}>{`Y${i+1}`}</button>))}
     </div>}
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>{qbr.map((q,i)=><Card key={q.quarter}><div style={{fontSize:16,fontWeight:700,color:C.ch[i],marginBottom:10}}>{q.quarter}</div>{[{l:"Revenue",v:fmt(q.revenue)},{l:"New ARR",v:fmt(q.newARR)},isSplit&&{l:"New Logo",v:fmt(q.newLogoARR)},isSplit&&{l:"Expansion",v:fmt(q.expansionARR)},{l:"Won",v:fN(q.deals)},{l:"Inquiries",v:fN(q.inquiries)},{l:"MQLs",v:fN(q.mqls)},{l:"SQLs",v:fN(q.sqls)},{l:"Meetings",v:fN(q.meetings)},{l:"SQOs",v:fN(q.sqos)},{l:"Pipeline",v:fmt(q.pipeline)},{l:"Stage 2",v:fmt(q.stage2Pipe)}].filter(Boolean).map(m=><div key={m.l} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${C.border}`}}><span style={{fontSize:10,color:C.muted}}>{m.l}</span><span style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Space Mono',monospace"}}>{m.v}</span></div>)}</Card>)}</div></div>);}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>{qbr.map((q,i)=><Card key={q.quarter}><div style={{fontSize:16,fontWeight:700,color:C.ch[i],marginBottom:10}}>{q.quarter}</div>{[{l:"Revenue",v:fmt(q.revenue)},{l:"New ARR",v:fmt(q.newARR)},isSplit&&{l:"New Logo",v:fmt(q.newLogoARR)},isSplit&&{l:"Expansion",v:fmt(q.expansionARR)},{l:"Won",v:fN(q.deals)},{l:"Inquiries",v:fN(q.inquiries)},{l:"MQLs",v:fN(q.mqls)},{l:"SQLs",v:fN(q.sqls)},{l:"Meetings",v:fN(q.meetings)},{l:"SQOs",v:fN(q.sqos)},{l:"Pipeline",v:fmt(q.pipeline)},{l:"Stage 2",v:fmt(q.stage2Pipe)}].filter(Boolean).map(m=><div key={m.l} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${C.border}`}}><span style={{fontSize:10,color:C.muted}}>{m.l}</span><span style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.v}</span></div>)}</Card>)}</div></div>);}
 
 function WeeklyPage({model,onInfoClick}){const w=model.weeklySimplified;return(<div><Header title="Weekly Tracker" sub="Weekly lifecycle targets" icon={Calendar} moduleId="weekly" onInfoClick={onInfoClick}/><div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:20}}><Metric label="Inquiries/wk" value={fN(w[0]?.inquiries)} color={C.ch[0]}/><Metric label="MQLs/wk" value={fN(w[0]?.mqls)} color={C.ch[1]}/><Metric label="SQLs/wk" value={fN(w[0]?.sqls)} color={C.ch[2]}/><Metric label="Meetings/wk" value={fN(w[0]?.meetings)} color={C.ch[3]}/><Metric label="SQOs/wk" value={fN(w[0]?.sqos)} color={C.ch[4]}/></div>
   <Card><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>Cumulative: Inquiries → SQLs → SQOs</h3><ResponsiveContainer width="100%" height={280}><AreaChart data={w}><defs><linearGradient id="wI" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.blue} stopOpacity={0.25}/><stop offset="95%" stopColor={C.blue} stopOpacity={0}/></linearGradient><linearGradient id="wQ" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.violet} stopOpacity={0.25}/><stop offset="95%" stopColor={C.violet} stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke={C.border}/><XAxis dataKey="weekLabel" stroke={C.dim} fontSize={10} interval={3} tickLine={false}/><YAxis stroke={C.dim} fontSize={11} tickLine={false} axisLine={false}/><Tooltip content={<TT/>}/><Area type="monotone" dataKey="cumulativeInquiries" stroke={C.blue} fill="url(#wI)" strokeWidth={2} name="Inquiries"/><Area type="monotone" dataKey="cumulativeSQOs" stroke={C.violet} fill="url(#wQ)" strokeWidth={2} name="SQOs"/></AreaChart></ResponsiveContainer></Card></div>);}
@@ -2237,7 +2240,7 @@ function NavSection({section,items,page,setPage}){
   return(<div style={{marginBottom:section?4:0}}>
     {section && (
       <button onClick={()=>setOpen(!open)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",
-        padding:"6px 10px",marginTop:8,border:"none",background:"transparent",cursor:"pointer",fontFamily:"'Oxanium',sans-serif"}}>
+        padding:"6px 10px",marginTop:8,border:"none",background:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
         <span style={{fontSize:9,fontWeight:700,color:hasActive?C.accent:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>{section}</span>
         <span style={{fontSize:10,color:C.dim,transform:open?"rotate(0deg)":"rotate(-90deg)",transition:"transform 0.15s"}}>▾</span>
       </button>
@@ -2248,7 +2251,7 @@ function NavSection({section,items,page,setPage}){
         <button key={n.id} onClick={()=>setPage(n.id)} style={{display:"flex",alignItems:"center",gap:9,width:"100%",
           padding:section?"7px 10px 7px 18px":"8px 10px",marginBottom:1,border:"none",borderRadius:0,
           background:a?C.accentD:"transparent",color:a?C.accent:C.muted,cursor:"pointer",fontSize:12,
-          fontWeight:a?600:400,textAlign:"left",transition:"all 0.15s",fontFamily:"'Oxanium',sans-serif"}}
+          fontWeight:a?600:400,textAlign:"left",transition:"all 0.15s",fontFamily:"'TWK Everett',sans-serif"}}
           onMouseEnter={e=>{if(!a){e.currentTarget.style.background=C.card;e.currentTarget.style.color=C.text}}}
           onMouseLeave={e=>{if(!a){e.currentTarget.style.background="transparent";e.currentTarget.style.color=C.muted}}}>
           <I size={13}/>{n.label}
@@ -2301,7 +2304,7 @@ const ONBOARDING_PRESETS = {
 };
 
 const ONBOARDING_STEPS = [
-  { id: "welcome", title: "Revenue Physics Engine", sub: "Before we model revenue, we need to declare how your company actually behaves — on a bad Tuesday, not in a board deck." },
+  { id: "welcome", title: "OpptyCon", sub: "Before we model revenue, we need to declare how your company actually behaves — on a bad Tuesday, not in a board deck." },
   { id: "motion", title: "GTM Operating Model", sub: "How do you actually acquire and close customers?" },
   { id: "scale", title: "Current Scale", sub: "Where are you now?" },
   { id: "capacity", title: "Capacity Constraints", sub: "Models assume infinite elasticity. Let's kill that fantasy." },
@@ -2360,7 +2363,7 @@ function OnboardingWizard({onComplete}){
         const isActive=value===o.value;
         return(<button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"16px 14px",borderRadius:0,
           border:`2px solid ${isActive?C.accent:C.border}`,background:isActive?C.accentD:"transparent",
-          cursor:"pointer",textAlign:"left",fontFamily:"'Oxanium',sans-serif",transition:"all 0.15s"}}>
+          cursor:"pointer",textAlign:"left",fontFamily:"'TWK Everett',sans-serif",transition:"all 0.15s"}}>
           <div style={{fontSize:13,fontWeight:700,color:isActive?C.accent:C.text}}>{o.label}</div>
           {o.desc&&<div style={{fontSize:10,color:C.muted,marginTop:4,lineHeight:1.4}}>{o.desc}</div>}
         </button>);
@@ -2375,7 +2378,7 @@ function OnboardingWizard({onComplete}){
       <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 12px",background:C.bg,borderRadius:0,border:`1px solid ${C.border}`}}>
         {prefix&&<span style={{color:C.dim,fontSize:13}}>{prefix}</span>}
         <input type="number" value={value} step={s} onChange={e=>onChange(parseFloat(e.target.value)||0)}
-          style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:14,fontFamily:"'Space Mono',monospace"}}/>
+          style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:14,fontFamily:"'Chivo Mono',monospace"}}/>
         {suffix&&<span style={{color:C.dim,fontSize:11}}>{suffix}</span>}
       </div>
     </div>
@@ -2440,7 +2443,7 @@ function OnboardingWizard({onComplete}){
           </div>
           <div style={{padding:12,background:`${C.accent}08`,borderRadius:0,border:`1px solid ${C.accent}15`}}>
             <div style={{fontSize:10,color:C.dim,marginBottom:4}}>Implied Growth Rate</div>
-            <div style={{fontSize:20,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>
+            <div style={{fontSize:20,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>
               {answers.startingARR>0?((answers.targetARR-answers.startingARR)/answers.startingARR*100).toFixed(0):0}%
             </div>
           </div>
@@ -2512,7 +2515,7 @@ function OnboardingWizard({onComplete}){
               {label:"Mktg Sourced",value:`${overrides.mktgSourcedPct||50}%`},
             ].map(b=>(<div key={b.label} style={{display:"flex",justifyContent:"space-between",padding:"8px 12px",background:C.bg,borderRadius:0}}>
               <span style={{fontSize:11,color:C.muted}}>{b.label}</span>
-              <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'Space Mono',monospace"}}>{b.value}</span>
+              <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{b.value}</span>
             </div>))}
           </div>
           <div style={{padding:12,background:`${C.green}08`,borderRadius:0,border:`1px solid ${C.green}20`}}>
@@ -2526,14 +2529,14 @@ function OnboardingWizard({onComplete}){
   };
 
   return(
-    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Oxanium',sans-serif",color:C.text,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'TWK Everett',sans-serif",color:C.text,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
       
       <div style={{width:"100%",maxWidth:720,padding:window.innerWidth<768?"20px 16px":"40px 32px"}}>
         {/* Logo */}
         <div style={{textAlign:"center",marginBottom:32}}>
-          <img src={LOGO_URL} alt="Heretics" style={{height:32,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
-          <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>Revenue Physics Engine</div>
+          <img src={LOGO_URL} alt="NetherOps" style={{height:32,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
+          <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>OpptyCon</div>
         </div>
 
         {/* Progress bar */}
@@ -2563,17 +2566,17 @@ function OnboardingWizard({onComplete}){
         <div style={{display:"flex",justifyContent:"space-between",marginTop:32}}>
           <button onClick={()=>canBack&&setStep(step-1)} style={{padding:"10px 20px",borderRadius:0,border:`1px solid ${C.border}`,
             background:"transparent",color:canBack?C.text:C.dim,cursor:canBack?"pointer":"default",fontSize:12,fontWeight:600,
-            fontFamily:"'Oxanium',sans-serif",opacity:canBack?1:0.3}}>
+            fontFamily:"'TWK Everett',sans-serif",opacity:canBack?1:0.3}}>
             Back
           </button>
           {step===ONBOARDING_STEPS.length-1 ? (
             <button onClick={()=>onComplete(buildOverrides())} style={{padding:"10px 28px",borderRadius:0,border:"none",
-              background:C.accent,color:"#fff",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"'Oxanium',sans-serif"}}>
+              background:C.accent,color:"#fff",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
               Launch Engine →
             </button>
           ) : (
             <button onClick={()=>setStep(step+1)} style={{padding:"10px 24px",borderRadius:0,border:"none",
-              background:C.accentD,color:C.accent,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"'Oxanium',sans-serif"}}>
+              background:C.accentD,color:C.accent,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
               Continue →
             </button>
           )}
@@ -2581,7 +2584,7 @@ function OnboardingWizard({onComplete}){
 
         {/* Skip link */}
         {step===0&&<div style={{textAlign:"center",marginTop:16}}>
-          <button onClick={()=>onComplete({})} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:11,fontFamily:"'Oxanium',sans-serif",textDecoration:"underline"}}>
+          <button onClick={()=>onComplete({})} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:11,fontFamily:"'TWK Everett',sans-serif",textDecoration:"underline"}}>
             Skip — use default inputs
           </button>
         </div>}
@@ -2615,14 +2618,14 @@ export default function App(){
   if(gated) return <AlphaGate onAccessGranted={()=>setGated(false)}/>;
   if(!onboarded) return <OnboardingWizard onComplete={handleOnboardComplete}/>;
 
-  return(<div style={{display:"flex",flexDirection:"column",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'Oxanium',sans-serif",color:C.text}}>
-    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+  return(<div style={{display:"flex",flexDirection:"column",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'TWK Everett',sans-serif",color:C.text}}>
+    <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
 
-    {/* ─── Heretics Site Nav Bar ─── */}
+    {/* ─── NetherOps Site Nav Bar ─── */}
     <div style={{position:"sticky",top:0,zIndex:200,padding:"0 20px",height:48,display:"flex",alignItems:"center",background:C.card,borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
       <a href="/" style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none",color:C.text}}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" style={{width:20,height:20}}><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:400,letterSpacing:"0.02em",textTransform:"lowercase"}}>governed revenue</span>
+        <span style={{fontFamily:"'Chivo Mono',monospace",fontSize:10,fontWeight:400,letterSpacing:"0.02em",textTransform:"lowercase"}}>governed revenue</span>
       </a>
       {!mobile && <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:2}}>
         {[
@@ -2636,10 +2639,10 @@ export default function App(){
           {href:"/agent-specs",label:"agent specs"},
           {href:"/infrastructure",label:"infrastructure"},
         ].map(l=>(
-          <a key={l.href} href={l.href} style={{fontFamily:"'Space Mono',monospace",fontSize:9,padding:"5px 8px",color:C.muted,textDecoration:"none",whiteSpace:"nowrap",transition:"color .3s",textTransform:"lowercase",letterSpacing:"0.02em"}}
+          <a key={l.href} href={l.href} style={{fontFamily:"'Chivo Mono',monospace",fontSize:9,padding:"5px 8px",color:C.muted,textDecoration:"none",whiteSpace:"nowrap",transition:"color .3s",textTransform:"lowercase",letterSpacing:"0.02em"}}
             onMouseEnter={e=>e.target.style.color=C.text} onMouseLeave={e=>e.target.style.color=C.muted}>{l.label}</a>
         ))}
-        <span style={{fontFamily:"'Space Mono',monospace",fontSize:9,padding:"5px 8px",color:C.accent,whiteSpace:"nowrap",textTransform:"lowercase",letterSpacing:"0.02em"}}>physics engine</span>
+        <span style={{fontFamily:"'Chivo Mono',monospace",fontSize:9,padding:"5px 8px",color:C.accent,whiteSpace:"nowrap",textTransform:"lowercase",letterSpacing:"0.02em"}}>physics engine</span>
       </div>}
       {mobile && <button onClick={()=>{setMobSiteNav(!mobSiteNav);setNavOpen(false);}} aria-label="Site menu" style={{marginLeft:"auto",display:"flex",background:"none",border:"none",cursor:"pointer",padding:8,flexDirection:"column",gap:3.5}}>
         <span style={{display:"block",width:16,height:1.5,background:C.text}}/><span style={{display:"block",width:16,height:1.5,background:C.text}}/><span style={{display:"block",width:16,height:1.5,background:C.text}}/>
@@ -2654,9 +2657,9 @@ export default function App(){
           {href:"/split-funnel-map",label:"motion map"},{href:"/lexicon",label:"lexicon"},{href:"/identity-graph",label:"identity graph"},
           {href:"/provenance",label:"provenance"},{href:"/agent-specs",label:"agent specs"},{href:"/infrastructure",label:"infrastructure"},
         ].map(l=>(
-          <a key={l.href} href={l.href} style={{fontFamily:"'Space Mono',monospace",fontSize:12,padding:"14px 0",color:C.muted,borderBottom:`1px solid ${C.border}`,textTransform:"lowercase",letterSpacing:"0.02em",display:"block",textDecoration:"none"}}>{l.label}</a>
+          <a key={l.href} href={l.href} style={{fontFamily:"'Chivo Mono',monospace",fontSize:12,padding:"14px 0",color:C.muted,borderBottom:`1px solid ${C.border}`,textTransform:"lowercase",letterSpacing:"0.02em",display:"block",textDecoration:"none"}}>{l.label}</a>
         ))}
-        <div style={{fontFamily:"'Space Mono',monospace",fontSize:12,padding:"14px 0",color:C.accent,textTransform:"lowercase",letterSpacing:"0.02em"}}>physics engine (current)</div>
+        <div style={{fontFamily:"'Chivo Mono',monospace",fontSize:12,padding:"14px 0",color:C.accent,textTransform:"lowercase",letterSpacing:"0.02em"}}>physics engine (current)</div>
       </div>
     )}
 
@@ -2668,7 +2671,7 @@ export default function App(){
         <button onClick={()=>setNavOpen(!navOpen)} style={{background:"transparent",border:"none",color:C.text,cursor:"pointer",padding:4}}>
           <Layers size={18}/>
         </button>
-        <div style={{fontSize:9,color:C.dim,letterSpacing:"0.06em",textTransform:"uppercase"}}>Revenue Physics Engine</div>
+        <div style={{fontSize:9,color:C.dim,letterSpacing:"0.06em",textTransform:"uppercase"}}>OpptyCon</div>
         <button onClick={()=>setDrivers(!drivers)} style={{background:"transparent",border:"none",color:drivers?C.violet:C.muted,cursor:"pointer",padding:4}}>
           <Settings size={16}/>
         </button>
@@ -2682,8 +2685,8 @@ export default function App(){
         <aside style={{width:mobile?260:220,height:"100vh",background:C.bgAlt,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",flexShrink:0,
           ...(mobile?{position:"fixed",left:0,top:0,zIndex:150}:{})}}>
           <div style={{padding:"16px 16px 20px"}}>
-            <img src={LOGO_URL} alt="Heretics" style={{height:28,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
-            <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>Revenue Physics Engine</div>
+            <img src={LOGO_URL} alt="NetherOps" style={{height:28,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
+            <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>OpptyCon</div>
           </div>
           <nav style={{flex:1,padding:"0 6px",overflowY:"auto"}}>
             {NAV_SECTIONS.map((sec,si)=>(
@@ -2691,20 +2694,20 @@ export default function App(){
             ))}
           </nav>
           <div style={{padding:"8px 6px",borderTop:`1px solid ${C.border}`}}>
-            <button onClick={()=>{setDrivers(!drivers);if(mobile)setNavOpen(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:drivers?C.violetD:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Oxanium',sans-serif"}}>
+            <button onClick={()=>{setDrivers(!drivers);if(mobile)setNavOpen(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:drivers?C.violetD:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'TWK Everett',sans-serif"}}>
               <Settings size={13}/>Global Drivers
             </button>
-            <button onClick={()=>setOnboarded(false)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'Oxanium',sans-serif"}}>
+            <button onClick={()=>setOnboarded(false)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'TWK Everett',sans-serif"}}>
               Re-run Setup
             </button>
           </div>
           <div style={{padding:"6px 12px 10px",borderTop:`1px solid ${C.border}`}}>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
               {[{id:"legal:privacy",label:"Privacy"},{id:"legal:terms",label:"Terms"},{id:"legal:security",label:"Security"},{id:"legal:disclaimer",label:"Disclaimer"}].map(l=>(
-                <button key={l.id} onClick={()=>navTo(l.id)} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:8,fontFamily:"'Oxanium',sans-serif",padding:0,textDecoration:"underline"}}>{l.label}</button>
+                <button key={l.id} onClick={()=>navTo(l.id)} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:8,fontFamily:"'TWK Everett',sans-serif",padding:0,textDecoration:"underline"}}>{l.label}</button>
               ))}
             </div>
-            <div style={{textAlign:"center",fontSize:7,color:C.dim,marginTop:4}}>© 2026 Heretic Engine. All rights reserved.</div>
+            <div style={{textAlign:"center",fontSize:7,color:C.dim,marginTop:4}}>© 2026 NetherOps. All rights reserved.</div>
           </div>
         </aside>
       </>
@@ -2739,7 +2742,7 @@ export default function App(){
               <Input compact label="Growth Rate" value={inputs.targetGrowthRate} onChange={v=>setInputs(p=>({...p,targetGrowthRate:v}))} suffix="%" step={5}/>
             )}
             <Input compact label="Starting ARR" value={inputs.startingARR} onChange={v=>setInputs(p=>({...p,startingARR:v}))} prefix="$" step={100000}/>
-            {inputs.targetMode==="growthRate"&&<div style={{padding:8,background:C.bg,borderRadius:0,marginBottom:8}}><div style={{fontSize:9,color:C.dim}}>Implied Target</div><div style={{fontSize:14,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{fmt(model.summary.targetARR)}</div></div>}
+            {inputs.targetMode==="growthRate"&&<div style={{padding:8,background:C.bg,borderRadius:0,marginBottom:8}}><div style={{fontSize:9,color:C.dim}}>Implied Target</div><div style={{fontSize:14,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(model.summary.targetARR)}</div></div>}
             <Input compact label="Avg Deal" value={inputs.avgDealSize} onChange={v=>setInputs(p=>({...p,avgDealSize:v}))} prefix="$" step={5000}/>
             <div style={{height:1,background:C.border,margin:"8px 0"}}/>
             <div style={{fontSize:9,fontWeight:700,color:C.violet,textTransform:"uppercase",marginBottom:6}}>Planning Horizon</div>
@@ -2799,7 +2802,7 @@ export default function App(){
                     <div style={{fontSize:8,color:C.dim}}>{m}</div>
                     <input type="number" value={inputs.seasonalWeights[i]} min={1} max={20} step={1}
                       onChange={e=>{const nw=[...inputs.seasonalWeights];nw[i]=parseInt(e.target.value)||1;setInputs(p=>({...p,seasonalWeights:nw}));}}
-                      style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"3px 2px",color:C.text,fontSize:10,fontFamily:"'Space Mono',monospace",textAlign:"center"}}/>
+                      style={{width:"100%",background:C.bg,border:`1px solid ${C.border}`,borderRadius:0,padding:"3px 2px",color:C.text,fontSize:10,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}/>
                   </div>
                 ))}
               </div>
@@ -2809,7 +2812,7 @@ export default function App(){
                 {QUARTERS.map((q,qi)=>{const qw=model.monthWeights.slice(qi*3,qi*3+3).reduce((s,w)=>s+w,0);return(
                   <div key={q} style={{textAlign:"center",padding:"4px 0",background:C.bg,borderRadius:0}}>
                     <div style={{fontSize:8,color:C.dim}}>{q}</div>
-                    <div style={{fontSize:11,fontWeight:700,color:C.accent,fontFamily:"'Space Mono',monospace"}}>{(qw*100).toFixed(0)}%</div>
+                    <div style={{fontSize:11,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{(qw*100).toFixed(0)}%</div>
                   </div>
                 );})}
               </div>
@@ -2839,23 +2842,23 @@ export default function App(){
             </div>
             <div style={{padding:"20px 24px",overflowY:"auto",maxHeight:"calc(80vh - 60px)",fontSize:12,color:C.muted,lineHeight:1.8}}>
               {page==="legal:privacy"&&<div>
-                <p>Heretic Engine does not collect, store, or process personal data through this application.</p>
+                <p>NetherOps does not collect, store, or process personal data through this application.</p>
                 <p>This application does not require account creation, does not request personal information, and does not store user inputs.</p>
-                <p>No financial, operational, or CRM data entered into this application is transmitted to or retained by Heretic Engine.</p>
+                <p>No financial, operational, or CRM data entered into this application is transmitted to or retained by NetherOps.</p>
                 <p>Standard server logs may be generated by the hosting provider for infrastructure and uptime monitoring purposes only.</p>
                 <p>This application does not use user inputs to train machine learning models or artificial intelligence systems.</p>
               </div>}
               {page==="legal:terms"&&<div>
                 <p>This application is provided for informational and demonstration purposes only.</p>
                 <p>All projections, calculations, and modeling outputs are illustrative and depend entirely on user-provided assumptions.</p>
-                <p>Heretic Engine makes no representations or warranties regarding the accuracy, completeness, or suitability of outputs for business decision-making.</p>
+                <p>NetherOps makes no representations or warranties regarding the accuracy, completeness, or suitability of outputs for business decision-making.</p>
                 <p>Users are solely responsible for validating assumptions and making independent business, financial, or operational decisions.</p>
-                <p>To the fullest extent permitted by law, Heretic Engine shall not be liable for any direct, indirect, incidental, or consequential damages arising from the use of this application.</p>
-                <p>All content, design, modeling logic, calculations, and visual frameworks contained in this application are proprietary intellectual property of Heretic Engine. Reproduction, redistribution, or commercial use without written permission is prohibited.</p>
+                <p>To the fullest extent permitted by law, NetherOps shall not be liable for any direct, indirect, incidental, or consequential damages arising from the use of this application.</p>
+                <p>All content, design, modeling logic, calculations, and visual frameworks contained in this application are proprietary intellectual property of NetherOps. Reproduction, redistribution, or commercial use without written permission is prohibited.</p>
                 <p>Use of this application constitutes acceptance of these terms.</p>
               </div>}
               {page==="legal:security"&&<div>
-                <p>This version of Heretic Engine does not persist user data.</p>
+                <p>This version of NetherOps does not persist user data.</p>
                 <p>No user accounts, CRM integrations, or external system connections are enabled in this environment.</p>
                 <p>The application is served over encrypted HTTPS connections.</p>
                 <p>No proprietary business data is stored or processed by this application.</p>

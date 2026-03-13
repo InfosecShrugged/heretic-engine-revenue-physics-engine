@@ -1,4 +1,4 @@
-// ─── Revenue Physics Engine ─── Core Calculation Model ───
+// ─── NetherOps OpptyCon ─── Core Calculation Model ───
 // Canonical lifecycle (contact-level):
 //   Inquiry → MQL → SQL → Meeting Held → SQO (Stage 2) → Closed Won
 //

@@ -1,4 +1,4 @@
-// ─── Revenue Physics Engine — Alpha Access Gate ───
+// ─── NetherOps OpptyCon — Alpha Access Gate ───
 // Collects email before granting engine access.
 // Uses Netlify Forms for zero-backend submission.
 // Stores access grant in localStorage so returning users pass through.
@@ -11,19 +11,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const STORAGE_KEY = 'rpe_alpha_access';
+const STORAGE_KEY = 'opptycon_alpha_access';
 const FORM_NAME = 'alpha-access';
 
 // ─── TOKENS (matches engine design system) ───
 const C = {
-  bg:"#f0f0f0", bgAlt:"#f8f8f8", card:"#ffffff", border:"#d9d9d9", borderL:"#ccc",
-  accent:"#ff6e3e", accentD:"rgba(255,110,62,0.10)", accentGlow:"rgba(255,110,62,0.20)",
-  green:"#2d8a56", greenD:"rgba(45,138,86,0.10)",
-  rose:"#d42e4a", roseD:"rgba(212,46,74,0.10)",
-  text:"#1a1918", muted:"#747474", dim:"#a3a3a3",
+  bg:"#EBEBEB", bgAlt:"#F4F4F2", card:"#FFFFFF",
+  border:"rgba(0,0,0,0.13)", borderL:"rgba(0,0,0,0.07)",
+  accent:"#111111", accentD:"rgba(0,0,0,0.06)", accentGlow:"rgba(0,0,0,0.12)",
+  lime:"#C8FF6E", limeD:"rgba(200,255,110,0.15)",
+  green:"#2E7D32", greenD:"rgba(46,125,50,0.10)",
+  rose:"#D44C38", roseD:"rgba(212,76,56,0.10)",
+  text:"#111111", muted:"#555555", dim:"#909090",
 };
 
-const LOGO_URL = "https://images.squarespace-cdn.com/content/v1/63d155fa93aba8529a061c8c/14b364ab-fc95-4c2d-ba6c-bca81e58a50f/HERETICS-LO.png?format=300w";
+const LOGO_URL = "/netherops-logo.svg";
 
 // ─── CHECK IF USER HAS ACCESS ───
 export function hasAlphaAccess() {
@@ -109,11 +111,11 @@ export default function AlphaGate({ onAccessGranted }) {
 
   return (
     <div style={{
-      minHeight: "100vh", background: C.bg, fontFamily: "'Oxanium', sans-serif",
+      minHeight: "100vh", background: C.bg, fontFamily: "'TWK Everett', sans-serif",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       padding: "24px 16px",
     }}>
-      <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+      <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -123,10 +125,10 @@ export default function AlphaGate({ onAccessGranted }) {
       >
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <img src={LOGO_URL} alt="Heretics" style={{ height: 32, marginBottom: 8, filter: "brightness(1.1)" }}
+          <img src={LOGO_URL} alt="NetherOps" style={{ height: 32, marginBottom: 8 }}
             onError={e => { e.target.style.display = 'none' }} />
           <div style={{
-            fontFamily: "'Space Mono', monospace", fontSize: 9, color: C.dim,
+            fontFamily: "'Chivo Mono', monospace", fontSize: 9, color: C.dim,
             letterSpacing: "0.1em", textTransform: "uppercase",
           }}>
             governed revenue architecture
@@ -154,7 +156,7 @@ export default function AlphaGate({ onAccessGranted }) {
                 }}>
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
                   <span style={{
-                    fontFamily: "'Space Mono', monospace", fontSize: 9, fontWeight: 700,
+                    fontFamily: "'Chivo Mono', monospace", fontSize: 9, fontWeight: 700,
                     color: C.accent, textTransform: "uppercase", letterSpacing: "0.06em",
                   }}>
                     Private Alpha
@@ -165,7 +167,7 @@ export default function AlphaGate({ onAccessGranted }) {
                   fontSize: 22, fontWeight: 700, color: C.text,
                   margin: "0 0 8px 0", lineHeight: 1.3,
                 }}>
-                  Revenue Physics Engine
+                  OpptyCon
                 </h1>
 
                 <p style={{
@@ -194,7 +196,7 @@ export default function AlphaGate({ onAccessGranted }) {
                       display: "flex", alignItems: "center", gap: 6,
                       fontSize: 11, color: C.text,
                     }}>
-                      <span style={{ color: C.accent, fontSize: 10, fontFamily: "'Space Mono', monospace" }}>→</span>
+                      <span style={{ color: C.accent, fontSize: 10, fontFamily: "'Chivo Mono', monospace" }}>→</span>
                       {f}
                     </div>
                   ))}
@@ -225,7 +227,7 @@ export default function AlphaGate({ onAccessGranted }) {
                       style={{
                         width: "100%", padding: "10px 14px",
                         background: C.bg, border: `1px solid ${C.border}`,
-                        fontSize: 14, fontFamily: "'Space Mono', monospace",
+                        fontSize: 14, fontFamily: "'Chivo Mono', monospace",
                         color: C.text, outline: "none",
                         transition: "border-color 0.2s",
                       }}
@@ -250,7 +252,7 @@ export default function AlphaGate({ onAccessGranted }) {
                         style={{
                           width: "100%", padding: "10px 14px",
                           background: C.bg, border: `1px solid ${C.border}`,
-                          fontSize: 12, fontFamily: "'Oxanium', sans-serif",
+                          fontSize: 12, fontFamily: "'TWK Everett', sans-serif",
                           color: C.text, outline: "none",
                         }}
                         onFocus={e => e.target.style.borderColor = C.accent}
@@ -271,7 +273,7 @@ export default function AlphaGate({ onAccessGranted }) {
                         style={{
                           width: "100%", padding: "10px 14px",
                           background: C.bg, border: `1px solid ${C.border}`,
-                          fontSize: 12, fontFamily: "'Oxanium', sans-serif",
+                          fontSize: 12, fontFamily: "'TWK Everett', sans-serif",
                           color: C.text, outline: "none",
                         }}
                         onFocus={e => e.target.style.borderColor = C.accent}
@@ -292,7 +294,7 @@ export default function AlphaGate({ onAccessGranted }) {
                       width: "100%", padding: "13px 24px", marginTop: 6,
                       background: submitting ? C.dim : C.accent,
                       border: "none", color: "#fff", cursor: submitting ? "wait" : "pointer",
-                      fontSize: 14, fontWeight: 700, fontFamily: "'Oxanium', sans-serif",
+                      fontSize: 14, fontWeight: 700, fontFamily: "'TWK Everett', sans-serif",
                       letterSpacing: "0.02em",
                       transition: "background 0.2s",
                     }}
@@ -352,10 +354,10 @@ export default function AlphaGate({ onAccessGranted }) {
         {/* Footer */}
         <div style={{
           textAlign: "center", marginTop: 20,
-          fontSize: 10, color: C.dim, fontFamily: "'Space Mono', monospace",
+          fontSize: 10, color: C.dim, fontFamily: "'Chivo Mono', monospace",
           letterSpacing: "0.04em",
         }}>
-          heretics.io — governed revenue architecture
+          netherops.io — governed revenue architecture
         </div>
       </motion.div>
     </div>

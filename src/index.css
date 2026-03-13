@@ -11,9 +11,9 @@
 html, body, #root {
   height: 100%;
   width: 100%;
-  background: #f0f0f0;
-  color: #1a1918;
-  font-family: 'Oxanium', system-ui, sans-serif;
+  background: #EBEBEB;
+  color: #111111;
+  font-family: 'TWK Everett', 'Helvetica Neue', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -27,11 +27,11 @@ html, body, #root {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: rgba(0,0,0,0.07);
   border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b5b5b5;
+  background: rgba(0,0,0,0.28);
 }
 
 /* Number input spinners */
@@ -45,7 +45,7 @@ input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  background: #d9d9d9;
+  background: rgba(0,0,0,0.13);
   border-radius: 0;
   outline: none;
 }
@@ -55,7 +55,7 @@ input[type="range"]::-webkit-slider-thumb {
   width: 14px;
   height: 14px;
   border-radius: 0;
-  background: #ff6e3e;
+  background: #111111;
   cursor: pointer;
   border: 2px solid #ffffff;
   box-shadow: none;
@@ -68,7 +68,7 @@ input[type="range"]::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 0;
-  background: #ff6e3e;
+  background: #111111;
   cursor: pointer;
   border: 2px solid #ffffff;
 }
@@ -85,6 +85,6 @@ input[type="range"]::-moz-range-thumb {
 /* Focus states */
 input:focus {
   outline: none;
-  border-color: #ff6e3e !important;
-  box-shadow: 0 0 0 2px rgba(255, 110, 62, 0.15);
+  border-color: #111111 !important;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
 }

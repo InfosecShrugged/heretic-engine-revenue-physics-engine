@@ -1,4 +1,4 @@
-// ─── Revenue Physics Engine — Data Adapters ───
+// ─── NetherOps OpptyCon — Data Adapters ───
 // Normalize external data sources → standard ActualsSnapshot schema.
 //
 // Usage:

@@ -30,7 +30,7 @@ const T = {
 
 // ─── LAYER DEFINITIONS ───
 const LAYERS = [
-  { id: "core", label: "Revenue Physics Engine", r: 68, color: T.core, type: "core" },
+  { id: "core", label: "OpptyCon", r: 68, color: T.core, type: "core" },
   { id: "governance", label: "Governance Layer", r: 152, color: T.governance, desc: "Constraint & Policy" },
   { id: "agent", label: "Agent Layer", r: 232, color: T.agent, desc: "Autonomous Decision" },
   { id: "execution", label: "Execution Systems", r: 308, color: T.execution, desc: "System of Record & Action" },
@@ -162,7 +162,7 @@ export default function ArchitectureDiagram() {
               System Architecture
             </div>
             <h1 style={{ fontSize: 22, fontWeight: 700, color: T.text, margin: 0, lineHeight: 1.2 }}>
-              Revenue Physics Engine
+              OpptyCon
             </h1>
             <p style={{ fontSize: 12, color: T.muted, margin: "6px 0 0", maxWidth: 400, lineHeight: 1.5 }}>
               Constraint → Policy → Agent → Execution → Market → Feedback
