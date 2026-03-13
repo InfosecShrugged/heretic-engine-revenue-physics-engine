@@ -2601,7 +2601,6 @@ export default function App(){
   const[infoPanel,setInfoPanel]=useState(null);
   const[inputs,setInputs]=useState(DEFAULT_INPUTS);
   const[navOpen,setNavOpen]=useState(false);
-  const[mobSiteNav,setMobSiteNav]=useState(false);
   const mobile=useMediaQuery("(max-width:768px)");
   const tablet=useMediaQuery("(max-width:1024px)");
   const model=useMemo(()=>computeModel(inputs),[inputs]);
@@ -2621,47 +2620,36 @@ export default function App(){
   return(<div style={{display:"flex",flexDirection:"column",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'TWK Everett',sans-serif",color:C.text}}>
     <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
 
-    {/* ─── NetherOps Site Nav Bar ─── */}
-    <div style={{position:"sticky",top:0,zIndex:200,padding:"0 20px",height:48,display:"flex",alignItems:"center",background:C.card,borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
-      <a href="/" style={{display:"flex",alignItems:"center",gap:8,textDecoration:"none",color:C.text}}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" style={{width:20,height:20}}><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        <span style={{fontFamily:"'Chivo Mono',monospace",fontSize:10,fontWeight:400,letterSpacing:"0.02em",textTransform:"lowercase"}}>governed revenue</span>
+    {/* Site back link */}
+    <div style={{
+      position:"sticky", top:0, zIndex:200,
+      padding:"0 20px", height:36,
+      display:"flex", alignItems:"center",
+      background: C.card,
+      borderBottom:`1px solid ${C.border}`,
+      flexShrink:0
+    }}>
+      <a href="https://app.heretics.io" style={{
+        fontFamily:"'Chivo Mono',monospace",
+        fontSize:10, fontWeight:500,
+        letterSpacing:"0.04em",
+        color: C.muted,
+        textDecoration:"none",
+        display:"flex", alignItems:"center", gap:6
+      }}>
+        ← netherops
       </a>
-      {!mobile && <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:2}}>
-        {[
-          {href:"/",label:"home"},
-          {href:"/spine-v4",label:"spine"},
-          {href:"/sovereignty-map",label:"sovereignty"},
-          {href:"/split-funnel-map",label:"motion"},
-          {href:"/lexicon",label:"lexicon"},
-          {href:"/identity-graph",label:"identity"},
-          {href:"/provenance",label:"provenance"},
-          {href:"/agent-specs",label:"agent specs"},
-          {href:"/infrastructure",label:"infrastructure"},
-        ].map(l=>(
-          <a key={l.href} href={l.href} style={{fontFamily:"'Chivo Mono',monospace",fontSize:9,padding:"5px 8px",color:C.muted,textDecoration:"none",whiteSpace:"nowrap",transition:"color .3s",textTransform:"lowercase",letterSpacing:"0.02em"}}
-            onMouseEnter={e=>e.target.style.color=C.text} onMouseLeave={e=>e.target.style.color=C.muted}>{l.label}</a>
-        ))}
-        <span style={{fontFamily:"'Chivo Mono',monospace",fontSize:9,padding:"5px 8px",color:C.accent,whiteSpace:"nowrap",textTransform:"lowercase",letterSpacing:"0.02em"}}>physics engine</span>
-      </div>}
-      {mobile && <button onClick={()=>{setMobSiteNav(!mobSiteNav);setNavOpen(false);}} aria-label="Site menu" style={{marginLeft:"auto",display:"flex",background:"none",border:"none",cursor:"pointer",padding:8,flexDirection:"column",gap:3.5}}>
-        <span style={{display:"block",width:16,height:1.5,background:C.text}}/><span style={{display:"block",width:16,height:1.5,background:C.text}}/><span style={{display:"block",width:16,height:1.5,background:C.text}}/>
-      </button>}
+      <span style={{
+        marginLeft:"auto",
+        fontFamily:"'Chivo Mono',monospace",
+        fontSize:9, fontWeight:600,
+        letterSpacing:"0.08em",
+        textTransform:"uppercase",
+        color: C.accent
+      }}>
+        opptycon
+      </span>
     </div>
-
-    {/* Mobile site nav overlay */}
-    {mobSiteNav && mobile && (
-      <div style={{position:"fixed",top:48,left:0,right:0,bottom:0,background:C.card,padding:"24px 20px",zIndex:199,display:"flex",flexDirection:"column",gap:4,overflowY:"auto"}}>
-        {[
-          {href:"/",label:"home"},{href:"/spine-v4",label:"spine"},{href:"/sovereignty-map",label:"sovereignty map"},
-          {href:"/split-funnel-map",label:"motion map"},{href:"/lexicon",label:"lexicon"},{href:"/identity-graph",label:"identity graph"},
-          {href:"/provenance",label:"provenance"},{href:"/agent-specs",label:"agent specs"},{href:"/infrastructure",label:"infrastructure"},
-        ].map(l=>(
-          <a key={l.href} href={l.href} style={{fontFamily:"'Chivo Mono',monospace",fontSize:12,padding:"14px 0",color:C.muted,borderBottom:`1px solid ${C.border}`,textTransform:"lowercase",letterSpacing:"0.02em",display:"block",textDecoration:"none"}}>{l.label}</a>
-        ))}
-        <div style={{fontFamily:"'Chivo Mono',monospace",fontSize:12,padding:"14px 0",color:C.accent,textTransform:"lowercase",letterSpacing:"0.02em"}}>physics engine (current)</div>
-      </div>
-    )}
 
     <div style={{display:"flex",flex:1,overflow:"hidden"}}>
 
