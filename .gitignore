@@ -3,12 +3,18 @@ node_modules/
 
 # Build output
 dist/
-heretics-site/dist/
-heretics-site/node_modules/
 
 # Local Netlify folder
-.netlify
+.netlify/
 
 # OS files
 .DS_Store
-heretic-engine-revenue-physics-engine
+__MACOSX/
+
+# Legacy duplicates (safe to delete)
+heretic-engine-revenue-physics-engine/
+heretics-site/
+
+# Editor
+.vscode/
+*.swp
