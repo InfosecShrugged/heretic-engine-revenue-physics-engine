@@ -334,7 +334,7 @@ const Header=({title,sub,icon:I,moduleId,onInfoClick})=>(
 
 const TT=({active,payload,label})=>{
   if(!active||!payload?.length)return null;
-  return(<div style={{background:"#d9d9d9",border:`1px solid ${C.border}`,borderRadius:0,padding:"10px 14px",boxShadow:"none"}}>
+  return(<div style={{background:C.bgAlt,border:`1px solid ${C.border}`,borderRadius:0,padding:"10px 14px",boxShadow:"none"}}>
     <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:6}}>{label}</div>
     {payload.map((p,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.muted,marginBottom:2}}>
       <div style={{width:7,height:7,borderRadius:"50%",background:p.color}}/>{p.name}: <span style={{color:C.text,fontWeight:600,fontFamily:"'Chivo Mono',monospace"}}>{typeof p.value==="number"&&Math.abs(p.value)>100?fmt(p.value):fN(p.value)}</span>
@@ -1212,7 +1212,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
           {p.fixedMktgIsFloorBound ? (
-            <button onClick={()=>setDebtTax(dt=>dt===0?1:0)} style={{padding:"5px 10px",borderRadius:0,border:`1px solid ${debtTax>0?"#2d8a56":"#c07800"}`,background:debtTax>0?"#2d8a5612":"#c0780012",color:debtTax>0?"#2d8a56":"#c07800",cursor:"pointer",fontSize:9,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
+            <button onClick={()=>setDebtTax(dt=>dt===0?1:0)} style={{padding:"5px 10px",borderRadius:0,border:`1px solid ${debtTax>0?C.green:C.amber}`,background:debtTax>0?`${C.green}12`:`${C.amber}12`,color:debtTax>0?C.green:C.amber,cursor:"pointer",fontSize:9,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
               {debtTax>0?"Strategic Overbuild":"Compression Active"}
             </button>
           ) : (
@@ -1300,33 +1300,33 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             <div style={{marginTop:4,fontSize:8,color:C.dim}}>{(p.fixedMktgItems?.find(f=>f.layer==="executive")?.pctOfRev||0).toFixed(1)}% of rev — derived</div>
           </div>
           {/* PMM Tier */}
-          <div style={{background:C.bgAlt,borderRadius:0,padding:12,borderTop:`3px solid #3b82f6`}}>
-            <div style={{fontSize:10,fontWeight:700,color:"#3b82f6",marginBottom:6}}>Product & Market Strategy</div>
+          <div style={{background:C.bgAlt,borderRadius:0,padding:12,borderTop:`3px solid ${C.blue}`}}>
+            <div style={{fontSize:10,fontWeight:700,color:C.blue,marginBottom:6}}>Product & Market Strategy</div>
             {Object.entries(p.tierTables?.PMM_TIERS||{}).map(([key,tier])=>{
               const isA=(inputs.pmmTier||"full")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,pmmTier:key}))}
                 style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
-                  border:`1px solid ${isA?"#3b82f6":C.borderMid}`,background:isA?"#3b82f612":"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
+                  border:`1px solid ${isA?C.blue:C.borderMid}`,background:isA?`${C.blue}12`:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
-                  <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#3b82f6":C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:9,fontWeight:700,color:isA?"#3b82f6":C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?C.blue:C.muted}}>{tier.label}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?C.blue:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
               </button>);
             })}
             {(inputs.pmmTier||"full")==="none"&&s.targetARR>=10000000&&
-              <div style={{marginTop:4,padding:4,background:"#d42e4a12",borderRadius:0,fontSize:8,color:"#d42e4a",fontWeight:600}}>⚠ Positioning risk above $10M</div>}
+              <div style={{marginTop:4,padding:4,background:`${C.red}12`,borderRadius:0,fontSize:8,color:C.red,fontWeight:600}}>⚠ Positioning risk above $10M</div>}
           </div>
           {/* MarTech Tier */}
-          <div style={{background:C.bgAlt,borderRadius:0,padding:12,borderTop:`3px solid #a3a3a3`}}>
-            <div style={{fontSize:10,fontWeight:700,color:"#a3a3a3",marginBottom:6}}>MarTech Infrastructure</div>
+          <div style={{background:C.bgAlt,borderRadius:0,padding:12,borderTop:`3px solid ${C.dim}`}}>
+            <div style={{fontSize:10,fontWeight:700,color:C.dim,marginBottom:6}}>MarTech Infrastructure</div>
             {Object.entries(p.tierTables?.MARTECH_TIERS||{}).map(([key,tier])=>{
               const isA=(inputs.coreMarTechTier||"standard")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,coreMarTechTier:key}))}
                 style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
-                  border:`1px solid ${isA?"#a3a3a3":C.borderMid}`,background:isA?"#a3a3a312":"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
+                  border:`1px solid ${isA?C.dim:C.borderMid}`,background:isA?`${C.dim}12`:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
-                  <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?"#a3a3a3":C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:9,fontWeight:700,color:isA?"#a3a3a3":C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?C.dim:C.muted}}>{tier.label}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?C.dim:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
               </button>);
             })}
@@ -1345,7 +1345,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         </div>
         <div style={{display:"grid",gridTemplateColumns:"180px 1fr",gap:12}}>
           <div style={{padding:10,background:C.bgAlt,borderRadius:0}}>
-            {[{key:"revEngineOps",label:"RevEngine Ops",color:"#c07800"},{key:"brandContent",label:"Brand & Content",color:"#2d8a56"},{key:"prAr",label:"PR / AR",color:"#b45bc0"}].map(item=>{
+            {[{key:"revEngineOps",label:"RevEngine Ops",color:C.amber},{key:"brandContent",label:"Brand & Content",color:C.green},{key:"prAr",label:"PR / AR",color:C.violet}].map(item=>{
               const emb=inputs.elasticMktgBreakdown||{revEngineOps:35,brandContent:40,prAr:25};
               return(<div key={item.key} style={{marginBottom:8}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
@@ -1360,9 +1360,9 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
             {(fixedItems||[]).filter(fi=>fi.layerType===2).map((fi,i)=>{
-              const colors=["#c07800","#2d8a56","#b45bc0"];
+              const colors=[C.amber,C.green,C.violet];
               const hs = fi.belowMinViable ? "at-risk" : fi.amount < fi.floor * 1.2 ? "thin" : "stable";
-              const hc = hs==="at-risk"?"#d42e4a":hs==="thin"?"#c07800":"#2d8a56";
+              const hc = hs==="at-risk"?C.red:hs==="thin"?C.amber:C.green;
               const ghostCaps = {revEngineOps:["Lifecycle automation","Lead scoring","Campaign ops"],brandContent:["Case studies","Content velocity","Video production"],prAr:["Analyst coverage","Thought leadership","Press"]};
               const ghosts = fi.belowMinViable ? (ghostCaps[fi.layer]||[]) : [];
               return(<div key={fi.name} style={{padding:10,background:C.bgAlt,borderRadius:0,borderLeft:`3px solid ${colors[i]}`}}>
@@ -1394,7 +1394,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             const isYou = Math.abs(s.targetARR / 1000000 - pt) < 1;
             return(<div key={pt} style={{padding:6,background:isYou?`${C.accent}12`:C.bg,borderRadius:0,textAlign:"center",border:isYou?`1px solid ${C.accent}30`:"1px solid transparent"}}>
               <div style={{fontSize:8,color:isYou?C.accent:C.dim,fontWeight:isYou?700:400}}>{isYou?"▸ ":""}${pt}M</div>
-              <div style={{fontSize:14,fontWeight:700,color:pct>15?"#d42e4a":pct>8?"#c07800":"#2d8a56",fontFamily:"'Chivo Mono',monospace"}}>{pct.toFixed(1)}%</div>
+              <div style={{fontSize:14,fontWeight:700,color:pct>15?C.red:pct>8?C.amber:C.green,fontFamily:"'Chivo Mono',monospace"}}>{pct.toFixed(1)}%</div>
               <div style={{fontSize:7,color:C.dim}}>{pct>12?"heavy":pct>6?"moderate":"lift wins"}</div>
             </div>);
           })}
@@ -2526,7 +2526,7 @@ function OnboardingWizard({onComplete}){
       <div style={{width:"100%",maxWidth:720,padding:window.innerWidth<768?"20px 16px":"40px 32px"}}>
         {/* Logo */}
         <div style={{textAlign:"center",marginBottom:32}}>
-          <img src={LOGO_URL} alt="NetherOps" style={{height:32,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
+          <img src={LOGO_URL} alt="NetherOps" style={{height:32,marginBottom:6,filter:C.bg==='#0F0F0F'?"invert(1) hue-rotate(180deg)":"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
           <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>OpptyCon</div>
         </div>
 
@@ -2562,7 +2562,7 @@ function OnboardingWizard({onComplete}){
           </button>
           {step===ONBOARDING_STEPS.length-1 ? (
             <button onClick={()=>onComplete(buildOverrides())} style={{padding:"10px 28px",borderRadius:0,border:"none",
-              background:C.accent,color:"#fff",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
+              background:C.accent,color:"#111",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
               Launch Engine →
             </button>
           ) : (
@@ -2592,11 +2592,16 @@ export default function App(){
   const[infoPanel,setInfoPanel]=useState(null);
   const[inputs,setInputs]=useState(DEFAULT_INPUTS);
   const[navOpen,setNavOpen]=useState(false);
+  const[themeMode,setThemeMode]=useState(()=>{
+    if(typeof window!=='undefined'){const saved=localStorage.getItem('opptycon-theme');if(saved)return saved;return window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}return'dark';
+  });
+  useEffect(()=>{setC(themeMode);document.documentElement.style.background=C.bg;document.documentElement.style.color=C.text;},[themeMode]);
+  const toggleTheme=()=>{const next=themeMode==='dark'?'light':'dark';setThemeMode(next);localStorage.setItem('opptycon-theme',next);};
   const mobile=useMediaQuery("(max-width:768px)");
   const tablet=useMediaQuery("(max-width:1024px)");
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
-  const pp={model,inputs,setInputs,onInfoClick,mobile,tablet};
+  const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
   const pages={dashboard:<DashboardPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
@@ -2640,6 +2645,9 @@ export default function App(){
       }}>
         opptycon
       </span>
+      <button onClick={toggleTheme} style={{marginLeft:8,background:'transparent',border:`1px solid ${C.borderMid}`,borderRadius:4,padding:'2px 8px',cursor:'pointer',fontFamily:"'Chivo Mono',monospace",fontSize:9,letterSpacing:'0.08em',textTransform:'uppercase',color:C.dim,display:'flex',alignItems:'center',gap:4}}>
+        {themeMode==='dark'?<Sun size={10}/>:<Moon size={10}/>}{themeMode==='dark'?'Light':'Dark'}
+      </button>
     </div>
 
     <div style={{display:"flex",flex:1,overflow:"hidden"}}>
@@ -2664,7 +2672,7 @@ export default function App(){
         <aside style={{width:mobile?260:220,height:"100vh",background:C.bgAlt,borderRight:`1px solid ${C.borderMid}`,display:"flex",flexDirection:"column",flexShrink:0,
           ...(mobile?{position:"fixed",left:0,top:0,zIndex:150}:{})}}>
           <div style={{padding:"16px 16px 20px"}}>
-            <img src={LOGO_URL} alt="NetherOps" style={{height:28,marginBottom:6,filter:"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
+            <img src={LOGO_URL} alt="NetherOps" style={{height:28,marginBottom:6,filter:C.bg==='#0F0F0F'?"invert(1) hue-rotate(180deg)":"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
             <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>OpptyCon</div>
           </div>
           <nav style={{flex:1,padding:"0 6px",overflowY:"auto"}}>
