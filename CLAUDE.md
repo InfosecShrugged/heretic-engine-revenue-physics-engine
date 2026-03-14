@@ -18,55 +18,67 @@
 | `netherops-site` | Marketing/content site | Static HTML/CSS/JS | Netlify |
 | `opptycon` | Revenue simulation engine | React/Vite/Tailwind | Built → netherops-site/tools/opptycon/ |
 
-## Design System: BigFilter · Signal Architecture
+## Design System: Three-Mode Dual Accent
 
-Source: `bigfilter-design-system.html`. Derived from scorecard.io.
+Live reference: `app.heretics.io/design-system/opptycon` (light+dark toggle).
+
+### The Accent Rule
+
+```
+Light surfaces → Rose #D64074 for TEXT accents, links, borders
+Light surfaces → Lime #C8FF6E for FILLS, badges, dots, buttons
+Dark surfaces  → Lime #C8FF6E for EVERYTHING
+Dark surfaces  → Rose #D64074 for governance alerts / constraint breaches ONLY
+Lime NEVER appears as text on light backgrounds (1.5:1 contrast — fails)
+```
 
 ### Fonts
 
-- **Display**: TWK Everett Light (300) — self-hosted `.otf` via `@font-face`
-- **Functional**: Chivo Mono — Google Fonts. All labels, CTAs, tags, nav, code
-- CSS: `--font-display: 'TWK Everett', 'Helvetica Neue', sans-serif;`
-- CSS: `--font-mono: 'Chivo Mono', 'Space Mono', monospace;`
+- **Display**: TWK Everett — self-hosted `.otf` (300/400/700)
+- **Functional**: Chivo Mono — Google Fonts. All labels, CTAs, tags, nav
+- CSS: `--font-display: 'TWK Everett', 'Helvetica Neue', Helvetica, Arial, sans-serif;`
+- CSS: `--font-mono: 'Chivo Mono', 'Space Mono', 'Courier New', monospace;`
 
-### Colors
+### Theme Tokens (src/tokens.js)
 
-- **Ground**: `#EBEBEB` (warm light gray — NOT white, NOT cool gray)
-- **Surface**: `#F4F4F2` · Cards/white: `#FFFFFF` · Raised/hover: `#E2E2DF`
-- **Ink**: `#111111` primary · `#555555` mid · `#909090` muted
-- **Inverse**: `#0F0F0F` bg · `#F5F5F3` text · `#AAAAAA` mid
-- **Accent**: `#111111` (black CTA) · `#C8FF6E` (lime — max 1 per screen)
-- **Borders**: `rgba(0,0,0,0.07)` subtle · `rgba(0,0,0,0.13)` mid · `rgba(0,0,0,0.28)` strong
-- **Semantic**: `#D44C38` error · `#2E7D32` success
+OpptyCon supports light and dark themes. The active theme is stored in module-level `let C` and swapped via `setC(mode)`. Import from `./tokens`:
+
+```javascript
+import { lightTheme, darkTheme, fonts, shadows } from './tokens';
+```
+
+**Light theme** — Rose accent for text, lime for fills:
+```javascript
+{ bg: '#EBEBEB', bgAlt: '#F4F4F2', surface: '#FFFFFF',
+  accent: '#D64074', lime: '#C8FF6E',
+  green: '#1A8A4A', amber: '#C07800', red: '#CC3340',
+  blue: '#2563EB', violet: '#7C4DDB',
+  text: '#111111', muted: '#555555', dim: '#909090',
+  border: 'rgba(0,0,0,0.07)', borderMid: 'rgba(0,0,0,0.13)',
+  chart: ['#D64074','#2563EB','#1A8A4A','#7C4DDB','#C07800','#0891B2'] }
+```
+
+**Dark theme** — Lime accent for everything, rose for governance alerts only:
+```javascript
+{ bg: '#0F0F0F', bgAlt: '#171717', surface: '#1C1C1C',
+  accent: '#C8FF6E', lime: '#C8FF6E', rose: '#D64074',
+  green: '#2ECC71', amber: '#F0A030', red: '#E74C3C',
+  blue: '#4A90D9', violet: '#8B5CF6',
+  text: '#F5F5F3', muted: '#AAAAAA', dim: '#666666',
+  border: 'rgba(255,255,255,0.06)', borderMid: 'rgba(255,255,255,0.10)',
+  chart: ['#C8FF6E','#4A90D9','#2ECC71','#8B5CF6','#F0A030','#D64074'] }
+```
 
 ### Rules
 
-1. TWK Everett is always weight 300 for headlines
+1. TWK Everett weight 300 for headlines, 400 for body
 2. Chivo Mono does ALL functional text — always uppercase for labels/CTAs
-3. Black is the primary accent. Lime is the attention color (1 per screen max)
-4. Ground is warm gray `#EBEBEB`, never pure white
+3. Rose is the text accent on light. Lime is the fill accent on light. Lime does everything on dark.
+4. Ground is warm gray `#EBEBEB` (light) or `#0F0F0F` (dark), never pure white
 5. Borders use rgba, not hex
-6. CTA buttons carry a `⠿` dot suffix
+6. Lime NEVER as text on light backgrounds
 7. Tags are pill-shaped with optional 5px status dots
-
-### Engine Token Object (App.jsx)
-
-```javascript
-const C = {
-  bg:"#EBEBEB", bgAlt:"#F4F4F2", card:"#FFFFFF",
-  border:"rgba(0,0,0,0.13)", borderL:"rgba(0,0,0,0.07)",
-  accent:"#111111", accentD:"rgba(0,0,0,0.06)",
-  lime:"#C8FF6E", limeD:"rgba(200,255,110,0.15)",
-  green:"#2E7D32", greenD:"rgba(46,125,50,0.10)",
-  amber:"#E89F0C", amberD:"rgba(232,159,12,0.10)",
-  rose:"#D44C38", roseD:"rgba(212,76,56,0.10)",
-  violet:"#6D28D9", violetD:"rgba(109,40,217,0.10)",
-  blue:"#2563EB", blueD:"rgba(37,99,235,0.10)",
-  text:"#111111", muted:"#555555", dim:"#909090",
-  inv:"#F5F5F3", invMid:"#AAAAAA", code:"#C8FF6E",
-  ch:["#111111","#2E7D32","#2563EB","#6D28D9","#E89F0C","#D44C38","#C8FF6E","#0891B2"],
-};
-```
+8. Semantic colors are brighter on dark backgrounds (Albers principle)
 
 ## Build & Deploy
 
