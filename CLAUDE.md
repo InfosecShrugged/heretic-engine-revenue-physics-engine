@@ -312,3 +312,8 @@ These are from a DIFFERENT project (BigFilter) or outdated instructions. Do NOT 
 | `#2d8a56` (old green) | `#1A8A4A` (light) / `#2ECC71` (dark) |
 | `#d42e4a` (old rose) | `#CC3340` (semantic red) |
 | "heretics" brand references | "NetherOps" / "OpptyCon" |
+
+### Known Bug: Escaped Template Literals
+When writing JS files with template literals, ALWAYS run `node --check filename.js` 
+after creating or editing. Claude Code sometimes escapes backticks as \` during file 
+creation, which silently kills the entire script with no visible error.
