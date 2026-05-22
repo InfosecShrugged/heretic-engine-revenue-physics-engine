@@ -71,6 +71,16 @@ const Input=({label,value,onChange,prefix="",suffix="",min,max,step=1,compact})=
 // ─── MODULE DOC REGISTRY ───
 // Every module gets a stable docRef, tooltip, and structured content
 const MODULE_DOCS = {
+  cfo: {
+    title: "CFO View", docRef: "/docs/modules/cfo",
+    tooltip: "Unit economics, cash sustainability, and the S&M investment band",
+    tldr: "A persona-curated subset of the model that answers the five questions a CFO asks in their first five minutes. Unit economics, burn vs revenue, S&M as % of revenue band, plus two honest 'not yet modeled' gaps (variance sensitivity, gross margin trajectory).",
+    included: ["LTV:CAC, CAC payback, Magic Number, Rule of 40 (the four unit economics tiles)", "Operating margin + annual burn + cumulative N-year cash required", "S&M as % of revenue with band visualization (underinvest / growth / stretch / burn zones)", "Acknowledged gaps: sensitivity analysis + gross margin trajectory"],
+    excluded: ["Functional cost detail (see P&L)", "Pipeline + capacity modeling (see CRO View / Sales Model)", "Channel-level CAC (see CAC Breakdown)"],
+    assumptions: ["All metrics derived from Global Drivers", "Burn = absolute value of operating loss if opMargin < 0", "Cumulative cash assumes flat burn rate across plan years (doesn't model Y2 cost scaling)", "S&M band: 30-55% growth, 55-60% stretch, ≥60% burn, <30% underinvest"],
+    whatChanges: ["Target ARR / growth rate", "All cost % inputs (G&A, R&D, Sales OPEX, Variable Mktg)", "Marketing budget tiers (executive, PMM, MarTech)", "Gross margin", "Planning years (changes cumulative cash math)"],
+    relatedModules: ["dashboard", "pnl", "sandmBudget", "cacBreakdown"],
+  },
   dashboard: {
     title: "Command Center", docRef: "/docs/modules/dashboard",
     tooltip: "Top-level health metrics and deal math summary",
@@ -360,6 +370,9 @@ const NAV_SECTIONS=[
   { section: null, items: [
     {id:"dashboard",label:"Command Center",icon:Gauge},
   ]},
+  { section: "Persona Views", items: [
+    {id:"cfo",label:"CFO View",icon:DollarSign},
+  ]},
   { section: "Revenue", items: [
     {id:"targets",label:"Target Tracker",icon:Target},
     {id:"glideslope",label:"Glideslope",icon:Target},
@@ -464,6 +477,135 @@ function DashboardPage({model,inputs,onInfoClick,mobile,tablet}){
           <CartesianGrid strokeDasharray="3 3" stroke={C.borderMid}/><XAxis dataKey="month" stroke={C.dim} fontSize={11} tickLine={false}/><YAxis stroke={C.dim} fontSize={11} tickFormatter={v=>fmt(v)} tickLine={false} axisLine={false}/><Tooltip content={<TT/>}/>
           <Area type="monotone" dataKey="totalARR" stroke={C.accent} fill={C.accentDim} strokeWidth={2} name="Projected"/><Line type="monotone" dataKey="targetARR" stroke={C.amber} strokeWidth={2} strokeDasharray="8 4" dot={false} name="Target"/>
         </ComposedChart></ResponsiveContainer></Card>
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// CFO PERSONA VIEW — unit economics + cash sustainability
+// First-5-min questions (from docs/PERSONA-AND-DATA-AUDIT.md §1):
+//   Q1: Is unit economics sustainable?      → tile row (LTV:CAC, CAC Payback, Magic, Rule of 40)
+//   Q2: Burn rate vs revenue projection?    → operating margin + computed annual burn
+//   Q3: S&M as % of revenue — band or burn? → visualized band with current position
+//   Q4: 20% miss → Y2 cash impact           → gap card (NOT MODELED — flagged honestly)
+//   Q5: Gross margin trajectory             → gap card (NOT MODELED — flagged honestly)
+// ════════════════════════════════════════════════════════════
+function CFOPage({model, inputs, onInfoClick, mobile}){
+  const { summary: s, pnl } = model;
+  // Burn = absolute value of negative operating income (only if opMargin < 0)
+  const isLosing = s.operatingIncome < 0;
+  const annualBurn = isLosing ? Math.abs(s.operatingIncome) : 0;
+  const monthlyBurn = annualBurn / 12;
+  const cumulativeBurnOverPlan = annualBurn * (inputs.planningYears || 2); // simple multi-year
+  // S&M band zones
+  const bandMax = 80; // visualization x-axis max
+  const bandPct = Math.min(100, (s.totalSAndMPct / bandMax) * 100);
+  const sAndMZone = s.totalSAndMPct < 30 ? "underinvest" : s.totalSAndMPct > 60 ? "burn" : s.totalSAndMPct > 55 ? "stretch" : "growth";
+  const sAndMZoneColor = sAndMZone === "underinvest" ? C.amber : sAndMZone === "burn" ? C.red : sAndMZone === "stretch" ? C.amber : C.green;
+  const sAndMZoneLabel = sAndMZone === "underinvest" ? "Underinvestment" : sAndMZone === "burn" ? "Burn territory" : sAndMZone === "stretch" ? "Stretch zone" : "Growth band";
+  return(<div>
+    <Header title="CFO View" sub="Unit economics, cash sustainability, and the S&M investment band" icon={DollarSign} moduleId="cfo" onInfoClick={onInfoClick}/>
+    
+    {/* Q1 — Unit Economics */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Is unit economics sustainable?</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:mobile?8:12,marginBottom:24}}>
+      <Metric label="LTV : CAC" value={`${s.ltvCac.toFixed(1)}x`} sub={s.ltvCac>=3?"Healthy (≥3x)":s.ltvCac>=2?"Watch (2-3x)":"Below threshold"} color={s.ltvCac>=3?C.green:s.ltvCac>=2?C.amber:C.red} delay={0}/>
+      <Metric label="CAC Payback" value={`${s.cacPayback.toFixed(1)} mo`} sub={`Target ${inputs.cacPaybackTarget||24}mo`} color={s.cacPayback<=(inputs.cacPaybackTarget||24)?C.green:s.cacPayback<=(inputs.cacPaybackTarget||24)*1.5?C.amber:C.red} delay={1}/>
+      <Metric label="Magic Number" value={s.magicNumber.toFixed(2)} sub={s.magicNumber>=0.75?"Efficient growth":s.magicNumber>=0.5?"Marginal":"Inefficient"} color={s.magicNumber>=0.75?C.green:s.magicNumber>=0.5?C.amber:C.red} delay={2}/>
+      <Metric label="Rule of 40" value={s.rule40.toFixed(0)} sub={`${(s.growthRate||0).toFixed(0)}% growth + ${(s.opMargin*100).toFixed(0)}% margin`} color={s.rule40>=40?C.green:C.amber} delay={3}/>
+    </div>
+    
+    {/* Q2 — Burn vs Revenue */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · Burn rate at plan vs revenue projection</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:18,marginBottom:isLosing?16:0}}>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>Operating Margin</div>
+          <div style={{fontSize:30,fontWeight:700,color:s.opMargin>=0?C.green:C.red,lineHeight:1.05,fontFamily:"'Chivo Mono',monospace"}}>{(s.opMargin*100).toFixed(1)}%</div>
+          <div style={{fontSize:11,color:C.dim,marginTop:6}}>{s.opMargin>=0?`Operating income ${fmt(s.operatingIncome)}`:`Operating loss ${fmt(Math.abs(s.operatingIncome))}`}</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>Annual Burn</div>
+          <div style={{fontSize:30,fontWeight:700,color:annualBurn>0?C.red:C.green,lineHeight:1.05,fontFamily:"'Chivo Mono',monospace"}}>{annualBurn>0?fmt(annualBurn):"—"}</div>
+          <div style={{fontSize:11,color:C.dim,marginTop:6}}>{annualBurn>0?`~${fmt(monthlyBurn)}/month`:"Profitable at plan"}</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>Cumulative {inputs.planningYears||2}-Yr</div>
+          <div style={{fontSize:30,fontWeight:700,color:cumulativeBurnOverPlan>0?C.red:C.green,lineHeight:1.05,fontFamily:"'Chivo Mono',monospace"}}>{cumulativeBurnOverPlan>0?fmt(cumulativeBurnOverPlan):"—"}</div>
+          <div style={{fontSize:11,color:C.dim,marginTop:6}}>{cumulativeBurnOverPlan>0?"Cash required at flat burn":"No cumulative burn at plan"}</div>
+        </div>
+      </div>
+      {isLosing && (
+        <div style={{padding:10,background:C.redDim,borderLeft:`2px solid ${C.red}`,marginTop:4}}>
+          <div style={{fontSize:11,color:C.text,lineHeight:1.55}}>
+            <strong style={{color:C.red}}>At plan, this business burns {fmt(monthlyBurn)} per month.</strong> Cumulative {inputs.planningYears||2}-year cash required is {fmt(cumulativeBurnOverPlan)} assuming flat burn rate (does not model Y2 cost scaling). Funding sufficiency depends on current cash position and bridge to profitability.
+          </div>
+        </div>
+      )}
+    </Card>
+    
+    {/* Q3 — S&M Investment Band */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · S&M investment band</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:14}}>
+        <div>
+          <span style={{fontSize:36,fontWeight:700,color:sAndMZoneColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{s.totalSAndMPct.toFixed(1)}%</span>
+          <span style={{fontSize:13,color:C.muted,marginLeft:8}}>S&M ÷ revenue</span>
+        </div>
+        <Badge label={sAndMZoneLabel} status={sAndMZone==="growth"?"good":sAndMZone==="burn"?"bad":"warning"}/>
+      </div>
+      {/* Band visualization */}
+      <div style={{position:"relative",height:28,background:C.bg,borderRadius:0,overflow:"hidden",marginBottom:8}}>
+        {/* Underinvest zone 0-30% */}
+        <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${(30/bandMax)*100}%`,background:`${C.amber}15`,borderRight:`1px dashed ${C.amber}66`}}/>
+        {/* Growth band 30-55% */}
+        <div style={{position:"absolute",left:`${(30/bandMax)*100}%`,top:0,bottom:0,width:`${(25/bandMax)*100}%`,background:`${C.green}20`,borderRight:`1px dashed ${C.amber}66`}}/>
+        {/* Stretch 55-60% */}
+        <div style={{position:"absolute",left:`${(55/bandMax)*100}%`,top:0,bottom:0,width:`${(5/bandMax)*100}%`,background:`${C.amber}20`,borderRight:`1px dashed ${C.red}66`}}/>
+        {/* Burn 60-80% */}
+        <div style={{position:"absolute",left:`${(60/bandMax)*100}%`,top:0,bottom:0,width:`${(20/bandMax)*100}%`,background:`${C.red}15`}}/>
+        {/* Current position marker */}
+        <motion.div initial={{left:0}} animate={{left:`${bandPct}%`}} transition={{duration:0.5}}
+          style={{position:"absolute",top:0,bottom:0,width:3,background:C.text,boxShadow:`0 0 6px ${C.text}66`,zIndex:5}}/>
+      </div>
+      {/* Zone labels */}
+      <div style={{position:"relative",height:18,marginBottom:14,fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>
+        <span style={{position:"absolute",left:`${(15/bandMax)*100}%`,transform:"translateX(-50%)",color:C.amber}}>UNDERINVEST</span>
+        <span style={{position:"absolute",left:`${(42.5/bandMax)*100}%`,transform:"translateX(-50%)",color:C.green}}>GROWTH 30-55%</span>
+        <span style={{position:"absolute",left:`${(57.5/bandMax)*100}%`,transform:"translateX(-50%)",color:C.amber}}>STRETCH</span>
+        <span style={{position:"absolute",left:`${(70/bandMax)*100}%`,transform:"translateX(-50%)",color:C.red}}>BURN ≥60%</span>
+      </div>
+      <div style={{fontSize:12,color:C.muted,lineHeight:1.6}}>
+        {sAndMZone==="growth"&&`At ${s.totalSAndMPct.toFixed(1)}% S&M, you're in the growth-stage band (35-55% is typical for SaaS targeting >50% YoY growth). Investing enough to fund the plan; not over-spending.`}
+        {sAndMZone==="underinvest"&&`At ${s.totalSAndMPct.toFixed(1)}% S&M, spend is below the 30% growth-band floor. Either the growth target is unrealistic given current investment, or budget needs to expand to fund the motion.`}
+        {sAndMZone==="stretch"&&`At ${s.totalSAndMPct.toFixed(1)}% S&M, you're in the stretch zone (55-60%). Sustainable only if growth rate justifies it — verify Rule of 40.`}
+        {sAndMZone==="burn"&&`At ${s.totalSAndMPct.toFixed(1)}% S&M, spend is in burn territory (≥60%). The business cannot sustain this without continuous funding. Either reduce S&M or accelerate revenue.`}
+      </div>
+    </Card>
+    
+    {/* Q4 + Q5 — honest gaps (not yet modeled) */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Q5 — Not yet modeled <span style={{color:C.amber,marginLeft:6}}>↘ on build queue</span></div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:14}}>
+      <Card style={{borderLeft:`2px solid ${C.amber}`,opacity:0.92}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+          <span style={{fontSize:9,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.08em"}}>Q4 · Coming soon</span>
+        </div>
+        <h3 style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:8,lineHeight:1.3}}>Sensitivity analysis: plan variance → cash impact</h3>
+        <p style={{fontSize:12,color:C.muted,lineHeight:1.6,marginBottom:0}}>If Y1 misses by 10/20/30%, what happens to Y2 cash burn and runway? The current Glideslope assumes plan attainment. A sensitivity slider is on the build queue.</p>
+      </Card>
+      <Card style={{borderLeft:`2px solid ${C.amber}`,opacity:0.92}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+          <span style={{fontSize:9,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.08em"}}>Q5 · Coming soon</span>
+        </div>
+        <h3 style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:8,lineHeight:1.3}}>Gross margin trajectory across the plan</h3>
+        <p style={{fontSize:12,color:C.muted,lineHeight:1.6,marginBottom:0}}>Currently a static input at {inputs.grossMargin}%. Modeled trajectory across the {inputs.planningYears||2}-year horizon (COGS scaling, infra leverage) is on the build queue.</p>
+      </Card>
+    </div>
+    
+    {/* Footer attribution */}
+    <div style={{marginTop:32,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Persona view · The {model.summary.fundingStage||"seriesB"} model assumes mid-market cyber benchmarks. Numbers are derived from Global Drivers — change them in the right-side panel. Every metric here is in the full module tree (Dashboard, P&L, S&M Budget) if you want to drill in.
     </div>
   </div>);
 }
@@ -2602,7 +2744,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     setInputs(prev=>({...prev,...overrides}));
