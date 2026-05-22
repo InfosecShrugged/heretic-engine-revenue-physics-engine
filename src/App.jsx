@@ -81,6 +81,16 @@ const MODULE_DOCS = {
     whatChanges: ["Target ARR / growth rate", "All cost % inputs (G&A, R&D, Sales OPEX, Variable Mktg)", "Marketing budget tiers (executive, PMM, MarTech)", "Gross margin", "Planning years (changes cumulative cash math)"],
     relatedModules: ["dashboard", "pnl", "sandmBudget", "cacBreakdown"],
   },
+  ceo: {
+    title: "CEO View", docRef: "/docs/modules/ceo",
+    tooltip: "On the number, biggest threat, investment posture",
+    tldr: "A persona-curated view that answers the five questions a CEO asks in their first five minutes. Plan confidence, single biggest threat to the plan (derived from model thresholds), burn assessment, and an investment-by-function band showing where to over- or under-spend versus benchmark.",
+    included: ["Q1: Target / Capacity / Confidence tiles", "Q2: Single-biggest-threat callout (derived from S&M, attainment, funnel, coverage, CAC thresholds)", "Q3: Operating margin + annual burn + Rule of 40", "Q4: G&A / R&D / Sales OPEX / Variable Mktg vs benchmark band (4 mini band tiles)", "Q5: Acknowledged gap — marginal-$ allocator"],
+    excluded: ["Full Governance Spine prioritized verdicts (see Spine module)", "Pipeline detail (see Pipeline / Funnel Health)", "Cost detail (see P&L)"],
+    assumptions: ["Threat detection priority: burn > capacity > funnel-broken > pipeline-gap > CAC > funnel-warning > underinvestment", "Confidence levels: <85% attainment = on track, 85-100% stretch, 100-120% behind, >120% unrealistic", "Investment bands sourced from inputs.costBenchmarks"],
+    whatChanges: ["Target ARR / growth rate", "AE count / quota / attainment", "All cost % inputs", "Funnel conversion rates"],
+    relatedModules: ["cfo", "dashboard", "spine", "sandmBudget"],
+  },
   dashboard: {
     title: "Command Center", docRef: "/docs/modules/dashboard",
     tooltip: "Top-level health metrics and deal math summary",
@@ -372,6 +382,7 @@ const NAV_SECTIONS=[
   ]},
   { section: "Persona Views", items: [
     {id:"cfo",label:"CFO View",icon:DollarSign},
+    {id:"ceo",label:"CEO View",icon:Activity},
   ]},
   { section: "Revenue", items: [
     {id:"targets",label:"Target Tracker",icon:Target},
@@ -606,6 +617,140 @@ function CFOPage({model, inputs, onInfoClick, mobile}){
     {/* Footer attribution */}
     <div style={{marginTop:32,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
       Persona view · The {model.summary.fundingStage||"seriesB"} model assumes mid-market cyber benchmarks. Numbers are derived from Global Drivers — change them in the right-side panel. Every metric here is in the full module tree (Dashboard, P&L, S&M Budget) if you want to drill in.
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// CEO PERSONA VIEW — on the number, biggest threat, investment posture
+// First-5-min questions (from docs/PERSONA-AND-DATA-AUDIT.md §1):
+//   Q1: Will we hit the number?                       → Capacity vs target + confidence
+//   Q2: Single biggest thing breaking the plan?       → Derived from model thresholds
+//   Q3: How much will we burn, is it affordable?      → Same as CFO Q2
+//   Q4: Where am I over/under-investing by function?  → 4 function-by-band tiles
+//   Q5: If I had +$1M, where would it go?             → gap card (NOT MODELED)
+// ════════════════════════════════════════════════════════════
+function CEOPage({model, inputs, onInfoClick, mobile}){
+  const { summary: s } = model;
+  // Q1 — capacity coverage
+  const capacityRatio = s.steadyStateQuota > 0 ? s.steadyStateQuota / s.newARRNeeded : 0;
+  const attainment = s.attainmentRequired || 100;
+  const confidence = attainment <= 85 ? "on-track" : attainment <= 100 ? "stretch" : attainment <= 120 ? "behind" : "unrealistic";
+  const confColor = confidence === "on-track" ? C.green : confidence === "stretch" ? C.amber : confidence === "behind" ? C.amber : C.red;
+  const confLabel = confidence === "on-track" ? "On track" : confidence === "stretch" ? "Stretch" : confidence === "behind" ? "Behind" : "Unrealistic";
+  // Q2 — derive the single biggest threat using model thresholds (no spine.js needed here)
+  let threat;
+  if (s.totalSAndMPct > 60) threat = { tier: "critical", label: "S&M burn", detail: `S&M at ${s.totalSAndMPct.toFixed(1)}% of revenue — over the 60% burn threshold.`, recommendation: "Reduce variable marketing or sales OPEX, or accelerate revenue to dilute the ratio.", linkModule: "pnl", linkLabel: "Open P&L" };
+  else if (attainment > 120) threat = { tier: "critical", label: "Capacity gap", detail: `Plan demands ${attainment.toFixed(0)}% AE attainment — historically only ~50% of AEs hit quota.`, recommendation: `Add ~${Math.ceil((attainment - 85) / 100 * inputs.aeCount)} AEs or raise deal size by ~${((attainment / 85 - 1) * 100).toFixed(0)}%.`, linkModule: "sales", linkLabel: "Open Sales Model" };
+  else if (s.funnelGrade === "D") threat = { tier: "critical", label: "Funnel broken", detail: `Funnel grade D — multiple stages below benchmarks.`, recommendation: "Fix the worst single stage first. Compounding effect through the rest of the funnel.", linkModule: "funnelHealth", linkLabel: "Open Funnel Health" };
+  else if (s.funnelGrade === "C") threat = { tier: "warning", label: "Funnel underperforming", detail: `Funnel grade C — leaving revenue on the table at multiple stages.`, recommendation: "Identify the stage with highest volume × lowest conversion — that's the highest-leverage fix.", linkModule: "funnelHealth", linkLabel: "Open Funnel Health" };
+  else if (s.coverageHealth === "bad") threat = { tier: "critical", label: "Pipeline coverage", detail: `Coverage health: bad — insufficient pipeline to forecast confidently.`, recommendation: "Front-load CREATE motion spend or extend the planning window.", linkModule: "pipeline", linkLabel: "Open Pipeline" };
+  else if (s.cacPayback > 36) threat = { tier: "warning", label: "CAC payback", detail: `Payback at ${s.cacPayback.toFixed(0)} months — unit economics eroding.`, recommendation: "Increase deal size, improve SQO→Won, or reduce channel CAC.", linkModule: "cacBreakdown", linkLabel: "Open CAC Breakdown" };
+  else if (s.totalSAndMPct < 30 && s.growthRate > 30) threat = { tier: "warning", label: "Underinvesting for the growth rate", detail: `Targeting ${s.growthRate.toFixed(0)}% growth with only ${s.totalSAndMPct.toFixed(1)}% S&M — below 30% growth-band floor.`, recommendation: "Either raise the budget or moderate the target.", linkModule: "sandmBudget", linkLabel: "Open S&M Budget" };
+  else threat = { tier: "ok", label: "No critical threats detected", detail: "Plan looks executable at current inputs. Standard quarterly reviews apply.", recommendation: null, linkModule: "spine", linkLabel: "Open Governance Spine" };
+  const threatBorder = threat.tier === "critical" ? C.red : threat.tier === "warning" ? C.amber : C.green;
+  const threatBg = threat.tier === "critical" ? C.redDim : threat.tier === "warning" ? C.amberDim : C.greenDim;
+  // Q3 — burn
+  const isLosing = s.operatingIncome < 0;
+  const annualBurn = isLosing ? Math.abs(s.operatingIncome) : 0;
+  const monthlyBurn = annualBurn / 12;
+  // Q4 — investment by function (4 cost categories vs benchmark)
+  const bench = inputs.costBenchmarks || {};
+  const fnCheck = (val, b) => {
+    if (!b) return { status: "ok", label: "—" };
+    if (val < b.low) return { status: "under", label: "Under-investing", color: C.amber };
+    if (val > b.high) return { status: "over", label: "Over-spending", color: C.red };
+    return { status: "in", label: "In band", color: C.green };
+  };
+  const functions = [
+    { key: "G&A", value: inputs.gAndAPct, b: bench.gAndAPct, sub: "Finance, Legal, HR, Exec, IT" },
+    { key: "R&D", value: inputs.rAndDPct, b: bench.rAndDPct, sub: "Product, eng, security R&D" },
+    { key: "Sales OPEX", value: inputs.salesOpexPct, b: bench.salesOpexPct, sub: "AE/SDR comp, tools, enablement" },
+    { key: "Variable Mktg", value: inputs.variableMktgPct, b: bench.variableMktgPct, sub: "Demand gen, programmatic" },
+  ].map(f => ({ ...f, check: fnCheck(f.value, f.b) }));
+  return(<div>
+    <Header title="CEO View" sub="Are we hitting the number, what's threatening it, and is the investment posture right" icon={Activity} moduleId="ceo" onInfoClick={onInfoClick}/>
+    
+    {/* Q1 — On the number */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Will we hit the number?</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:mobile?8:12,marginBottom:18}}>
+      <Metric label="Target ARR" value={fmt(s.targetARR)} sub={`Growth ${(s.growthRate||0).toFixed(0)}% from ${fmt(s.startingARR)}`} color={C.accent} delay={0}/>
+      <Metric label="New ARR Needed" value={fmt(s.newARRNeeded)} sub={`${s.dealsNeeded} new logo deals`} color={C.violet} delay={1}/>
+      <Metric label="Steady-State Capacity" value={fmt(s.steadyStateQuota)} sub={`${inputs.aeCount} AEs × ${fmt(inputs.aeQuota)} quota`} color={C.blue} delay={2}/>
+      <Metric label="Plan Confidence" value={confLabel} sub={`${attainment.toFixed(0)}% AE attainment required`} color={confColor} delay={3}/>
+    </div>
+    
+    {/* Q2 — Biggest threat */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · Single biggest threat to the plan</div>
+    <Card style={{marginBottom:24,borderLeft:`3px solid ${threatBorder}`,background:threatBg}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:14,flexWrap:"wrap"}}>
+        <div style={{flex:1,minWidth:240}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+            <span style={{fontSize:9,fontWeight:700,color:threatBorder,textTransform:"uppercase",letterSpacing:"0.08em"}}>{threat.tier === "critical" ? "Critical" : threat.tier === "warning" ? "Watch" : "Healthy"}</span>
+          </div>
+          <h3 style={{fontSize:20,fontWeight:600,color:C.text,marginBottom:8,lineHeight:1.2}}>{threat.label}</h3>
+          <p style={{fontSize:13,color:C.muted,lineHeight:1.6,marginBottom:threat.recommendation?12:0}}>{threat.detail}</p>
+          {threat.recommendation && <p style={{fontSize:12,color:C.text,lineHeight:1.6,padding:10,background:C.bg,borderRadius:0,borderLeft:`2px solid ${threatBorder}`}}><strong style={{color:threatBorder}}>Move:</strong> {threat.recommendation}</p>}
+        </div>
+        {threat.linkModule && (
+          <div style={{fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.06em"}}>
+            ↘ {threat.linkLabel}
+          </div>
+        )}
+      </div>
+    </Card>
+    
+    {/* Q3 — Burn affordable */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · How much will we burn — is it affordable?</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(3,1fr)",gap:mobile?8:12,marginBottom:24}}>
+      <Metric label="Operating Margin" value={`${(s.opMargin*100).toFixed(1)}%`} sub={s.opMargin>=0?fmt(s.operatingIncome)+" income":fmt(Math.abs(s.operatingIncome))+" loss"} color={s.opMargin>=0?C.green:C.red} delay={4}/>
+      <Metric label="Annual Burn" value={annualBurn>0?fmt(annualBurn):"—"} sub={annualBurn>0?`~${fmt(monthlyBurn)}/mo`:"Profitable at plan"} color={annualBurn>0?C.red:C.green} delay={5}/>
+      <Metric label="Rule of 40" value={s.rule40.toFixed(0)} sub={s.rule40>=40?"Healthy":"Below threshold"} color={s.rule40>=40?C.green:C.red} delay={6}/>
+    </div>
+    
+    {/* Q4 — Investment by function */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Where am I over-spending and under-investing?</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:14}}>
+        {functions.map((fn,i)=>{
+          const b = fn.b;
+          if (!b) return null;
+          const max = b.high * 1.5;
+          const valPct = Math.min(100, (fn.value / max) * 100);
+          const lowPct = (b.low / max) * 100;
+          const highPct = (b.high / max) * 100;
+          return(
+            <div key={fn.key} style={{padding:14,background:C.bg,border:`1px solid ${C.borderMid}`,borderTop:`2px solid ${fn.check.color || C.dim}`}}>
+              <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{fn.key}</div>
+              <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{fn.value}%</div>
+              <div style={{fontSize:9,color:C.dim,marginTop:3,marginBottom:8}}>{fn.sub}</div>
+              {/* Band visualization */}
+              <div style={{position:"relative",height:6,background:C.surface,borderRadius:0,overflow:"hidden",marginBottom:6}}>
+                <div style={{position:"absolute",left:`${lowPct}%`,top:0,bottom:0,width:`${highPct-lowPct}%`,background:`${C.green}25`}}/>
+                <motion.div initial={{left:0}} animate={{left:`${valPct}%`}} transition={{duration:0.4,delay:i*0.05}}
+                  style={{position:"absolute",top:0,bottom:0,width:2,background:fn.check.color || C.text}}/>
+              </div>
+              <div style={{fontSize:9,color:fn.check.color||C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{fn.check.label} · band {b.low}-{b.high}%</div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+    
+    {/* Q5 — gap (marginal $ allocator) */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 — Not yet modeled <span style={{color:C.amber,marginLeft:6}}>↘ on build queue</span></div>
+    <Card style={{marginBottom:18,borderLeft:`2px solid ${C.amber}`,opacity:0.92}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+        <span style={{fontSize:9,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.08em"}}>Q5 · Coming soon</span>
+      </div>
+      <h3 style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:8,lineHeight:1.3}}>Marginal $1M allocator: where would the next dollar earn the most?</h3>
+      <p style={{fontSize:12,color:C.muted,lineHeight:1.6}}>The CEO's hardest question. Sensitivity to incremental spend across CREATE / CONVERT / ACCELERATE motions, AE headcount, or deal size — ranked by marginal-$-to-marginal-ARR. The plumbing exists (Revenue Motions has the unit economics); the visualization is on the build queue.</p>
+    </Card>
+    
+    {/* Footer attribution */}
+    <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Persona view · Threat detection derives from model thresholds, not the full Governance Spine — open the Spine module for the prioritized verdict list. Every metric here is in the full module tree if you need to drill in.
     </div>
   </div>);
 }
@@ -2744,7 +2889,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     setInputs(prev=>({...prev,...overrides}));
