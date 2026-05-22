@@ -1258,8 +1258,121 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
       </ResponsiveContainer>
     </Card>
     
+    {/* Q2 NEW — Mid-funnel + meetings (BDR layer, MQL→SQO velocity, close rates) */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · Mid-funnel — what marketing+BDR delivers through SQO</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:mobile?8:12,marginBottom:14}}>
+      <Metric label="Meetings Set" value={fN(s.meetingsSetNeeded)} sub={`${s.meetingShowRate}% show rate`} color={C.blue} delay={4}/>
+      <Metric label="Meetings Held" value={fN(s.meetingsNeeded)} sub={`${fN(s.meetingsSetNeeded - s.meetingsNeeded)} no-show/cancel`} color={C.text} delay={5}/>
+      <Metric label="MQL → SQO" value={`${((inputs.mqlToSqlRate*inputs.sqlToMeetingRate*inputs.meetingToSqoRate/1e4)).toFixed(1)}%`} sub={`Qualification yield through 3 gates`} color={C.violet} delay={6}/>
+      <Metric label="SQO → Won" value={`${inputs.sqoToWonRate}%`} sub={`Sales close rate`} color={inputs.sqoToWonRate>=25?C.green:C.amber} delay={7}/>
+    </div>
+    <Card style={{marginBottom:24}}>
+      <div style={{fontSize:11,fontWeight:600,color:C.muted,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.04em"}}>Funnel velocity — median days per stage</div>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(5,1fr)",gap:10}}>
+        {[
+          {label:"Stage 1→2", days:inputs.velStage1to2, color:C.accent},
+          {label:"Stage 2→3", days:inputs.velStage2to3, color:C.blue},
+          {label:"Stage 3→4", days:inputs.velStage3to4, color:C.violet},
+          {label:"Stage 4→5", days:inputs.velStage4to5, color:C.amber},
+          {label:"Stage 5→Close", days:inputs.velStage5toClose, color:C.text},
+        ].map(v=>(
+          <div key={v.label} style={{padding:10,background:C.bg,borderTop:`2px solid ${v.color}`}}>
+            <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{v.label}</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{v.days}<span style={{fontSize:10,color:C.muted}}>d</span></div>
+          </div>
+        ))}
+      </div>
+      <div style={{marginTop:10,fontSize:11,color:C.muted,lineHeight:1.6}}>
+        Total cycle: <strong style={{color:C.text}}>{s.totalCycleDays} days</strong>. The mid-funnel sales-stage time (Stage 2→3 and Stage 3→4) is where MQL-to-revenue lag accumulates. Watch for stage durations creeping; that's the leading indicator of pipeline stalls.
+      </div>
+    </Card>
+
+    {/* Q3 NEW — Stage 2 pipeline + coverage */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · Stage 2 pipeline — the pipeline that forecasts</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Stage 2 Pipeline Required</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(s.stage2Pipeline)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>{fN(s.sqosNeeded)} SQOs × {fmt(inputs.avgDealSize)} avg deal</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Pipeline Coverage</div>
+          <div style={{fontSize:22,fontWeight:700,color:s.coverageHealth==="good"?C.green:s.coverageHealth==="warning"?C.amber:C.red,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{inputs.pipelineCoverage}%</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>{s.coverageHealth==="good"?"Healthy (≥350%)":s.coverageHealth==="warning"?"At threshold":"Below floor"}</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Mktg-Sourced Share</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{inputs.mktgSourcedPct}%</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>{fN(s.mktgSQOs)} of {fN(s.sqosNeeded)} SQOs come from marketing</div>
+        </div>
+      </div>
+      <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+        Stage 2 is the pipeline that forecasts — AE-promoted, qualified opportunities. If BDRs report to marketing, this entire metric is in your ownership. The board cares about Stage 2 coverage, not raw lead count.
+      </div>
+    </Card>
+
+    {/* Q4 NEW — Channel performance cohort */}
+    {channels && channels.length > 0 && (
+      <>
+        <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Channel performance cohort — through-funnel</div>
+        <Card style={{marginBottom:24}}>
+          <div style={{display:"grid",gridTemplateColumns:mobile?"1.5fr repeat(3,1fr)":"1.4fr repeat(6,1fr)",gap:8,padding:"6px 0",fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",borderBottom:`1px solid ${C.borderMid}`}}>
+            <div>Channel</div>
+            <div style={{textAlign:"right"}}>Inq</div>
+            <div style={{textAlign:"right"}}>SQOs</div>
+            <div style={{textAlign:"right"}}>Deals</div>
+            {!mobile && <div style={{textAlign:"right"}}>Win %</div>}
+            {!mobile && <div style={{textAlign:"right"}}>CAC</div>}
+            {!mobile && <div style={{textAlign:"right"}}>ROI</div>}
+          </div>
+          {channels.map((ch,i)=>{
+            const winPct = ch.sqos > 0 ? (ch.deals/ch.sqos*100).toFixed(0) : "—";
+            return(
+              <div key={i} style={{display:"grid",gridTemplateColumns:mobile?"1.5fr repeat(3,1fr)":"1.4fr repeat(6,1fr)",gap:8,padding:"9px 0",borderBottom:i<channels.length-1?`1px solid ${C.borderMid}`:"none",fontSize:11,alignItems:"baseline"}}>
+                <div style={{color:C.text,fontWeight:500}}>{ch.name}</div>
+                <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{fN(ch.channelInquiries)}</div>
+                <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.blue}}>{fN(ch.sqos)}</div>
+                <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.green}}>{fN(ch.deals)}</div>
+                {!mobile && <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:winPct!=="—"&&parseFloat(winPct)>=25?C.green:C.amber}}>{winPct}%</div>}
+                {!mobile && <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{fmt(ch.cac)}</div>}
+                {!mobile && <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:ch.roi>=2?C.green:ch.roi>=1?C.amber:C.red,fontWeight:600}}>{ch.roi?ch.roi.toFixed(1):"0"}x</div>}
+              </div>
+            );
+          })}
+          <div style={{marginTop:14,fontSize:11,color:C.muted,lineHeight:1.6}}>
+            Through-funnel cohort by CREATE channel — inquiries flow through MQL/SQL/Meeting/SQO at the same global funnel rates, so SQO and Deal counts here assume each channel's leads convert at the same rate. In practice channels have different quality — overlay actual win rates from CRM to find which channels actually deliver pipeline that closes.
+          </div>
+        </Card>
+
+        {/* Quarter cohort — seasonal volume distribution */}
+        {model.qbrData && model.qbrData.length > 0 && (
+          <Card style={{marginBottom:24}}>
+            <div style={{fontSize:11,fontWeight:600,color:C.muted,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.04em"}}>Quarter cohort — pipeline contribution by quarter</div>
+            <div style={{display:"grid",gridTemplateColumns:`120px repeat(${Math.min(model.qbrData.length,8)},1fr)`,gap:8}}>
+              <div></div>
+              {model.qbrData.slice(0,8).map((q,i)=>(
+                <div key={i} style={{fontSize:9,fontWeight:700,color:i<4?C.text:C.dim,textAlign:"center",fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{q.quarter?q.quarter.split(" ")[0]:`Q${i+1}`}</div>
+              ))}
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Inquiries</div>
+              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{fN(q.inquiries)}</div>))}
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Meetings</div>
+              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.blue,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{fN(q.meetings)}</div>))}
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>SQOs</div>
+              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{fN(q.sqos)}</div>))}
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Deals</div>
+              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.green,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{fN(q.deals)}</div>))}
+            </div>
+            <div style={{marginTop:12,fontSize:11,color:C.muted,lineHeight:1.6}}>
+              Same global conversion rates applied to each quarter's seasonal weight (NORAM B2B pattern by default). Volumes shift across quarters; conversion stays constant in the model. Real cohort drift (e.g. Q1 leads converting worse than Q4) requires CRM-actuals overlay — on build queue.
+            </div>
+          </Card>
+        )}
+      </>
+    )}
+
     {/* Q2 — CAC variants */}
-    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · CAC payback at current motion mix</div>
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · CAC payback at current motion mix</div>
     <Card style={{marginBottom:24}}>
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:14}}>
         {cacs.map((c,i)=>{
@@ -1283,7 +1396,7 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
     {/* Q3 — Channel concentration */}
     {topChannel && (
       <>
-        <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · Channel concentration risk</div>
+        <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q6 · Channel concentration risk</div>
         <Card style={{marginBottom:24,borderLeft:`3px solid ${concentrationRisk?C.amber:C.green}`}}>
           <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:14,flexWrap:"wrap"}}>
             <div style={{fontSize:32,fontWeight:700,color:concentrationRisk?C.amber:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{topChannel.pct}%</div>
@@ -1312,7 +1425,7 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
     )}
     
     {/* Q4 — Fixed/Variable split */}
-    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Fixed / variable marketing split</div>
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q7 · Fixed / variable marketing split</div>
     <Card style={{marginBottom:24}}>
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
         <div>
@@ -1345,7 +1458,7 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
     </Card>
     
     {/* Q5 — Motion mix */}
-    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · CREATE / CONVERT / ACCELERATE split</div>
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q8 · CREATE / CONVERT / ACCELERATE split</div>
     <Card style={{marginBottom:18}}>
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14}}>
         {motionData.map((m,i)=>{
