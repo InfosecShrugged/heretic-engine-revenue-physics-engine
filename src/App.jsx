@@ -246,6 +246,215 @@ function HorizonPlannerCard({model, inputs, mobile}){
 }
 
 
+
+// ════════════════════════════════════════════════════════════
+// PHASE 0 — CRM READINESS DIAGNOSTIC (workstream E)
+// Before the engine math means anything, the source data has to be
+// trustworthy. This diagnostic scores the CRM hygiene foundations
+// across four categories: definitions+capture, pipeline integrity,
+// attribution+demand, forecasting. Output is a readiness grade and
+// prioritized fixes for what's broken.
+// ════════════════════════════════════════════════════════════
+const PHASE_0_CHECKLIST = {
+  foundation: {
+    label: "Foundation — definitions + data capture",
+    desc: "If these aren't true, every number downstream is suspect.",
+    color: "accent",
+    questions: [
+      { id: "mql_def", text: "MQL, SQL, SQO have documented definitions consistently applied across marketing + sales", fix: "Write definitions in a shared doc. Walk both teams through them. Track misclassifications until <5%." },
+      { id: "stage_dates", text: "Stage entry/exit timestamps are captured automatically (not manually backfilled)", fix: "Turn on stage history tracking in SFDC/HubSpot. Velocity math is impossible without this." },
+      { id: "lead_source", text: "Lead source is captured at creation (required field, not nullable)", fix: "Make Lead Source required. Audit existing leads with missing source — usually 20-40% of historical records." },
+      { id: "conv_measured", text: "Conversion rates have been measured from actual CRM data in the last 90 days", fix: "Pull real conversion rates from CRM cohorts. The defaults in this model are mid-market benchmarks — your reality is probably different." },
+    ],
+  },
+  pipeline: {
+    label: "Pipeline integrity",
+    desc: "Pipeline you can't trust forecasts a number you can't hit.",
+    color: "blue",
+    questions: [
+      { id: "stage2_criteria", text: "Stage 2 (SQO) has explicit promotion criteria; AEs trained on it", fix: "Document Stage 2 entry criteria (BANT or MEDDICC subset). Train AEs. Audit existing Stage 2 for misclassifications — purge or demote." },
+      { id: "owner_next", text: "Every open opportunity has an owner + next step + next-step date", fix: "Make next step + date required on Stage 2+. Set up a missing-next-step report; review weekly." },
+      { id: "stage_velocity", text: "Median time-in-stage is tracked per stage", fix: "Build a stage-velocity report. Required for the Velocity module + horizon planner to be meaningful." },
+      { id: "lost_reasons", text: "Lost reasons are required on closed-lost; categorical (not free text); reviewed quarterly", fix: "Define ~6 lost-reason categories (price, no decision, lost-to-competitor, product gap, etc.). Required on close. Quarterly readout." },
+    ],
+  },
+  attribution: {
+    label: "Attribution + demand",
+    desc: "Channel ROI is undecidable without these.",
+    color: "violet",
+    questions: [
+      { id: "channel_attr", text: "Channel attribution captured on every lead AND opportunity", fix: "Enforce UTM tracking on inbound + manual source-of-origin on outbound. No null sources." },
+      { id: "meeting_held", text: "Set vs held meetings distinguished; show rate tracked", fix: "Calendar integration or manual held-confirmation. Track no-shows / cancels separately. ~20% gap between set and held is normal." },
+      { id: "mktg_rule", text: "Marketing-sourced vs AE-sourced has an unambiguous rule (no recurring fights)", fix: "Document the rule (first-touch / last-touch / SAL handoff). Get VP Sales + VP Marketing to sign off. Re-audit quarterly." },
+      { id: "multi_touch", text: "Multi-touch — or consistent single-touch — attribution is implemented", fix: "Pick a model — pure first-touch is fine. The discipline is consistency, not sophistication." },
+    ],
+  },
+  forecast: {
+    label: "Forecasting",
+    desc: "Without these, the model's output is louder than your real visibility.",
+    color: "amber",
+    questions: [
+      { id: "forecast_cats", text: "Forecast categories used meaningfully (Commit / Best Case / Pipeline) — not just AE moods", fix: "Define entry criteria per category. Train AEs. Use them in weekly forecast calls. Audit accuracy retrospectively." },
+      { id: "forecast_accuracy", text: "Forecast accuracy is tracked vs actual quarter-over-quarter", fix: "Snapshot forecast at week 1 of each quarter; compare to actuals at QE. Track delta. Coach AEs on systematic bias." },
+      { id: "stale_flag", text: "Stale opportunities (no activity 30+ days) are flagged and reviewed weekly", fix: "Set up stalled-deal report. Review weekly in pipeline meeting. Force close-lost on 60+ day stalls without action." },
+    ],
+  },
+};
+
+function CRMReadinessPage({onInfoClick, mobile}){
+  const [answers, setAnswers] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('opptycon-phase0-answers') || '{}'); }
+    catch(e) { return {}; }
+  });
+  const setAnswer = (id, value) => {
+    setAnswers(prev => {
+      const next = {...prev, [id]: value};
+      try { localStorage.setItem('opptycon-phase0-answers', JSON.stringify(next)); } catch(e) {}
+      return next;
+    });
+  };
+
+  // Score: Yes=2, Unsure=1, No=0, unanswered=0
+  const allQuestions = Object.values(PHASE_0_CHECKLIST).flatMap(cat => cat.questions);
+  const totalQuestions = allQuestions.length;
+  const maxScore = totalQuestions * 2;
+  const score = allQuestions.reduce((sum, q) => sum + (answers[q.id] === "yes" ? 2 : answers[q.id] === "unsure" ? 1 : 0), 0);
+  const pct = (score / maxScore) * 100;
+  const grade = pct >= 90 ? "A" : pct >= 70 ? "B" : pct >= 50 ? "C" : pct >= 25 ? "D" : "F";
+  const gradeColor = grade === "A" ? C.green : grade === "B" ? C.green : grade === "C" ? C.amber : C.red;
+  const verdict = grade === "A" ? "CRM is ready for revenue modeling"
+    : grade === "B" ? "Mostly ready — close the gaps in your weakest category"
+    : grade === "C" ? "Foundation is shaky — read modeling output as directional only"
+    : "Phase 0 hygiene needed before modeling makes sense";
+
+  const failedQuestions = allQuestions.filter(q => answers[q.id] === "no");
+  const unsureQuestions = allQuestions.filter(q => answers[q.id] === "unsure");
+  const answered = allQuestions.filter(q => answers[q.id]).length;
+
+  return(<div>
+    <Header title="Phase 0 — CRM Readiness" sub="Before the engine math means anything, the source data has to be trustworthy. Score yours." icon={BookOpen} moduleId="phase0" onInfoClick={onInfoClick}/>
+
+    {/* Score summary */}
+    <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"2fr 3fr",gap:14,marginBottom:24}}>
+      <Card style={{borderLeft:`3px solid ${gradeColor}`}}>
+        <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:8,flexWrap:"wrap"}}>
+          <div style={{fontSize:72,fontWeight:700,color:gradeColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{grade}</div>
+          <div>
+            <div style={{fontSize:14,fontWeight:600,color:C.text}}>{score} <span style={{color:C.muted,fontWeight:400}}>/ {maxScore}</span></div>
+            <div style={{fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{pct.toFixed(0)}% · {answered} of {totalQuestions} answered</div>
+          </div>
+        </div>
+        <div style={{fontSize:12,color:C.text,fontWeight:500,lineHeight:1.5}}>{verdict}</div>
+      </Card>
+      <Card>
+        <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>Score breakdown</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+          {Object.entries(PHASE_0_CHECKLIST).map(([key, cat])=>{
+            const catScore = cat.questions.reduce((sum, q) => sum + (answers[q.id] === "yes" ? 2 : answers[q.id] === "unsure" ? 1 : 0), 0);
+            const catMax = cat.questions.length * 2;
+            const catPct = (catScore/catMax)*100;
+            const catColor = catPct >= 70 ? C.green : catPct >= 40 ? C.amber : C.red;
+            return(
+              <div key={key} style={{padding:10,background:C.bg,borderLeft:`2px solid ${catColor}`}}>
+                <div style={{fontSize:10,color:C.text,fontWeight:600,marginBottom:4}}>{cat.label.split(" — ")[0]}</div>
+                <div style={{fontSize:9,color:catColor,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{catScore}/{catMax} · {catPct.toFixed(0)}%</div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+    </div>
+
+    {/* Top fixes — if any */}
+    {(failedQuestions.length > 0 || unsureQuestions.length > 0) && (
+      <Card style={{marginBottom:24,borderLeft:`3px solid ${C.amber}`}}>
+        <div style={{fontSize:10,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Top fixes — what to do first</div>
+        {failedQuestions.slice(0,3).map((q,i)=>(
+          <div key={q.id} style={{padding:"10px 0",borderBottom:i<Math.min(2,failedQuestions.length-1)?`1px solid ${C.borderMid}`:"none"}}>
+            <div style={{fontSize:11,fontWeight:600,color:C.red,marginBottom:4,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>NO · {q.id}</div>
+            <div style={{fontSize:12,color:C.text,marginBottom:6,lineHeight:1.5}}>{q.text}</div>
+            <div style={{fontSize:11,color:C.muted,lineHeight:1.6,paddingLeft:14,borderLeft:`2px solid ${C.amber}`}}>Fix: {q.fix}</div>
+          </div>
+        ))}
+        {failedQuestions.length === 0 && unsureQuestions.slice(0,3).map((q,i)=>(
+          <div key={q.id} style={{padding:"10px 0",borderBottom:i<Math.min(2,unsureQuestions.length-1)?`1px solid ${C.borderMid}`:"none"}}>
+            <div style={{fontSize:11,fontWeight:600,color:C.amber,marginBottom:4,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>UNSURE · {q.id}</div>
+            <div style={{fontSize:12,color:C.text,marginBottom:6,lineHeight:1.5}}>{q.text}</div>
+            <div style={{fontSize:11,color:C.muted,lineHeight:1.6,paddingLeft:14,borderLeft:`2px solid ${C.amber}`}}>Find out: {q.fix}</div>
+          </div>
+        ))}
+      </Card>
+    )}
+
+    {/* Category cards with all questions */}
+    {Object.entries(PHASE_0_CHECKLIST).map(([key, cat])=>{
+      const catScore = cat.questions.reduce((sum, q) => sum + (answers[q.id] === "yes" ? 2 : answers[q.id] === "unsure" ? 1 : 0), 0);
+      const catMax = cat.questions.length * 2;
+      const catColor = cat.color === "accent" ? C.accent : cat.color === "blue" ? C.blue : cat.color === "violet" ? C.violet : cat.color === "amber" ? C.amber : C.text;
+      return(
+        <Card key={key} style={{marginBottom:18}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6,flexWrap:"wrap",gap:8}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:catColor,marginBottom:2}}>{cat.label}</div>
+              <div style={{fontSize:11,color:C.muted}}>{cat.desc}</div>
+            </div>
+            <div style={{fontSize:11,fontWeight:700,color:catColor,fontFamily:"'Chivo Mono',monospace"}}>{catScore}/{catMax}</div>
+          </div>
+          <div style={{marginTop:10}}>
+            {cat.questions.map((q,i)=>{
+              const ans = answers[q.id];
+              return(
+                <div key={q.id} style={{padding:"12px 0",borderTop:i>0?`1px solid ${C.borderMid}`:"none"}}>
+                  <div style={{fontSize:12,color:C.text,lineHeight:1.55,marginBottom:8}}>{q.text}</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                    {[{v:"yes",l:"Yes",c:C.green},{v:"unsure",l:"Unsure",c:C.amber},{v:"no",l:"No",c:C.red}].map(opt=>(
+                      <button key={opt.v} onClick={()=>setAnswer(q.id, opt.v === ans ? null : opt.v)}
+                        style={{padding:"6px 14px",borderRadius:0,border:`1.5px solid ${ans===opt.v?opt.c:C.borderMid}`,
+                          background:ans===opt.v?`${opt.c}20`:"transparent",color:ans===opt.v?opt.c:C.muted,
+                          cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"'TWK Everett',sans-serif",
+                          textTransform:"uppercase",letterSpacing:"0.06em",transition:"all 0.15s"}}>{opt.l}</button>
+                    ))}
+                  </div>
+                  {ans === "no" && (
+                    <div style={{marginTop:8,padding:10,background:`${C.red}08`,borderLeft:`2px solid ${C.red}`,fontSize:11,color:C.muted,lineHeight:1.6}}>
+                      <strong style={{color:C.red,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",fontSize:9,textTransform:"uppercase"}}>Fix:</strong> {q.fix}
+                    </div>
+                  )}
+                  {ans === "unsure" && (
+                    <div style={{marginTop:8,padding:10,background:`${C.amber}08`,borderLeft:`2px solid ${C.amber}`,fontSize:11,color:C.muted,lineHeight:1.6}}>
+                      <strong style={{color:C.amber,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",fontSize:9,textTransform:"uppercase"}}>Find out:</strong> {q.fix}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      );
+    })}
+
+    {/* Reset + footer */}
+    <Card style={{marginBottom:18}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+        <div style={{fontSize:11,color:C.muted,lineHeight:1.6,flex:1,minWidth:240}}>
+          Answers persist locally (your browser only). Re-take when you've worked on the failed items. The goal isn't a perfect A — it's knowing where the modeling output is real vs directional.
+        </div>
+        <button onClick={()=>{
+          if(confirm('Reset all Phase 0 answers?')) {
+            setAnswers({});
+            try { localStorage.removeItem('opptycon-phase0-answers'); } catch(e) {}
+          }
+        }} style={{padding:"8px 14px",borderRadius:0,border:`1px solid ${C.borderMid}`,background:"transparent",color:C.muted,cursor:"pointer",fontSize:10,fontWeight:600,fontFamily:"'TWK Everett',sans-serif",textTransform:"uppercase",letterSpacing:"0.04em"}}>Reset answers</button>
+      </div>
+    </Card>
+
+    <div style={{marginTop:14,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Phase 0 framework · Read the diagnostic alongside the Data Confidence callout on persona views — they answer different questions (inputs you've confirmed vs CRM that can support those inputs). Both being green is the bar for forecast-grade output.
+    </div>
+  </div>);
+}
+
+
 // ─── MODULE DOC REGISTRY ───
 // Every module gets a stable docRef, tooltip, and structured content
 const MODULE_DOCS = {
@@ -318,6 +527,16 @@ const MODULE_DOCS = {
     assumptions: ["Worst-stage detection: prioritizes 'bad' status stages, then 'good' stages with largest gap to 'great'", "Highest-leverage: largest absolute pp gap to 'great' benchmark (compounding through downstream stages)"],
     whatChanges: ["All funnel conversion rates", "Channel mix + CPL/cost params", "AE count, ramp, attrition", "All cost % inputs"],
     relatedModules: ["funnelHealth", "channels", "pipeline", "sellerRamp"],
+  },
+  phase0: {
+    title: "Phase 0 — CRM Readiness", docRef: "/docs/modules/phase0",
+    tooltip: "Score CRM hygiene foundations before trusting the model",
+    tldr: "Before the engine math means anything, the source data has to be trustworthy. This diagnostic scores ~15 yes/no questions across four categories — foundation, pipeline integrity, attribution, forecasting. Output is an A-F readiness grade and prioritized fixes for what's broken. Read alongside the Data Confidence callout on persona views.",
+    included: ["Foundation: MQL/SQL/SQO definitions, stage dates, lead source capture, conversion rate measurement", "Pipeline integrity: Stage 2 criteria, owner+next-step hygiene, stage velocity tracking, lost reason discipline", "Attribution: channel attribution, set-vs-held meetings, mktg-sourced rule, single/multi-touch consistency", "Forecasting: category usage, accuracy tracking, stale-deal flagging", "Top fixes panel — surfaces the 3 highest-priority NO answers", "Per-category subscore + overall A-F grade"],
+    excluded: ["Auto-scoring from CRM API (this is self-assessment)", "Specific tooling recommendations (the questions are tool-agnostic)"],
+    assumptions: ["Yes = 2 pts, Unsure = 1 pt, No = 0 pts", "Grade thresholds: A ≥90%, B ≥70%, C ≥50%, D ≥25%, F <25%", "Answers persist in localStorage — survive page reloads, not browser clears"],
+    whatChanges: ["Your honest yes/no/unsure answers — this is the only module where input quality is the entire point"],
+    relatedModules: ["spine", "dashboard"],
   },
   dashboard: {
     title: "Command Center", docRef: "/docs/modules/dashboard",
@@ -641,6 +860,7 @@ const NAV_SECTIONS=[
     {id:"pnl",label:"P&L",icon:DollarSign},
   ]},
   { section: "System", items: [
+    {id:"phase0",label:"Phase 0 — CRM Readiness",icon:BookOpen},
     {id:"spine",label:"Governance Spine",icon:Shield},
     {id:"data",label:"Data Sources",icon:Zap},
     {id:"architecture",label:"Architecture",icon:Activity},
@@ -1199,7 +1419,7 @@ function CROPage({model, inputs, onInfoClick, mobile}){
 //   Q5: Right CREATE/CONVERT/ACCELERATE split?         → Motion mix + ROI per motion
 // ════════════════════════════════════════════════════════════
 function CMOPage({model, inputs, onInfoClick, mobile}){
-  const { summary: s, monthly, motions, pnl } = model;
+  const { summary: s, monthly, motions, pnl, channels } = model;
   // Q1 — monthly demand
   const y1Months = (monthly||[]).filter(m => m.yearIndex === 0);
   const totalInq = y1Months.reduce((sum,m)=>sum+(m.monthlyInquiries||0),0);
@@ -4029,7 +4249,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,phase0:<CRMReadinessPage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     const{_persona, ...modelInputs} = overrides || {};
