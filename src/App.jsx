@@ -3403,6 +3403,7 @@ const ONBOARDING_PRESETS = {
 
 const ONBOARDING_STEPS = [
   { id: "welcome", title: "OpptyCon", sub: "Before we model revenue, we need to declare how your company actually behaves — on a bad Tuesday, not in a board deck." },
+  { id: "role", title: "Who are you?", sub: "We'll route you to a pane of glass tuned to your seat. You can change views any time from the left nav." },
   { id: "motion", title: "GTM Operating Model", sub: "How do you actually acquire and close customers?" },
   { id: "scale", title: "Current Scale", sub: "Where are you now?" },
   { id: "capacity", title: "Capacity Constraints", sub: "Models assume infinite elasticity. Let's kill that fantasy." },
@@ -3414,6 +3415,7 @@ const ONBOARDING_STEPS = [
 function OnboardingWizard({onComplete}){
   const[step,setStep]=useState(0);
   const[answers,setAnswers]=useState({
+    role: "ceo",
     salesMotion: "sales-led",
     buyerSegment: "mid",
     entryPoint: "inbound",
@@ -3452,6 +3454,7 @@ function OnboardingWizard({onComplete}){
       aeCount: answers.aeCount,
       aeRampMonths: answers.aeRampMonths,
       grossMargin: answers.grossMargin,
+      _persona: answers.role,  // routed by handleOnboardComplete; not consumed by engine
     };
   };
 
@@ -3496,6 +3499,22 @@ function OnboardingWizard({onComplete}){
           </p>
         </div>
       );
+      case "role": return(<div>
+        <div style={{marginBottom:14,fontSize:11,color:C.muted,lineHeight:1.6}}>
+          The model is the same across personas — the framing changes. Pick the view you'll spend most of your time in.
+          The full 17-module nav is always available from the left sidebar.
+        </div>
+        <ChoiceGrid columns={2} value={answers.role} onChange={v=>u("role",v)} options={[
+          {value:"ceo",label:"CEO",desc:"Plan confidence + biggest threat + investment posture."},
+          {value:"cfo",label:"CFO",desc:"Unit economics + burn + S&M as % of revenue band."},
+          {value:"cro",label:"CRO / VP Sales",desc:"Capacity, quarterly coverage, hire timing, SDR engine."},
+          {value:"cmo",label:"CMO / VP Marketing",desc:"Monthly demand, CAC variants, channel concentration, motion mix."},
+          {value:"vc",label:"VC / Investor",desc:"Efficiency metrics, glideslope credibility, investability."},
+          {value:"board",label:"Board Member",desc:"Quarterly waterfall, biggest miss, attainment, assumptions."},
+          {value:"revops",label:"RevOps / Operator",desc:"Funnel diagnostic, channel CAC, capacity decomposition, leverage points."},
+          {value:"dashboard",label:"None of the above",desc:"Default Command Center — the full executive dashboard."},
+        ]}/>
+      </div>);
       case "motion": return(<div>
         <div style={{marginBottom:20}}>
           <div style={{fontSize:11,fontWeight:700,color:C.dim,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.05em"}}>Sales Motion</div>
@@ -3712,7 +3731,9 @@ export default function App(){
   const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
-    setInputs(prev=>({...prev,...overrides}));
+    const{_persona, ...modelInputs} = overrides || {};
+    setInputs(prev=>({...prev,...modelInputs}));
+    if (_persona) setPage(_persona);  // route to the persona view (or dashboard if "dashboard")
     setOnboarded(true);
   };
   const navTo=(pg)=>{setPage(pg);if(mobile)setNavOpen(false);};
