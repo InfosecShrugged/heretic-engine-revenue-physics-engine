@@ -153,6 +153,99 @@ function DataConfidenceCallout({inputs, compact=false}) {
 }
 
 
+
+// ════════════════════════════════════════════════════════════
+// HORIZON PLANNER CARD — workstream F
+// Asks: given your targetARR + targetDate, can the current bench
+// actually produce that velocity? Feasibility check + lever ladder.
+// ════════════════════════════════════════════════════════════
+function HorizonPlannerCard({model, inputs, mobile}){
+  const h = model.horizonPlanner;
+  if (!h) return null;
+  if (h.error === "target_in_past") {
+    return(<Card style={{marginBottom:18,borderLeft:`3px solid ${C.amber}`}}>
+      <div style={{fontSize:11,color:C.amber,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Horizon Planner</div>
+      <div style={{fontSize:12,color:C.text}}>Target date is at or before plan start. Set <strong>Target Date</strong> in Global Drivers to a future date.</div>
+    </Card>);
+  }
+  if (h.error === "target_beyond_horizon") {
+    return(<Card style={{marginBottom:18,borderLeft:`3px solid ${C.amber}`}}>
+      <div style={{fontSize:11,color:C.amber,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Horizon Planner</div>
+      <div style={{fontSize:12,color:C.text}}>Target date is {h.monthsToTarget} months out, beyond your {h.plannedMonths}-month planning horizon. Increase <strong>planningYears</strong> in Global Drivers.</div>
+    </Card>);
+  }
+  const verdictColor = h.verdict === "achievable" ? C.green : h.verdict === "stretch" ? C.amber : h.verdict === "behind" ? C.amber : C.red;
+  const verdictLabel = h.verdict === "achievable" ? "Achievable at current bench" : h.verdict === "stretch" ? "Stretch — possible at peak performance" : h.verdict === "behind" ? "Behind — meaningful gap" : "Unrealistic at current bench";
+  return(<Card style={{marginBottom:18,borderLeft:`3px solid ${verdictColor}`}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:14,gap:12,flexWrap:"wrap"}}>
+      <div>
+        <div style={{fontSize:9,fontWeight:700,color:verdictColor,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Horizon Planner · {verdictLabel}</div>
+        <div style={{fontSize:14,color:C.text,fontWeight:600}}>
+          <span style={{fontFamily:"'Chivo Mono',monospace"}}>{fmt(h.horizonTarget)}</span> by <span style={{fontFamily:"'Chivo Mono',monospace"}}>{h.targetDate}</span> · {h.monthsToTarget} months from plan start
+        </div>
+      </div>
+      <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.06em",textAlign:"right"}}>
+        {h.onTrackPct.toFixed(0)}% on-track
+      </div>
+    </div>
+    {/* Velocity comparison */}
+    <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
+      <div>
+        <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Velocity Required</div>
+        <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(h.velocityRequired)}<span style={{fontSize:11,color:C.muted}}>/mo</span></div>
+        <div style={{fontSize:10,color:C.dim,marginTop:3}}>{fmt(h.newARRRequired)} new ARR over {h.monthsToTarget} months</div>
+      </div>
+      <div>
+        <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Bench Can Produce</div>
+        <div style={{fontSize:22,fontWeight:700,color:verdictColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(h.aeMonthlyCapacity)}<span style={{fontSize:11,color:C.muted}}>/mo</span></div>
+        <div style={{fontSize:10,color:C.dim,marginTop:3}}>{inputs.aeCount} AEs × {fmt(inputs.aeQuota)} × {h.realisticAttainment.toFixed(0)}% attain.</div>
+      </div>
+      <div>
+        <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Cumulative Gap</div>
+        <div style={{fontSize:22,fontWeight:700,color:h.cumulativeGap>0?C.red:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{h.cumulativeGap>0?fmt(h.cumulativeGap):"—"}</div>
+        <div style={{fontSize:10,color:C.dim,marginTop:3}}>{h.cumulativeGap>0?`${fmt(h.monthlyGap)}/mo short`:"Bench covers target"}</div>
+      </div>
+    </div>
+    {/* Lever ladder — only if gap > 0 */}
+    {h.levers && (
+      <div style={{padding:14,background:C.bg,borderLeft:`2px solid ${verdictColor}`}}>
+        <div style={{fontSize:10,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>Lever Ladder — any ONE of these closes the gap</div>
+        <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:12}}>
+          <div>
+            <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{h.levers.ae.label}</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>+{h.levers.ae.gap}</div>
+            <div style={{fontSize:10,color:C.dim,marginTop:4}}>From {h.levers.ae.current} to {h.levers.ae.needed} AEs</div>
+          </div>
+          <div>
+            <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{h.levers.dealSize.label}</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>+{h.levers.dealSize.liftPct.toFixed(0)}%</div>
+            <div style={{fontSize:10,color:C.dim,marginTop:4}}>{fmt(h.levers.dealSize.current)} → {fmt(h.levers.dealSize.needed)}</div>
+          </div>
+          <div>
+            <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{h.levers.attainment.label}</div>
+            <div style={{fontSize:18,fontWeight:700,color:h.levers.attainment.needed>110?C.red:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{h.levers.attainment.needed.toFixed(0)}%</div>
+            <div style={{fontSize:10,color:C.dim,marginTop:4}}>From {h.levers.attainment.current.toFixed(0)}% realistic{h.levers.attainment.needed>110?" — implausible":""}</div>
+          </div>
+          <div>
+            <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{h.levers.inquiryVolume.label}</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>+{h.levers.inquiryVolume.liftPct.toFixed(0)}%</div>
+            <div style={{fontSize:10,color:C.dim,marginTop:4}}>More marketing throughput</div>
+          </div>
+        </div>
+        <div style={{marginTop:12,fontSize:10,color:C.dim,lineHeight:1.6}}>
+          Each lever computed in isolation — in practice, you'd combine 2-3 levers each contributing partially. Attainment >110% is the implausibility flag; nobody runs a whole team there sustainably.
+        </div>
+      </div>
+    )}
+    {!h.levers && h.cumulativeGap <= 0 && (
+      <div style={{padding:12,background:`${C.green}10`,borderLeft:`2px solid ${C.green}`,fontSize:12,color:C.text,lineHeight:1.6}}>
+        <strong style={{color:C.green}}>The current bench can produce this velocity</strong> — no lever changes needed to hit the target by date. Standard execution risks still apply (ramp time, attrition, funnel conversion holding up).
+      </div>
+    )}
+  </Card>);
+}
+
+
 // ─── MODULE DOC REGISTRY ───
 // Every module gets a stable docRef, tooltip, and structured content
 const MODULE_DOCS = {
@@ -814,6 +907,7 @@ function CEOPage({model, inputs, onInfoClick, mobile}){
   return(<div>
     <Header title="CEO View" sub="Are we hitting the number, what's threatening it, and is the investment posture right" icon={Activity} moduleId="ceo" onInfoClick={onInfoClick}/>
     <DataConfidenceCallout inputs={inputs}/>
+    <HorizonPlannerCard model={model} inputs={inputs} mobile={mobile}/>
     
     {/* Q1 — On the number */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Will we hit the number?</div>
@@ -3352,6 +3446,7 @@ function GlideslopePage({model,inputs,setInputs,onInfoClick}){
   const y1End = gs[11];
   const y2End = ny > 1 ? gs[23] : null;
   return(<div><Header title="Glideslope" sub={ny>1?`${ny}-Year Planning Horizon — ${isEven?"Linear":"Seasonal"} targets`:(isEven?"Linear target (even distribution)":"Seasonal target (NORAM B2B pattern)")} icon={Target} moduleId="glideslope" onInfoClick={onInfoClick}/>
+    <HorizonPlannerCard model={model} inputs={inputs} mobile={false}/>
     {/* Year summary cards */}
     <div style={{display:"grid",gridTemplateColumns:ny>1?"repeat(6,1fr)":"repeat(4,1fr)",gap:12,marginBottom:20}}>
       <Metric label="Y1 Exit" value={fmt(y1End?.totalARR)} color={C.accent}/>
@@ -3943,8 +4038,13 @@ export default function App(){
             {/* Target Mode Toggle */}
             {/* Plan start date — anchors all calendar labels (workstream D) */}
             <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Plan Start Date</div>
-            <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"7px 11px",marginBottom:13,gap:6}}>
+            <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"7px 11px",marginBottom:6,gap:6}}>
               <input type="date" value={inputs.planStartDate||""} onChange={e=>setInputs(p=>({...p,planStartDate:e.target.value}))}
+                style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%",colorScheme:themeMode==="dark"?"dark":"light"}}/>
+            </div>
+            <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Target Date (when targetARR must land)</div>
+            <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"7px 11px",marginBottom:13,gap:6}}>
+              <input type="date" value={inputs.targetDate||""} onChange={e=>setInputs(p=>({...p,targetDate:e.target.value}))}
                 style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%",colorScheme:themeMode==="dark"?"dark":"light"}}/>
             </div>
             <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Target Mode</div>

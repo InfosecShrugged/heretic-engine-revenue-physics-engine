@@ -17,6 +17,13 @@ export const DEFAULT_INPUTS = {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
   })(),
+  // ── Target date — when the plan needs to land. Drives horizon projection
+  // and lever-ladder math. Defaults to 12 months from plan start.
+  targetDate: (() => {
+    const d = new Date();
+    const t = new Date(d.getFullYear(), d.getMonth() + 12, 1);
+    return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-01`;
+  })(),
   // Target mode: "absolute" or "growthRate"
   targetMode: "absolute",
   targetARR: 10000000, startingARR: 3000000, targetGrowthRate: 100,
@@ -981,7 +988,79 @@ export function computeModel(inputs) {
     };
   }).filter(q => q.closingDeals > 0 || q.sqosNeeded > 0 || q.mqlsNeeded > 0);
 
-  return {
+  // ── Time-horizon planner (workstream F) ────────────────────────────
+  // The engine BACK-SOLVES from targetARR — so projected ARR always matches
+  // the target by design. This planner asks a different question: given the
+  // user's targetARR + targetDate, can the CURRENT BENCH actually produce
+  // that velocity? It's a feasibility check on capacity, not a forecast.
+  let horizonPlanner = null;
+  if (inputs.targetDate) {
+    const tdYearStr = inputs.targetDate.split('-')[0];
+    const tdMonthStr = inputs.targetDate.split('-')[1];
+    const tdYear = parseInt(tdYearStr, 10);
+    const tdMonth = parseInt(tdMonthStr, 10) - 1;
+    const monthsToTarget = (tdYear - startYear) * 12 + (tdMonth - startMonthIdx);
+    if (monthsToTarget > 0 && monthsToTarget <= totalMonths) {
+      const horizonTarget = targetARR;
+      const newARRRequired = Math.max(0, horizonTarget - retainedARR);
+      const velocityRequired = newARRRequired / monthsToTarget; // $/month
+      // What the current bench CAN produce (independent of target):
+      const realisticAttainment = 0.85; // industry-realistic average AE attainment
+      const aeMonthlyCapacity = (aeCount * aeQuota * realisticAttainment) / 12;
+      const horizonAchievable = aeMonthlyCapacity * monthsToTarget;
+      const cumulativeGap = newARRRequired - horizonAchievable;
+      const monthlyGap = velocityRequired - aeMonthlyCapacity;
+      const onTrackPct = velocityRequired > 0 ? (aeMonthlyCapacity / velocityRequired) * 100 : 100;
+      const verdict = onTrackPct >= 100 ? "achievable" :
+                      onTrackPct >= 85  ? "stretch" :
+                      onTrackPct >= 65  ? "behind" : "unrealistic";
+
+      // Lever ladder — what minimum change to ONE lever closes the cumulative gap?
+      // Only computed when cumulativeGap > 0.
+      let levers = null;
+      if (cumulativeGap > 0) {
+        // Lever 1: AE count (how many MORE AEs make achievable = required)
+        const aesNeeded = Math.ceil((velocityRequired * 12) / (aeQuota * realisticAttainment));
+        const aeGap = Math.max(0, aesNeeded - aeCount);
+        // Lever 2: Deal size lift (a higher avgDealSize multiplies AE output linearly)
+        const liftMultiplier = aeMonthlyCapacity > 0 ? velocityRequired / aeMonthlyCapacity : null;
+        const dealSizeLiftPct = liftMultiplier !== null ? (liftMultiplier - 1) * 100 : null;
+        const dealSizeNeeded = liftMultiplier !== null ? avgDealSize * liftMultiplier : null;
+        // Lever 3: Attainment % (raising team-wide attainment scales output linearly)
+        const attainmentNeeded = aeMonthlyCapacity > 0 ? realisticAttainment * (velocityRequired / aeMonthlyCapacity) * 100 : null;
+        // Lever 4: Mktg/inquiry volume — same linear scaling, but expressed as inquiry-volume increase
+        const inquiryLiftPct = dealSizeLiftPct;
+        levers = {
+          ae: { current: aeCount, needed: aesNeeded, gap: aeGap, label: "+AEs" },
+          dealSize: { current: avgDealSize, needed: dealSizeNeeded, liftPct: dealSizeLiftPct, label: "+Deal size" },
+          attainment: { current: realisticAttainment * 100, needed: attainmentNeeded, label: "+Attainment" },
+          inquiryVolume: { liftPct: inquiryLiftPct, label: "+Inquiry volume" },
+        };
+      }
+
+      horizonPlanner = {
+        targetDate: inputs.targetDate,
+        monthsToTarget,
+        horizonTarget,
+        newARRRequired,
+        velocityRequired,
+        aeMonthlyCapacity,
+        horizonAchievable,
+        cumulativeGap,
+        monthlyGap,
+        onTrackPct,
+        verdict,
+        realisticAttainment: realisticAttainment * 100,
+        levers,
+      };
+    } else if (monthsToTarget <= 0) {
+      horizonPlanner = { error: "target_in_past", monthsToTarget };
+    } else {
+      horizonPlanner = { error: "target_beyond_horizon", monthsToTarget, plannedMonths: totalMonths };
+    }
+  }
+
+    return {
     summary: { targetARR, startingARR, retainedARR, newARRNeeded, dealsNeeded,
       sqosNeeded, meetingsNeeded, sqlsNeeded, mqlsNeeded, inquiriesNeeded,
       pipelineRequired, totalRevenue, grossProfit, operatingIncome, totalMarketingSpend,
@@ -1023,7 +1102,7 @@ export function computeModel(inputs) {
       // Attrition
       totalAttrLoss,
     },
-    monthly, channels, sellerRamp, stages, yearTargets, numYears,
+    monthly, channels, sellerRamp, stages, yearTargets, numYears, horizonPlanner,
     // Revenue Motions
     motions: {
       allocation: ma, createBudget, convertBudget, accelBudget,
