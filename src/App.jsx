@@ -91,6 +91,16 @@ const MODULE_DOCS = {
     whatChanges: ["Target ARR / growth rate", "AE count / quota / attainment", "All cost % inputs", "Funnel conversion rates"],
     relatedModules: ["cfo", "dashboard", "spine", "sandmBudget"],
   },
+  cro: {
+    title: "CRO View", docRef: "/docs/modules/cro",
+    tooltip: "Ramped capacity, quarterly coverage, hire timing, SDR engine, attainment realism",
+    tldr: "A persona-curated view for the CRO / VP Sales. Answers the five operational questions a sales leader asks in their first five minutes: capacity vs target, pipeline by quarter, how many AEs short and when, the SDR engine, and whether implied AE attainment is realistic.",
+    included: ["Q1: Full vs Ramped capacity, coverage %, with comparison bar visualization", "Q2: Quarterly SQO / MQL / closing deal targets (phase-shifted)", "Q3: AE gap to plan + hire timing narrative (ramp-aware)", "Q4: SDR:AE ratio + mktg-sourced split + outbound constraint verdict", "Q5: Required attainment with 4-zone band (realistic / stretch / aggressive / unrealistic)"],
+    excluded: ["Per-rep territory analysis (use CRM)", "Forecast accuracy / commit (use CRM forecasting)", "Comp plan modeling (see S&M Budget)"],
+    assumptions: ["Industry-realistic average AE attainment: 85% (~70% of AEs achieve)", "Hire-by buffer = aeRampMonths - 3 (start hiring N months before you need ramped)", "Quarterly targets are phase-shifted: closing → SQO (sqoLeadQuarters ahead) → MQL (+mqlLeadQuarters ahead)"],
+    whatChanges: ["aeCount, aeQuota", "aeRampMonths, aeAttritionRate", "sdrsPerAe", "mktgSourcedPct", "Target ARR (cascades to capacity gap)"],
+    relatedModules: ["sales", "sellerRamp", "targets", "pipeline"],
+  },
   dashboard: {
     title: "Command Center", docRef: "/docs/modules/dashboard",
     tooltip: "Top-level health metrics and deal math summary",
@@ -383,6 +393,7 @@ const NAV_SECTIONS=[
   { section: "Persona Views", items: [
     {id:"cfo",label:"CFO View",icon:DollarSign},
     {id:"ceo",label:"CEO View",icon:Activity},
+    {id:"cro",label:"CRO View",icon:Users},
   ]},
   { section: "Revenue", items: [
     {id:"targets",label:"Target Tracker",icon:Target},
@@ -751,6 +762,201 @@ function CEOPage({model, inputs, onInfoClick, mobile}){
     {/* Footer attribution */}
     <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
       Persona view · Threat detection derives from model thresholds, not the full Governance Spine — open the Spine module for the prioritized verdict list. Every metric here is in the full module tree if you need to drill in.
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// CRO / VP SALES PERSONA VIEW — capacity, coverage, hire timing
+// First-5-min questions (from docs/PERSONA-AND-DATA-AUDIT.md §1):
+//   Q1: Ramped quota capacity vs target?         → Capacity comparison + ramp curve
+//   Q2: Pipeline coverage by quarter?            → Quarterly target/coverage table
+//   Q3: How many AEs am I short, and when?       → Computed gap + hire-by timing
+//   Q4: SDR:AE ratio constraining outbound?      → Ratio + implied outbound capacity
+//   Q5: Attainment realism — implied % per AE?   → Required attainment vs industry benchmark
+// ════════════════════════════════════════════════════════════
+function CROPage({model, inputs, onInfoClick, mobile}){
+  const { summary: s, monthly, quarterlyTargets } = model;
+  // Q1 — Capacity layers
+  const fullCapacity = inputs.aeCount * inputs.aeQuota;
+  const rampedCapacity = s.steadyStateQuota || 0;
+  const rampLoss = fullCapacity - rampedCapacity;
+  const capCoverage = s.newARRNeeded > 0 ? (rampedCapacity / s.newARRNeeded) * 100 : 100;
+  // Q3 — AEs short
+  const targetAttainment = 85; // industry-realistic average AE attainment
+  const aesNeededAt85 = Math.ceil((s.newARRNeeded / (targetAttainment/100)) / inputs.aeQuota);
+  const aeGap = Math.max(0, aesNeededAt85 - inputs.aeCount);
+  const aeSurplus = Math.max(0, inputs.aeCount - aesNeededAt85);
+  const rampMonths = inputs.aeRampMonths || 6;
+  // Q4 — SDR ratio
+  const sdrRatio = inputs.sdrsPerAe || 1.5;
+  const sdrRatioColor = sdrRatio >= 1.5 ? C.green : sdrRatio >= 1.0 ? C.amber : C.red;
+  const sdrRatioLabel = sdrRatio >= 1.5 ? "Healthy" : sdrRatio >= 1.0 ? "Minimum" : "Below floor";
+  const aeSelfPct = 100 - (inputs.mktgSourcedPct || 50);
+  // Q5 — Attainment realism
+  const att = s.attainmentRequired || 100;
+  const attColor = att <= 85 ? C.green : att <= 100 ? C.amber : att <= 120 ? C.red : C.red;
+  const attBand = att <= 85 ? "Realistic" : att <= 100 ? "Stretch" : att <= 120 ? "Aggressive" : "Unrealistic";
+  // Q2 — quarterly coverage rows
+  const qRows = (quarterlyTargets || []).slice(0, 8);
+  return(<div>
+    <Header title="CRO View" sub="Ramped capacity, quarterly pipeline coverage, hire timing, and the SDR engine" icon={Users} moduleId="cro" onInfoClick={onInfoClick}/>
+    
+    {/* Q1 — Capacity vs target */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Do I have enough ramped quota capacity?</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:14,marginBottom:18}}>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>New ARR Needed</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(s.newARRNeeded)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>{s.dealsNeeded} deals @ {fmt(inputs.avgDealSize)}</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Full Capacity</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(fullCapacity)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>{inputs.aeCount} AEs × {fmt(inputs.aeQuota)}</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Ramped Capacity</div>
+          <div style={{fontSize:22,fontWeight:700,color:rampLoss>0?C.amber:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(rampedCapacity)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>Ramp loss: {fmt(rampLoss)} · attrition loss: {fmt(s.totalAttrLoss||0)}</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Coverage</div>
+          <div style={{fontSize:22,fontWeight:700,color:capCoverage>=115?C.green:capCoverage>=85?C.amber:C.red,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{capCoverage.toFixed(0)}%</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>{capCoverage>=115?"Margin for error":capCoverage>=85?"Tight":"Gap"}</div>
+        </div>
+      </div>
+      {/* Capacity bar — visual comparison */}
+      <div style={{marginTop:8}}>
+        {[
+          { label: "Target (New ARR Needed)", value: s.newARRNeeded, color: C.text },
+          { label: "Full Capacity (no ramp loss)", value: fullCapacity, color: C.dim },
+          { label: "Ramped Capacity (effective)", value: rampedCapacity, color: rampLoss>0?C.amber:C.green },
+        ].map((row,i)=>{
+          const maxV = Math.max(s.newARRNeeded, fullCapacity);
+          const pct = (row.value / maxV) * 100;
+          return(
+            <div key={i} style={{display:"grid",gridTemplateColumns:"180px 1fr 90px",gap:10,alignItems:"center",marginBottom:6}}>
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{row.label}</div>
+              <div style={{height:14,background:C.bg,borderRadius:0,position:"relative",overflow:"hidden"}}>
+                <motion.div initial={{width:0}} animate={{width:`${pct}%`}} transition={{duration:0.5,delay:i*0.06}}
+                  style={{height:"100%",background:row.color,opacity:0.85}}/>
+              </div>
+              <div style={{fontSize:11,fontWeight:600,color:row.color,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(row.value)}</div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+    
+    {/* Q2 — Quarterly pipeline coverage */}
+    {qRows.length > 0 && (
+      <>
+        <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · Pipeline coverage by quarter</div>
+        <Card style={{marginBottom:24}}>
+          <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(qRows.length, mobile?2:8)},1fr)`,gap:10}}>
+            {qRows.slice(0, mobile?4:8).map((q,i)=>(
+              <div key={i} style={{padding:12,background:C.bg,borderRadius:0,borderTop:`2px solid ${q.isCurrentYear?C.accent:C.dim}`}}>
+                <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{q.quarter}</div>
+                <div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{q.sqosNeeded||0}</div>
+                <div style={{fontSize:9,color:C.dim,marginTop:3}}>SQOs · {q.closingDeals||0} closing</div>
+                <div style={{fontSize:9,color:C.dim,marginTop:2}}>{q.mqlsNeeded||0} MQLs</div>
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:14,fontSize:11,color:C.muted,lineHeight:1.6}}>
+            Phase-shifted: each quarter's closing deals come from SQOs created <b style={{color:C.text}}>{inputs.sqoLeadQuarters||2} quarter(s) earlier</b>, and those SQOs need MQLs <b style={{color:C.text}}>{inputs.mqlLeadQuarters||1} quarter(s)</b> before that. Front-loading matters.
+          </div>
+        </Card>
+      </>
+    )}
+    
+    {/* Q3 — AEs short, hire timing */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · How many AEs am I short, and when?</div>
+    <Card style={{marginBottom:24,borderLeft:`3px solid ${aeGap>0?C.red:C.green}`}}>
+      <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:12,flexWrap:"wrap"}}>
+        <div style={{fontSize:48,fontWeight:700,color:aeGap>0?C.red:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{aeGap>0?`+${aeGap}`:aeSurplus>0?`+${aeSurplus}`:"0"}</div>
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>{aeGap>0?`AEs short of plan`:aeSurplus>0?`AE surplus at plan`:`AE count matches plan`}</div>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+            Plan needs {aesNeededAt85} AEs at {targetAttainment}% average attainment (industry-realistic). Current bench: {inputs.aeCount}.
+          </div>
+        </div>
+      </div>
+      {aeGap > 0 && (
+        <div style={{padding:12,background:C.redDim,borderLeft:`2px solid ${C.red}`,fontSize:12,color:C.text,lineHeight:1.6}}>
+          <strong style={{color:C.red}}>Hire timing matters.</strong> Each new AE needs ~{rampMonths} months to ramp. To have {aeGap} new AEs productive by mid-plan, hire by month {Math.max(1, rampMonths-3)} — earlier is better. If you can't hire, raise deal size, accept lower coverage, or moderate the target.
+        </div>
+      )}
+      {aeSurplus > 0 && (
+        <div style={{padding:12,background:C.greenDim,borderLeft:`2px solid ${C.green}`,fontSize:12,color:C.text,lineHeight:1.6}}>
+          Headcount sufficient with margin. Watch attrition (current {inputs.aeAttritionRate}%) — at this rate you'll lose ~{((inputs.aeAttritionRate/100)*inputs.aeCount).toFixed(1)} AEs across the year.
+        </div>
+      )}
+    </Card>
+    
+    {/* Q4 — SDR ratio + outbound */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · SDR engine + outbound capacity</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14}}>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>SDR : AE Ratio</div>
+          <div style={{fontSize:30,fontWeight:700,color:sdrRatioColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{sdrRatio}:1</div>
+          <div style={{fontSize:11,color:sdrRatioColor,marginTop:4,fontWeight:600}}>{sdrRatioLabel}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:6,lineHeight:1.5}}>{Math.ceil(inputs.aeCount*sdrRatio)} SDRs supporting {inputs.aeCount} AEs</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Mktg-Sourced Split</div>
+          <div style={{fontSize:30,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{inputs.mktgSourcedPct}%</div>
+          <div style={{fontSize:11,color:C.muted,marginTop:4,fontWeight:500}}>Marketing → AE Self-source</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:6,lineHeight:1.5}}>{aeSelfPct}% of pipeline depends on AE/SDR outbound</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Outbound Constraint</div>
+          <div style={{fontSize:14,fontWeight:600,color:C.text,marginTop:8,lineHeight:1.5}}>
+            {sdrRatio < 1.0 ? <span style={{color:C.red}}>SDR ratio below 1.0 starves outbound</span> :
+             aeSelfPct > 65 ? <span style={{color:C.amber}}>Heavy outbound dependency — needs strong SDR engine</span> :
+             aeSelfPct < 35 ? <span style={{color:C.green}}>Marketing-led — outbound is a supplement</span> :
+             <span style={{color:C.green}}>Balanced motion</span>}
+          </div>
+        </div>
+      </div>
+    </Card>
+    
+    {/* Q5 — Attainment realism */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · Attainment realism per AE</div>
+    <Card style={{marginBottom:18,borderLeft:`3px solid ${attColor}`}}>
+      <div style={{display:"flex",alignItems:"baseline",gap:18,marginBottom:14,flexWrap:"wrap"}}>
+        <div style={{fontSize:48,fontWeight:700,color:attColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{att.toFixed(0)}%</div>
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>Required attainment per AE — <span style={{color:attColor}}>{attBand}</span></div>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+            For the team to hit plan, the average AE needs to attain {att.toFixed(0)}% of their {fmt(inputs.aeQuota)} quota. Industry distribution: ~50% of AEs hit ≥100%; ~70% hit ≥85%.
+          </div>
+        </div>
+      </div>
+      {/* Attainment band visualization */}
+      <div style={{position:"relative",height:22,background:C.bg,borderRadius:0,overflow:"hidden",marginBottom:8}}>
+        <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${(85/150)*100}%`,background:`${C.green}25`}}/>
+        <div style={{position:"absolute",left:`${(85/150)*100}%`,top:0,bottom:0,width:`${(15/150)*100}%`,background:`${C.amber}25`}}/>
+        <div style={{position:"absolute",left:`${(100/150)*100}%`,top:0,bottom:0,width:`${(20/150)*100}%`,background:`${C.red}15`}}/>
+        <div style={{position:"absolute",left:`${(120/150)*100}%`,top:0,bottom:0,right:0,background:`${C.red}30`}}/>
+        <motion.div initial={{left:0}} animate={{left:`${Math.min(98,(att/150)*100)}%`}} transition={{duration:0.5}}
+          style={{position:"absolute",top:0,bottom:0,width:3,background:C.text,boxShadow:`0 0 6px ${C.text}66`,zIndex:5}}/>
+      </div>
+      <div style={{position:"relative",height:14,fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>
+        <span style={{position:"absolute",left:`${(42.5/150)*100}%`,transform:"translateX(-50%)",color:C.green}}>REALISTIC ≤85%</span>
+        <span style={{position:"absolute",left:`${(92/150)*100}%`,transform:"translateX(-50%)",color:C.amber}}>STRETCH</span>
+        <span style={{position:"absolute",left:`${(110/150)*100}%`,transform:"translateX(-50%)",color:C.red}}>AGGRESSIVE</span>
+        <span style={{position:"absolute",left:`${(135/150)*100}%`,transform:"translateX(-50%)",color:C.red}}>UNREALISTIC</span>
+      </div>
+    </Card>
+    
+    {/* Footer attribution */}
+    <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Persona view · Capacity numbers derived from inputs.aeCount × inputs.aeQuota with ramp + attrition adjustments. For per-AE territory analysis or rep-level forecasting (not modeled), use your CRM. Open Sales Model + Seller Ramp for the full mechanics.
     </div>
   </div>);
 }
@@ -2889,7 +3095,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     setInputs(prev=>({...prev,...overrides}));
