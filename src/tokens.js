@@ -5,8 +5,8 @@
 
 export const lightTheme = {
   // Backgrounds
-  bg:           '#EBEBEB',
-  bgAlt:        '#F4F4F2',
+  bg:           '#D6D6D1',
+  bgAlt:        '#E0E0DB',
   surface:      '#FFFFFF',
   surfaceHover: '#F8F8F6',
 
@@ -21,11 +21,11 @@ export const lightTheme = {
   dim:          '#909090',
   ghost:        '#C4C4C4',
 
-  // Primary accent — ROSE (text, links, borders on light)
+  // Primary accent — VIOLET (primary action/brand mark per DS §8)
   accent:       '#7C5CFF',
-  accentHover:  '#C23668',
-  accentDim:    'rgba(214,64,116,0.08)',
-  accentGlow:   'rgba(214,64,116,0.15)',
+  accentHover:  '#5A3FCF',
+  accentDim:    'rgba(124,92,255,0.08)',
+  accentGlow:   'rgba(124,92,255,0.15)',
 
   // Secondary accent — LIME (fills, badges, dots, buttons on light)
   lime:         '#C8FF6E',
@@ -45,7 +45,7 @@ export const lightTheme = {
   violet:       '#7C4DDB',
   violetDim:    'rgba(124,77,219,0.08)',
 
-  // Chart palette (rose leads on light)
+  // Chart palette (violet leads on light per DS §8)
   chart: ['#7C5CFF','#2563EB','#1A8A4A','#7C4DDB','#C07800','#0891B2'],
 
   // Inverse (for dark inset panels on light pages)
@@ -55,10 +55,10 @@ export const lightTheme = {
 
 export const darkTheme = {
   // Backgrounds
-  bg:           '#0F0F0F',
-  bgAlt:        '#171717',
-  surface:      '#1C1C1C',
-  surfaceHover: '#252525',
+  bg:           '#0F0F13',
+  bgAlt:        '#16161C',
+  surface:      '#16161C',
+  surfaceHover: '#1D1D25',
 
   // Borders
   border:       'rgba(255,255,255,0.06)',
@@ -77,9 +77,10 @@ export const darkTheme = {
   accentDim:    'rgba(200,255,110,0.08)',
   accentGlow:   'rgba(200,255,110,0.15)',
 
-  // Rose — governance constraints / alerts only on dark
-  rose:         '#7C5CFF',
-  roseDim:      'rgba(214,64,116,0.10)',
+  // Breach — governance constraints / alerts only on dark (key kept for back-compat;
+  // per DS §8 this is #FF6157, replacing the old rose-as-governance-alert)
+  rose:         '#FF6157',
+  roseDim:      'rgba(255,97,87,0.10)',
 
   // Lime fills (same values, just explicit)
   lime:         '#C8FF6E',

@@ -22,6 +22,8 @@
 
 ## Design System — OpptyCon (Dual-Mode Profile)
 
+> **Updated 2026-05-22 per DS spec §8:** Brand accent rose → violet (#7C5CFF). Ground refresh: light #EBEBEB→#D6D6D1, dark #0F0F0F→#0F0F13. Governance rose → breach red #FF6157. Dark mode accent (#C8FF6E lime) NOT yet shifted to violet — that's a larger refactor pending.
+
 > **CRITICAL: This app uses the OpptyCon design system, which is derived from the NetherOps design language. NOT BigFilter. NOT Syne/DM Sans/IBM Plex Mono. NOT orange #E85D2A or #ff6e3e. If you see these anywhere, they are WRONG.**
 
 ### The Three-Mode Dual Accent Rule
@@ -29,15 +31,15 @@
 ```
 MEMORIZE THIS:
 
-Light surfaces → Rose #D64074 for TEXT accents, links, borders
-Light surfaces → Lime #C8FF6E for FILLS, badges, dots, buttons, highlights
-Dark surfaces  → Lime #C8FF6E for EVERYTHING (text, links, fills, badges, buttons)
-Dark surfaces  → Rose #D64074 for GOVERNANCE ALERTS ONLY (CAC breach, coverage violation, margin warning)
+Light surfaces → Violet #7C5CFF for TEXT accents, links, borders (primary action per DS §8)
+Light surfaces → Lime #C8FF6E for FILLS, badges, dots, buttons, highlights (semantic: governed)
+Dark surfaces  → Lime #C8FF6E for ACCENT (everything — primary action TBD pending full §8 alignment)
+Dark surfaces  → Red #FF6157 for GOVERNANCE BREACH (per DS §8 — was rose, now spec'd red)
 
 Lime NEVER appears as text on light backgrounds (1.5:1 contrast — fails WCAG)
 ```
 
-The accent logic INVERTS between modes. On light, rose is the text accent and lime is the fill accent. On dark, lime takes over everything and rose narrows to governance constraint violations only.
+The accent logic differs between modes. On light, **violet is the text accent** (per DS §8) and lime is the fill accent. On dark, lime is still the everything-accent — full §8 alignment (violet primary action on dark too) is a separate refactor.
 
 ### Typography
 
@@ -67,28 +69,28 @@ const C = mode === 'dark' ? darkTheme : lightTheme;
 #### Light Theme Tokens
 
 ```
-Surfaces:     bg #EBEBEB · bgAlt #F4F4F2 · surface #FFFFFF · surfaceHover #F8F8F6
+Surfaces:     bg #D6D6D1 · bgAlt #E0E0DB · surface #FFFFFF · surfaceHover #F8F8F6  (per DS §8 — light ground ties to NetherOps marketing grey)
 Borders:      rgba(0,0,0,0.07) / 0.13 / 0.22
 Text:         text #111111 · muted #555555 · dim #909090 · ghost #C4C4C4
-Accent:       accent #D64074 (rose) · accentHover #C23668
+Accent:       accent #7C5CFF (violet) · accentHover #5A3FCF  (per DS §8)
 Lime:         lime #C8FF6E · limeDark #9BE040
 Semantic:     green #1A8A4A · amber #C07800 · red #CC3340 · blue #2563EB · violet #7C4DDB
-Chart order:  ['#D64074','#2563EB','#1A8A4A','#7C4DDB','#C07800','#0891B2']  ← rose-led
+Chart order:  ['#7C5CFF','#2563EB','#1A8A4A','#7C4DDB','#C07800','#0891B2']  ← violet-led
 ```
 
 #### Dark Theme Tokens
 
 ```
-Surfaces:     bg #0F0F0F · bgAlt #171717 · surface #1C1C1C · surfaceHover #252525
+Surfaces:     bg #0F0F13 · bgAlt #16161C · surface #16161C · surfaceHover #1D1D25  (per DS §8 — dark control-room canvas)
 Borders:      rgba(255,255,255,0.06) / 0.10 / 0.18
 Text:         text #F5F5F3 · muted #AAAAAA · dim #666666 · ghost #444444
 Accent:       accent #C8FF6E (lime!) · accentHover #9BE040
-Rose:         rose #D64074 (governance alerts ONLY)
+Rose:         rose #FF6157 (governance breach — key name kept for back-compat; value updated per DS §8)
 Semantic:     green #2ECC71 · amber #F0A030 · red #E74C3C · blue #4A90D9 · violet #8B5CF6
 Chart order:  ['#C8FF6E','#4A90D9','#2ECC71','#8B5CF6','#F0A030','#D64074']  ← lime-led
 ```
 
-**Key difference:** `C.accent` is ROSE on light, LIME on dark. Code that uses `C.accent` automatically gets the right color per mode.
+**Key difference:** `C.accent` is **VIOLET (#7C5CFF) on light** (per DS §8), LIME on dark. Code that uses `C.accent` automatically gets the right color per mode. Dark-mode violet shift is pending — separate refactor.
 
 #### Shadows
 
@@ -303,10 +305,10 @@ These are from a DIFFERENT project (BigFilter) or outdated instructions. Do NOT 
 | IBM Plex Mono (font) | Chivo Mono |
 | Oxanium (font) | TWK Everett |
 | Space Mono (font) | Chivo Mono |
-| `#E85D2A` (orange accent) | `#D64074` (rose) + `#C8FF6E` (lime) |
-| `#ff6e3e` (old orange) | `#D64074` (rose) + `#C8FF6E` (lime) |
-| `#f0f0f0` (old bg) | `#EBEBEB` (light) / `#0F0F0F` (dark) |
-| `#f8f8f8` (old surface) | `#F4F4F2` (light) / `#171717` (dark) |
+| `#E85D2A` (orange accent) | `#7C5CFF` (violet, per DS §8) + `#C8FF6E` (lime) |
+| `#ff6e3e` (old orange) | `#7C5CFF` (violet, per DS §8) + `#C8FF6E` (lime) |
+| `#f0f0f0` (old bg) | `#D6D6D1` (light) / `#0F0F13` (dark) — per DS §8 |
+| `#f8f8f8` (old surface) | `#E0E0DB` (light) / `#16161C` (dark) — per DS §8 |
 | `#1a1918` (old text) | `#111111` (light) / `#F5F5F3` (dark) |
 | `#d9d9d9` (old border) | `rgba(0,0,0,0.13)` (light) / `rgba(255,255,255,0.10)` (dark) |
 | `#2d8a56` (old green) | `#1A8A4A` (light) / `#2ECC71` (dark) |

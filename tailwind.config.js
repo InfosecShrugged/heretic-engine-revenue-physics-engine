@@ -10,15 +10,15 @@ export default {
       },
       colors: {
         nether: {
-          bg: '#EBEBEB',
-          surface: '#F4F4F2',
+          bg: '#D6D6D1',
+          surface: '#E0E0DB',
           card: '#FFFFFF',
           border: 'rgba(0,0,0,0.13)',
           borderLight: 'rgba(0,0,0,0.07)',
           // Rose — text accent on light
-          rose: '#D64074',
-          roseHover: '#C23668',
-          roseDim: 'rgba(214,64,116,0.08)',
+          rose: '#7C5CFF',  // violet per DS §8, var name kept for back-compat
+          roseHover: '#5A3FCF',
+          roseDim: 'rgba(124,92,255,0.08)',
           // Lime — fill accent on light + everything on dark
           lime: '#C8FF6E',
           limeDark: '#9BE040',
