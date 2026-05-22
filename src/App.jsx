@@ -68,6 +68,91 @@ const Input=({label,value,onChange,prefix="",suffix="",min,max,step=1,compact})=
   </div>
 );
 
+
+// ════════════════════════════════════════════════════════════
+// DATA CONFIDENCE — workstream C v1
+// Tracks which "hard-to-measure" inputs (the 🔴 cluster from
+// docs/PERSONA-AND-DATA-AUDIT.md §2) are still at module defaults.
+// When more than half are untouched, the output is flagged as
+// "directional, not forecast" — surfaces the silent-default problem.
+// ════════════════════════════════════════════════════════════
+const RED_INPUTS = [
+  // Funnel conversion (most teams measure these wrong)
+  'inquiryToMqlRate', 'mqlToSqlRate', 'sqlToMeetingRate', 'meetingToSqoRate', 'sqoToWonRate',
+  'meetingShowRate', 'stage1MinPct',
+  // Multi-year planning
+  'y2GrowthRate', 'y2ConversionLift',
+  // Phase-shift (most teams don't model)
+  'sqoLeadQuarters', 'mqlLeadQuarters',
+  // Behavioral cost splits (most don't split this way)
+  'salesVariablePct', 'fixedMktgPct', 'martechPctOfVariable',
+  // Sales capacity wishful-thinking inputs
+  'aeRampMonths', 'aeAttritionRate', 'mktgSourcedPct',
+  // Velocity by stage (almost never tracked)
+  'velStage1to2', 'velStage2to3', 'velStage3to4', 'velStage4to5', 'velStage5toClose',
+  // ACCELERATE outcomes (require experiment culture)
+  'accelDaysReduced', 'accelWinRateLift', 'accelAccountsCoverage',
+  // Expansion-as-funnel
+  'expansionAvgDeal', 'expansionSqoToWon', 'expansionCycleWeeks',
+];
+
+function computeDataConfidence(inputs) {
+  const untouched = RED_INPUTS.filter(k => {
+    const def = DEFAULT_INPUTS[k];
+    return def !== undefined && def === inputs[k];
+  });
+  const pct = (untouched.length / RED_INPUTS.length) * 100;
+  return {
+    untouched,
+    untouchedCount: untouched.length,
+    totalRedInputs: RED_INPUTS.length,
+    untouchedPct: pct,
+    tier: pct >= 60 ? "directional" : pct >= 30 ? "partial" : "solid",
+  };
+}
+
+function DataConfidenceCallout({inputs, compact=false}) {
+  const[expanded, setExpanded] = useState(false);
+  const conf = computeDataConfidence(inputs);
+  const color = conf.tier === "directional" ? C.amber : conf.tier === "partial" ? C.blue : C.green;
+  const label = conf.tier === "directional" ? "Directional · not forecast" : conf.tier === "partial" ? "Partial data — read with caution" : "Data confidence · solid";
+  const subtext = conf.tier === "directional"
+    ? "These are inputs most teams either don't track or measure inconsistently — funnel conversion, velocity by stage, motion economics, expansion-as-funnel. Your output is directional. Open Global Drivers to override the ones you can."
+    : conf.tier === "partial"
+    ? "Some hard-to-measure inputs are set; others still at defaults. Mixed-confidence output — verify before quoting any specific number to a board."
+    : "Most hard-to-measure inputs have been confirmed. Your output is a forecast, not just directional. Standard model caveats still apply.";
+  return(<div style={{marginBottom:18}}>
+    <div onClick={()=>setExpanded(!expanded)} style={{cursor:"pointer",padding:"12px 14px",background:`${color}10`,border:`1px solid ${color}33`,borderLeft:`3px solid ${color}`,display:"flex",alignItems:"baseline",gap:14,flexWrap:"wrap"}}>
+      <div style={{flex:"0 0 auto"}}>
+        <div style={{fontSize:9,fontWeight:700,color:color,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
+        <div style={{fontSize:13,color:C.text,fontWeight:600,fontFamily:"'Chivo Mono',monospace"}}>{conf.untouchedCount}<span style={{color:C.muted,fontWeight:400}}>/{conf.totalRedInputs}</span> hard-to-measure inputs still at defaults</div>
+      </div>
+      <div style={{flex:1,minWidth:240,fontSize:11,color:C.muted,lineHeight:1.55}}>{subtext}</div>
+      <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.06em"}}>{expanded?"▾ HIDE LIST":"▸ SHOW LIST"}</div>
+    </div>
+    {expanded && (
+      <div style={{padding:"10px 14px",background:C.bg,border:`1px solid ${C.borderMid}`,borderTop:"none",fontSize:11,color:C.muted,lineHeight:1.6}}>
+        <div style={{marginBottom:8,fontSize:10,fontWeight:600,color:C.dim,textTransform:"uppercase",letterSpacing:"0.04em"}}>Inputs still at default ({conf.untouchedCount})</div>
+        <div style={{display:"grid",gridTemplateColumns:compact?"1fr":"repeat(auto-fit,minmax(220px,1fr))",gap:"4px 14px"}}>
+          {conf.untouched.length === 0 ? (
+            <div style={{color:C.green}}>None — all hard-to-measure inputs have been overridden.</div>
+          ) : (
+            conf.untouched.map(k => (
+              <div key={k} style={{fontFamily:"'Chivo Mono',monospace",fontSize:10,color:C.muted}}>
+                <span style={{color:C.text}}>{k}</span> <span style={{color:C.dim}}>= {String(inputs[k])}</span>
+              </div>
+            ))
+          )}
+        </div>
+        <div style={{marginTop:10,paddingTop:8,borderTop:`1px solid ${C.borderMid}`,fontSize:10,color:C.dim,lineHeight:1.6}}>
+          Audit reference: <span style={{color:C.muted}}>docs/PERSONA-AND-DATA-AUDIT.md §2</span> — these inputs were flagged as 🟡 (often wrong) or 🔴 (don't have) for typical mid-market teams. Confirming each input is the path from "directional" to "forecast."
+        </div>
+      </div>
+    )}
+  </div>);
+}
+
+
 // ─── MODULE DOC REGISTRY ───
 // Every module gets a stable docRef, tooltip, and structured content
 const MODULE_DOCS = {
@@ -479,6 +564,7 @@ function DashboardPage({model,inputs,onInfoClick,mobile,tablet}){
   const isSplit = inputs.revenueMode === "split";
   return(<div>
     <Header title="Command Center" sub="Every metric derived from your model inputs" icon={Gauge} moduleId="dashboard" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
     <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(auto-fit,minmax(200px,1fr))",gap:mobile?8:12,marginBottom:mobile?16:24}}>
       <Metric label="Target ARR" value={fmt(s.targetARR)} sub={inputs.targetMode==="growthRate"?`${inputs.targetGrowthRate}% growth`:""} icon={Target} color={C.accent} delay={0}/>
       <Metric label="Starting ARR" value={fmt(s.startingARR)} sub={`NRR retained: ${fmt(s.retainedARR)}`} icon={DollarSign} color={C.green} delay={1}/>
@@ -572,6 +658,7 @@ function CFOPage({model, inputs, onInfoClick, mobile}){
   const sAndMZoneLabel = sAndMZone === "underinvest" ? "Underinvestment" : sAndMZone === "burn" ? "Burn territory" : sAndMZone === "stretch" ? "Stretch zone" : "Growth band";
   return(<div>
     <Header title="CFO View" sub="Unit economics, cash sustainability, and the S&M investment band" icon={DollarSign} moduleId="cfo" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
     
     {/* Q1 — Unit Economics */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Is unit economics sustainable?</div>
@@ -726,6 +813,7 @@ function CEOPage({model, inputs, onInfoClick, mobile}){
   ].map(f => ({ ...f, check: fnCheck(f.value, f.b) }));
   return(<div>
     <Header title="CEO View" sub="Are we hitting the number, what's threatening it, and is the investment posture right" icon={Activity} moduleId="ceo" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
     
     {/* Q1 — On the number */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Will we hit the number?</div>
@@ -846,6 +934,7 @@ function CROPage({model, inputs, onInfoClick, mobile}){
   const qRows = (quarterlyTargets || []).slice(0, 8);
   return(<div>
     <Header title="CRO View" sub="Ramped capacity, quarterly pipeline coverage, hire timing, and the SDR engine" icon={Users} moduleId="cro" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
     
     {/* Q1 — Capacity vs target */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Do I have enough ramped quota capacity?</div>
@@ -1050,6 +1139,7 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
   ];
   return(<div>
     <Header title="CMO View" sub="Monthly demand, CAC variants, channel concentration, fixed/variable split, motion mix" icon={Megaphone} moduleId="cmo" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
     
     {/* Q1 — Monthly demand */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · How many inquiries / MQLs per month?</div>
@@ -1226,6 +1316,7 @@ function VCPage({model, inputs, onInfoClick, mobile}){
   const y2Credible = y2GrowthRate === null ? null : y2GrowthRate <= 100;
   return(<div>
     <Header title="VC View" sub="Efficiency metrics, multi-year credibility, investability" icon={BarChart3} moduleId="vc" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
     
     {/* Q1 — Efficient or burning */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Efficient or burning?</div>
@@ -1353,6 +1444,7 @@ function BoardPage({model, inputs, onInfoClick, mobile}){
   else issue = null;
   return(<div>
     <Header title="Board View" sub="Where we are vs plan, biggest miss, attainment posture, investment band, key assumptions" icon={Shield} moduleId="board" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
     
     {/* Q1 — Quarterly waterfall */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Where are we vs plan — quarterly waterfall</div>
@@ -1476,6 +1568,7 @@ function RevOpsPage({model, inputs, onInfoClick, mobile}){
   const channelsSorted = [...(channels||[])].sort((a,b)=>b.spend-a.spend).slice(0,5);
   return(<div>
     <Header title="RevOps View" sub="Funnel diagnostic, channel economics, capacity decomposition, floor-bound flags, leverage points" icon={Zap} moduleId="revops" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
     
     {/* Q1 — Funnel break */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Where's the funnel breaking?</div>
