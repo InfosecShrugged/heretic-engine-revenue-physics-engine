@@ -1,5 +1,5 @@
 // ─── NetherOps OpptyCon Design System — Three-Mode Dual Accent ───
-// Rose #D64074 = text/links/borders on light
+// Violet #7C5CFF = primary action/brand mark per DS §8
 // Lime #C8FF6E = fills/badges/dots/buttons on light + everything on dark
 // Lime NEVER as text on light surfaces
 
@@ -22,7 +22,7 @@ export const lightTheme = {
   ghost:        '#C4C4C4',
 
   // Primary accent — ROSE (text, links, borders on light)
-  accent:       '#D64074',
+  accent:       '#7C5CFF',
   accentHover:  '#C23668',
   accentDim:    'rgba(214,64,116,0.08)',
   accentGlow:   'rgba(214,64,116,0.15)',
@@ -46,7 +46,7 @@ export const lightTheme = {
   violetDim:    'rgba(124,77,219,0.08)',
 
   // Chart palette (rose leads on light)
-  chart: ['#D64074','#2563EB','#1A8A4A','#7C4DDB','#C07800','#0891B2'],
+  chart: ['#7C5CFF','#2563EB','#1A8A4A','#7C4DDB','#C07800','#0891B2'],
 
   // Inverse (for dark inset panels on light pages)
   inv:          '#F5F5F3',
@@ -78,7 +78,7 @@ export const darkTheme = {
   accentGlow:   'rgba(200,255,110,0.15)',
 
   // Rose — governance constraints / alerts only on dark
-  rose:         '#D64074',
+  rose:         '#7C5CFF',
   roseDim:      'rgba(214,64,116,0.10)',
 
   // Lime fills (same values, just explicit)
@@ -100,7 +100,7 @@ export const darkTheme = {
   violetDim:    'rgba(139,92,246,0.10)',
 
   // Chart palette (lime leads on dark)
-  chart: ['#C8FF6E','#4A90D9','#2ECC71','#8B5CF6','#F0A030','#D64074'],
+  chart: ['#C8FF6E','#4A90D9','#2ECC71','#8B5CF6','#F0A030','#7C5CFF'],
 
   // Inverse
   inv:          '#111111',
