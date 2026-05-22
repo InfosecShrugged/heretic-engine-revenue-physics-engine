@@ -101,6 +101,16 @@ const MODULE_DOCS = {
     whatChanges: ["aeCount, aeQuota", "aeRampMonths, aeAttritionRate", "sdrsPerAe", "mktgSourcedPct", "Target ARR (cascades to capacity gap)"],
     relatedModules: ["sales", "sellerRamp", "targets", "pipeline"],
   },
+  cmo: {
+    title: "CMO View", docRef: "/docs/modules/cmo",
+    tooltip: "Monthly demand, CAC variants, channel concentration, fixed/variable, motion mix",
+    tldr: "A persona-curated view for the CMO / VP Marketing. Shows the calendar-shaped view of inquiry/MQL demand (not just funnel-shaped), four CAC variants from optimistic to honest, concentration risk on the largest CREATE channel, the fixed-vs-variable budget split, and the CREATE/CONVERT/ACCELERATE motion mix with per-motion ROI signals.",
+    included: ["Q1: Monthly inquiry/MQL bar chart + summary tiles + funnel yield", "Q2: 4 CAC variants (programmatic / martech-loaded / fully-burdened / all-in) with payback months each", "Q3: Top CREATE channel concentration check (≥40% triggers risk verdict) + full channel bar list", "Q4: Total / Fixed / Variable split with band context", "Q5: 3 motion tiles (CREATE / CONVERT / ACCELERATE) with spend + per-motion metrics", "Honest gap: stage-recommended motion split"],
+    excluded: ["Channel-by-channel CPL/CPM detail (see Revenue Motions)", "Stage conversion math (see Funnel Health)", "Sales budget detail (see S&M Budget)"],
+    assumptions: ["Concentration risk threshold: ≥40% of any single CREATE channel", "Fixed/variable healthy band: 20-35% fixed / 65-80% variable for growth stage", "Calendar-shaped demand uses NORAM seasonality by default"],
+    whatChanges: ["motionAllocation %", "motionChannels[].pct and CPL/cost params", "variableMktgPct, fixedMktgPct, martechPctOfVariable", "All funnel conversion rates (cascade to monthly volume)"],
+    relatedModules: ["channels", "cacBreakdown", "marketing", "mktgBudget"],
+  },
   dashboard: {
     title: "Command Center", docRef: "/docs/modules/dashboard",
     tooltip: "Top-level health metrics and deal math summary",
@@ -394,6 +404,7 @@ const NAV_SECTIONS=[
     {id:"cfo",label:"CFO View",icon:DollarSign},
     {id:"ceo",label:"CEO View",icon:Activity},
     {id:"cro",label:"CRO View",icon:Users},
+    {id:"cmo",label:"CMO View",icon:Megaphone},
   ]},
   { section: "Revenue", items: [
     {id:"targets",label:"Target Tracker",icon:Target},
@@ -957,6 +968,207 @@ function CROPage({model, inputs, onInfoClick, mobile}){
     {/* Footer attribution */}
     <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
       Persona view · Capacity numbers derived from inputs.aeCount × inputs.aeQuota with ramp + attrition adjustments. For per-AE territory analysis or rep-level forecasting (not modeled), use your CRM. Open Sales Model + Seller Ramp for the full mechanics.
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// CMO / VP MARKETING PERSONA VIEW
+// First-5-min questions (from docs/PERSONA-AND-DATA-AUDIT.md §1):
+//   Q1: How many inquiries / MQLs per month?           → Monthly demand calendar
+//   Q2: CAC payback at current motion mix?             → 4-variant CAC tiles
+//   Q3: Channel concentration risk?                     → Highest-share CREATE channel
+//   Q4: Fixed/variable split healthy?                   → Split with band context
+//   Q5: Right CREATE/CONVERT/ACCELERATE split?         → Motion mix + ROI per motion
+// ════════════════════════════════════════════════════════════
+function CMOPage({model, inputs, onInfoClick, mobile}){
+  const { summary: s, monthly, motions, pnl } = model;
+  // Q1 — monthly demand
+  const y1Months = (monthly||[]).filter(m => m.yearIndex === 0);
+  const totalInq = y1Months.reduce((sum,m)=>sum+(m.monthlyInquiries||0),0);
+  const totalMQL = y1Months.reduce((sum,m)=>sum+(m.monthlyMQLs||0),0);
+  const peakInq = y1Months.reduce((max,m)=>m.monthlyInquiries>max.monthlyInquiries?m:max, {monthlyInquiries:0,month:"—"});
+  // Q2 — CAC variants
+  const cacs = [
+    { label: "Programmatic", value: pnl.programmaticCAC || 0, desc: "Channel spend ÷ deals (optimistic)" },
+    { label: "MarTech-Loaded", value: pnl.martechLoadedCAC || 0, desc: "+ martech / data tools" },
+    { label: "Fully Burdened", value: pnl.fullyBurdenedCAC || 0, desc: "+ all fixed mktg overhead" },
+    { label: "All-In Blended", value: pnl.blendedAllInCAC || 0, desc: "+ all S&M ÷ all deals (honest)" },
+  ];
+  const targetPayback = inputs.cacPaybackTarget || 24;
+  // Q3 — channel concentration
+  const createChannels = (motions?.create?.channels) || [];
+  const sortedChannels = [...createChannels].sort((a,b)=>b.pct-a.pct);
+  const topChannel = sortedChannels[0];
+  const concentrationRisk = topChannel && topChannel.pct >= 40;
+  // Q4 — fixed/variable
+  const totalMktg = (pnl?.totalMktgBudget) || 0;
+  const fixed = (pnl?.fixedMktg) || 0;
+  const variable = (pnl?.variableMktg) || 0;
+  const fixedPct = totalMktg > 0 ? (fixed/totalMktg)*100 : 0;
+  const variablePct = totalMktg > 0 ? (variable/totalMktg)*100 : 0;
+  // Q5 — motion mix
+  const ma = inputs.motionAllocation || {create:45,convert:30,accelerate:25};
+  const motionData = [
+    { key:"CREATE", value: ma.create, totals: motions?.create?.totals, color: C.green, desc: "Net-new demand" },
+    { key:"CONVERT", value: ma.convert, totals: motions?.convert?.totals, color: C.blue, desc: "Qualification throughput" },
+    { key:"ACCELERATE", value: ma.accelerate, totals: motions?.accelerate?.totals, color: C.violet, desc: "Deal velocity + win-rate lift" },
+  ];
+  return(<div>
+    <Header title="CMO View" sub="Monthly demand, CAC variants, channel concentration, fixed/variable split, motion mix" icon={Megaphone} moduleId="cmo" onInfoClick={onInfoClick}/>
+    
+    {/* Q1 — Monthly demand */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · How many inquiries / MQLs per month?</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:mobile?8:12,marginBottom:14}}>
+      <Metric label="Total Inquiries (Y1)" value={fN(totalInq)} sub={`${fN(Math.round(totalInq/12))} avg/month`} color={C.accent} delay={0}/>
+      <Metric label="Total MQLs (Y1)" value={fN(totalMQL)} sub={`${fN(Math.round(totalMQL/12))} avg/month`} color={C.blue} delay={1}/>
+      <Metric label="Peak Month" value={peakInq.month} sub={`${fN(peakInq.monthlyInquiries)} inquiries (seasonality)`} color={C.violet} delay={2}/>
+      <Metric label="Funnel Yield" value={`${(s.effectiveFunnelYield*100).toFixed(2)}%`} sub={`1 deal per ${Math.round(1/s.effectiveFunnelYield)} inq`} color={C.text} delay={3}/>
+    </div>
+    {/* Monthly bar chart */}
+    <Card style={{marginBottom:24}}>
+      <div style={{fontSize:11,fontWeight:600,color:C.muted,marginBottom:14,textTransform:"uppercase",letterSpacing:"0.04em"}}>Monthly inquiry + MQL demand · Y1</div>
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={y1Months} margin={{top:5,right:10,left:10,bottom:5}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.borderMid}/>
+          <XAxis dataKey="month" stroke={C.dim} fontSize={10} tickLine={false}/>
+          <YAxis stroke={C.dim} fontSize={10} tickLine={false} axisLine={false}/>
+          <Tooltip content={<TT/>}/>
+          <Bar dataKey="monthlyInquiries" name="Inquiries" fill={C.accent}/>
+          <Bar dataKey="monthlyMQLs" name="MQLs" fill={C.blue}/>
+        </BarChart>
+      </ResponsiveContainer>
+    </Card>
+    
+    {/* Q2 — CAC variants */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · CAC payback at current motion mix</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:14}}>
+        {cacs.map((c,i)=>{
+          const payback = inputs.avgDealSize > 0 ? c.value / (inputs.avgDealSize/12) : 0;
+          const color = payback <= targetPayback ? C.green : payback <= targetPayback*1.5 ? C.amber : C.red;
+          return(
+            <div key={c.label} style={{padding:12,background:C.bg,borderRadius:0,borderTop:`2px solid ${color}`}}>
+              <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{c.label}</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{fmt(c.value)}</div>
+              <div style={{fontSize:10,color:color,marginTop:4,fontWeight:600,fontFamily:"'Chivo Mono',monospace"}}>{payback.toFixed(1)}mo payback</div>
+              <div style={{fontSize:9,color:C.dim,marginTop:6,lineHeight:1.4}}>{c.desc}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{marginTop:14,fontSize:11,color:C.muted,lineHeight:1.6}}>
+        The honest CAC is the rightmost column — all S&M divided by all deals (including expansion). Target payback: <strong style={{color:C.text}}>≤{targetPayback} months</strong>. If the all-in number is far from programmatic, fixed overhead is dominating.
+      </div>
+    </Card>
+    
+    {/* Q3 — Channel concentration */}
+    {topChannel && (
+      <>
+        <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · Channel concentration risk</div>
+        <Card style={{marginBottom:24,borderLeft:`3px solid ${concentrationRisk?C.amber:C.green}`}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:14,flexWrap:"wrap"}}>
+            <div style={{fontSize:32,fontWeight:700,color:concentrationRisk?C.amber:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{topChannel.pct}%</div>
+            <div style={{flex:1,minWidth:240}}>
+              <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:4}}>{topChannel.name} is the largest CREATE channel</div>
+              <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+                {concentrationRisk ? `Over the 40% concentration threshold. If ${topChannel.name} CPL increases 30%, it blows up the whole CREATE budget.` : `Within healthy concentration limits (under 40%). Diversified motion is more resilient to channel-level shocks.`}
+              </div>
+            </div>
+          </div>
+          {/* Channel allocation bars */}
+          <div style={{marginTop:8}}>
+            {sortedChannels.map((ch,i)=>(
+              <div key={i} style={{display:"grid",gridTemplateColumns:"140px 1fr 70px",gap:10,alignItems:"center",marginBottom:5}}>
+                <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{ch.name}</div>
+                <div style={{height:10,background:C.bg,borderRadius:0,overflow:"hidden"}}>
+                  <motion.div initial={{width:0}} animate={{width:`${ch.pct*1.5}%`}} transition={{duration:0.4,delay:i*0.04}}
+                    style={{height:"100%",background:ch.pct>=40?C.amber:C.green,opacity:0.7}}/>
+                </div>
+                <div style={{fontSize:10,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{ch.pct}% · {fmt(ch.spend)}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </>
+    )}
+    
+    {/* Q4 — Fixed/Variable split */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Fixed / variable marketing split</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Total Marketing</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(totalMktg)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>{((totalMktg/s.totalRevenue)*100).toFixed(1)}% of revenue</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Fixed (Infrastructure)</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(fixed)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>{fixedPct.toFixed(0)}% · Exec, PMM, MarTech, ops, brand</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Variable (Demand)</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(variable)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:4}}>{variablePct.toFixed(0)}% · Motion-allocated channels</div>
+        </div>
+      </div>
+      {/* Fixed/Variable split visualization */}
+      <div style={{position:"relative",height:14,background:C.bg,borderRadius:0,overflow:"hidden",marginBottom:8}}>
+        <motion.div initial={{width:0}} animate={{width:`${fixedPct}%`}} transition={{duration:0.5}}
+          style={{position:"absolute",left:0,top:0,bottom:0,background:C.violet,opacity:0.85}}/>
+        <motion.div initial={{width:0}} animate={{width:`${variablePct}%`}} transition={{duration:0.5,delay:0.1}}
+          style={{position:"absolute",left:`${fixedPct}%`,top:0,bottom:0,background:C.green,opacity:0.85}}/>
+      </div>
+      <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+        {pnl.fixedMktgIsFloorBound ? `Fixed budget is structurally floor-bound — the minimum-viable team costs more than the formula allocates. This resolves as revenue scales. ` : ""}
+        Benchmark for growth stage: <strong style={{color:C.text}}>20-35% fixed / 65-80% variable</strong>. Current split is <strong style={{color:fixedPct>40||fixedPct<15?C.amber:C.text}}>{fixedPct.toFixed(0)}% fixed</strong>.
+      </div>
+    </Card>
+    
+    {/* Q5 — Motion mix */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · CREATE / CONVERT / ACCELERATE split</div>
+    <Card style={{marginBottom:18}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14}}>
+        {motionData.map((m,i)=>{
+          const roi = m.totals?.revenue && m.totals?.spend ? (m.totals.revenue / m.totals.spend) : null;
+          return(
+            <div key={m.key} style={{padding:14,background:C.bg,borderRadius:0,borderTop:`2px solid ${m.color}`}}>
+              <div style={{fontSize:9,fontWeight:700,color:m.color,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{m.key}</div>
+              <div style={{fontSize:28,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{m.value}%</div>
+              <div style={{fontSize:10,color:C.dim,marginTop:4}}>{m.desc}</div>
+              <div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.borderMid}`}}>
+                <div style={{fontSize:10,color:C.muted,marginBottom:2}}>Spend: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(m.totals?.spend||0)}</span></div>
+                {m.key === "CREATE" && m.totals?.deals !== undefined && (
+                  <div style={{fontSize:10,color:C.muted}}>Deals: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.totals.deals}</span> · ROI: <span style={{color:roi&&roi>=2?C.green:roi&&roi>=1?C.amber:C.red,fontFamily:"'Chivo Mono',monospace"}}>{roi?roi.toFixed(1):"0"}x</span></div>
+                )}
+                {m.key === "CONVERT" && m.totals?.sqosCreated !== undefined && (
+                  <div style={{fontSize:10,color:C.muted}}>SQOs created: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.totals.sqosCreated}</span> · cost/SQO: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(m.totals.costPerSqo||0)}</span></div>
+                )}
+                {m.key === "ACCELERATE" && m.totals?.oppsInfluenced !== undefined && (
+                  <div style={{fontSize:10,color:C.muted}}>Opps touched: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.totals.oppsInfluenced}</span> · +{m.totals.winRateLift||5}pp win rate</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+    
+    {/* Honest gap — stage-recommended motion split */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Bonus gap <span style={{color:C.amber,marginLeft:6}}>↘ on build queue</span></div>
+    <Card style={{marginBottom:18,borderLeft:`2px solid ${C.amber}`,opacity:0.92}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+        <span style={{fontSize:9,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.08em"}}>Q5 cousin · Coming soon</span>
+      </div>
+      <h3 style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:8,lineHeight:1.3}}>What's the right CREATE/CONVERT/ACCELERATE split for our stage?</h3>
+      <p style={{fontSize:12,color:C.muted,lineHeight:1.6}}>The audit flagged this: Revenue Motions has the framework but no stage-anchored recommendation (e.g. seed-stage favors CREATE heavily; Series C balances). A "recommended for {inputs.fundingStage||"seriesB"} / {fmt(s.targetARR)}" overlay is on the build queue.</p>
+    </Card>
+    
+    {/* Footer */}
+    <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Persona view · Channel data sourced from inputs.motionChannels. Phase-shifted seasonality reflected in monthly demand. Open Revenue Motions for channel-level mechanics, CAC Breakdown for the 4 variants in depth.
     </div>
   </div>);
 }
@@ -3095,7 +3307,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     setInputs(prev=>({...prev,...overrides}));
