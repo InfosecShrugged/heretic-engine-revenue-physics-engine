@@ -126,6 +126,132 @@ Plus **10 agents in the registry** with a phased build (read-only → recommend 
 | D | Motion Orchestration · Content / Positioning |
 | E | Experimentation · Security / Governance |
 
+### 2d. Sovereignty Map (`/sovereignty-map`)
+
+Claims a **sovereignty principle**: *"Control lives where judgment occurs, not where data flows."*
+
+Four verdict categories per layer: **Never Vendor · Build · Hybrid · Vendor Acceptable**.
+
+A 5-layer **Sovereignty Stack** with explicit build-vs-buy verdicts:
+
+| Layer | Build verdict | Reason |
+|---|---|---|
+| L01 — Revenue Feedback & Reweighting | Build | Strategic; correction logic must be internal |
+| L02 — Orchestration & Velocity | Hybrid | Vendor infra OK; routing logic proprietary |
+| Telemetry Ingestion | Hybrid | Raw signal can come from vendors |
+| L03 — Signal Interpretation Engine | Build | Core IP — probability weighting + decay constants |
+| L04 — ICP Economic Clustering | Build | Proprietary Revenue Density math |
+| L05 — P&L Economic Gravity | Never Vendor | Internal truth — ARR/CAC/LTV decisions live here |
+
+Plus a **Portfolio Engine** framing: single company vs portfolio-level architecture with central adjudication core + per-asset tooling variation.
+
+### 2e. Split-Funnel Map (`/split-funnel-map`)
+
+Claims **seven acquisition lanes** (different from the doctrine page's seven motions, different from OpptyCon's three motions — a *third* taxonomy):
+
+| Lane | Name | Behavior |
+|---|---|---|
+| L01 | Demand Capture | Inbound high-intent hand-raise (demo, contact, pricing) |
+| L02 | Demand Conditioning | Content-driven, no explicit hand-raise (webinar, whitepaper) |
+| L03 | Exploration Capital | Outbound cold, no signal trigger (BDR within ICP cluster) |
+| L04 | Interception Capital | Signal-enabled, APS ≥ threshold (intent surge, trigger event) |
+| L05 | Distribution Multiplied | Partner/channel co-sell, alliance, referral |
+| L06 | Stakeholder Compression | Field acceleration, multi-thread, S2→Close compression |
+| L07 | Revenue Density Motion | Expansion, cross-sell, upsell, renewal, churn prevention |
+
+**Overlays** (applied across all lanes): Segment SPI Cluster · Geo/Territory · Pod Assignment · Capacity Limits. Principle: *"same channel, different KPI by lane."*
+
+### 2f. Lexicon (`/lexicon`) — the canonical terminology source
+
+This page is the **single biggest divergence** between doctrine and OpptyCon. It explicitly *retires* the terminology OpptyCon is built on.
+
+**Replaced legacy terms** (the lexicon's own framing):
+
+| Retired | What replaces it |
+|---|---|
+| **MQL** | APS (Account Probability Score) at threshold |
+| **Funnel** | Acquisition Lanes + Stage Ledger |
+| **Attribution** | Provenance + Learning Latency |
+| **Awareness** | Demand Conditioning (Lane 02) |
+| **Demand Gen** | Lane-specific capture motions |
+| **Lead** | Contact (tied to Account via role mapping) |
+| **CPL** | Cost per Lane Outcome (lane-specific KPI) |
+| **ROI** | SPI delta + Revenue Density delta |
+
+**New canonical terminology:**
+
+- **SPI (Segment Profitability Index)** — 3-year gross margin return multiple per acquisition dollar, by segment. *The anchor metric.*
+- **Revenue Density** — `(Win Rate × ACV × Margin × Retention) ÷ Sales Cycle Length`. Capital flows to high density.
+- **P_base / P_accel** — structural readiness × behavioral velocity (the dual probability model)
+- **Narrative Receptivity** — ICP dimension: category maturity × disruption tolerance × strategic influence
+- **Account Atomicity** — all signal/routing decisions at account-level, not lead-level
+- **Opportunity Integrity** — governed creation tied to buying groups
+- **Learning Latency** — time from motion deployment to validated revenue lift
+- **Correction Latency** — time from error detection to model reweighting
+- **ABX** — account-based experience (the umbrella term)
+
+**Operating principle (the lexicon's own one-liner):**
+> *Channels execute. Motions coordinate. Agents govern. Segments prioritize. Economics decide.*
+
+### 2g. Identity Graph (`/identity-graph`)
+
+Claims an **atomic unit shift**: Account is the unit, not Lead/Contact.
+
+**5 resolution domains**: Lead→Account · Lead→Contact · Contact→Opportunity · Account→Opportunity Integrity · Activity & Campaign Mapping.
+
+**5 buying-group roles** (each weighted in APS): Economic Buyer · Technical Buyer · Champion · Influencer · Blocker.
+
+**Account State lifecycle**: `Cold → Conditioning → Warming → Active → Expansion → Dormant`.
+
+**Failure cascades** — when CRM hygiene breaks, what downstream agents see:
+- Orphan leads → APS noise → false-positive routing
+- Duplicate accounts → split history → understated probability
+- No contact roles → buying group unknown → stage inflation → forecast miss
+- Untagged campaigns → Learning Agent blind → cannot measure lane lift
+- Territory misalignment → wrong pod assignment → capacity over/under-load
+- Subsidiary unmapped → parent treated separately → ICP scoring fragmented
+
+Principle: *"No agent operates on CRM primitives — they operate on the normalized graph."*
+
+### 2h. Infrastructure (`/infrastructure`)
+
+Claims an **8-layer infrastructure stack** that must exist before agent autonomy:
+
+1. Canonical Data Layer (ID graph, dedupe policy)
+2. Data Pipeline & Event Model (connectors, freshness)
+3. Control Plane Services (RBAC, Policy Engine, Provenance Logging)
+4. Tooling Layer (permissions, validation, rate limits, approvals, logging, fail-safe)
+5. Human-in-the-Loop Workflow (queues, approvers, escalation)
+6. Evaluation Harness (offline replay, golden datasets, metrics)
+7. Observability & Incident Response (monitoring, alerts, kill switch, rollbacks)
+8. Environment & Deployment Discipline (dev/staging/prod, versioning, CI/CD)
+
+**MVP survival stack** (5 components): Identity Graph + dedupe · Event Schema · Tool Wrappers + permissions · Approval Workflow · Provenance + monitoring.
+
+Principle: *"Infrastructure first, autonomy later. Treat agents like production software."*
+
+### 2i. Provenance (`/provenance`)
+
+Claims provenance is a **horizontal audit plane**, not a vertical layer. *"No autonomous action without provenance logging."*
+
+**Five provenance domains** with specific schemas:
+
+| Domain | Logs (excerpt) |
+|---|---|
+| **Signal Provenance (L04)** | sources[], weights{}, decay_constants, icp_modifiers, model_version, timestamp |
+| **Model Provenance (L01)** | cohort_window, cluster_id, error_threshold, weight_delta, version_change, approver |
+| **Routing Provenance (L02)** | threshold_active, capacity_state, agent_fired, account_state, territory_assigned, motion_track |
+| **Economic Provenance (L06)** | spi_delta, cac_assumption, coverage_multiple, margin_constraint |
+| **Vendor Provenance Boundary** | vendor_id, signal_type, raw_value, normalization, internal_weight |
+
+**Promises:**
+- Every probability score is decomposable
+- Every routing decision is reconstructable
+- Every correction event is explainable
+- Every capital shift is traceable to economic logic
+
+*"Provenance replaces attribution as the governing discipline."* Immutable, append-only.
+
 ---
 
 ## 3. Gap analysis — bidirectional
