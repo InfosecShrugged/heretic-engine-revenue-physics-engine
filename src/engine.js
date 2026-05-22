@@ -11,6 +11,12 @@ const QUARTERS = ["Q1","Q2","Q3","Q4"];
 export { MONTHS, QUARTERS };
 
 export const DEFAULT_INPUTS = {
+  // ── Plan start date — anchors all calendar labels (months/quarters/years)
+  // Defaults to the first of the current month so labels feel like real time.
+  planStartDate: (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+  })(),
   // Target mode: "absolute" or "growthRate"
   targetMode: "absolute",
   targetARR: 10000000, startingARR: 3000000, targetGrowthRate: 100,
@@ -308,10 +314,44 @@ export function computeModel(inputs) {
   // ── Multi-year planning
   const numYears = Math.min(3, Math.max(1, planningYears || 2));
   const totalMonths = numYears * 12;
-  const MONTH_LABELS = Array.from({length: totalMonths}, (_, i) => {
-    const yi = Math.floor(i / 12);
-    return yi === 0 ? MONTHS[i % 12] : `${MONTHS[i % 12]} Y${yi + 1}`;
-  });
+
+  // ── Calendar anchoring (workstream D)
+  // planStartDate (YYYY-MM-DD) anchors all month/quarter/year labels in calendar time.
+  // Quarter NUMBERING stays plan-aligned (Q1 = first 3 months of plan), but the LABEL
+  // shows the actual months covered.
+  const planStart = inputs.planStartDate || (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+  })();
+  const [psYearStr, psMonthStr] = planStart.split('-');
+  const startYear = parseInt(psYearStr, 10);
+  const startMonthIdx = parseInt(psMonthStr, 10) - 1;
+  function calMonthAt(planMonthIndex) {
+    const abs = startMonthIdx + planMonthIndex;
+    return { monthIdx: ((abs % 12) + 12) % 12, year: startYear + Math.floor(abs / 12) };
+  }
+  function calMonthLabel(planMonthIndex) {
+    const { monthIdx, year } = calMonthAt(planMonthIndex);
+    return `${MONTHS[monthIdx]} '${String(year).slice(-2)}`;
+  }
+  function calQuarterLabel(planMonthIndex) {
+    const yi = Math.floor(planMonthIndex / 12);
+    const qi = Math.floor((planMonthIndex % 12) / 3);
+    const qStart = yi * 12 + qi * 3;
+    const startCal = calMonthAt(qStart);
+    const endCal = calMonthAt(qStart + 2);
+    const yearTag = startCal.year === endCal.year
+      ? `'${String(startCal.year).slice(-2)}`
+      : `'${String(startCal.year).slice(-2)}-'${String(endCal.year).slice(-2)}`;
+    return `Q${qi+1} (${MONTHS[startCal.monthIdx]}-${MONTHS[endCal.monthIdx]} ${yearTag})`;
+  }
+  function calYearLabel(yi) {
+    const ys = calMonthAt(yi * 12);
+    const ye = calMonthAt(yi * 12 + 11);
+    return `Y${yi+1} (${MONTHS[ys.monthIdx]} '${String(ys.year).slice(-2)}-${MONTHS[ye.monthIdx]} '${String(ye.year).slice(-2)})`;
+  }
+
+  const MONTH_LABELS = Array.from({length: totalMonths}, (_, i) => calMonthLabel(i));
 
   // Per-year targets
   const yearTargets = [];
@@ -333,7 +373,7 @@ export function computeModel(inputs) {
     const yrSqoWon = Math.min(95, sqoToWonRate + convLift * 100);
     const yrSqos = Math.ceil(yrDeals / (yrSqoWon / 100));
     yearTargets.push({
-      year: y + 1, label: `Y${y + 1}`,
+      year: y + 1, label: calYearLabel(y), shortLabel: `Y${y + 1}`,
       startARR: yrStartARR, targetARR: yrTargetARR,
       exitARR: yrTargetARR, // projected exit = target (model assumes on-target)
       newARRNeeded: yrNewARRNeeded, dealsNeeded: yrDeals,
@@ -373,7 +413,7 @@ export function computeModel(inputs) {
     const cnarr = runningNewARR;
     const tarr = yt.startARR + cnarr;
     return { month: m, monthNum: mn, monthInYear, yearIndex: yi, yearLabel: `Y${yi+1}`,
-      quarter: QUARTERS[Math.floor(mi12/3)], quarterLabel: `${yi===0?"":"Y"+(yi+1)+" "}${QUARTERS[Math.floor(mi12/3)]}`,
+      quarter: calQuarterLabel(i), quarterLabel: calQuarterLabel(i), quarterShort: `Q${Math.floor(mi12/3)+1}`,
       rampedAEs: raes, rampFactor: rf, fullCapacity: cap, seasonalWeight: sw,
       monthlyInquiries: inq, monthlyMQLs: mmql, monthlySQLs: msql,
       monthlyMeetings: mmtg, monthlySQOs: msqo, monthlyDeals: md,
@@ -388,8 +428,8 @@ export function computeModel(inputs) {
   });
 
 
-  // Seller ramp with attrition
-  const sellerRamp = MONTHS.map((m, i) => {
+  // Seller ramp with attrition (Y1 only — uses calendar months from planStartDate)
+  const sellerRamp = MONTHS.map((m, i) => { const calLabel = calMonthLabel(i);
     const mn = i+1, rp = Math.min(1, mn/Math.max(1,aeRampMonths));
     // Attrition reduces effective headcount over time (cumulative loss)
     const attrFactor = Math.pow(1 - monthlyAttrRate, mn);
@@ -397,7 +437,7 @@ export function computeModel(inputs) {
     const raes = Math.round(effectiveAEs * rp * 10) / 10;
     const eq = (aeQuota/12)*rp, tc = raes*(aeQuota/12), fq = aeCount*(aeQuota/12);
     const attrLoss = (aeCount - effectiveAEs) * (aeQuota/12);
-    return { month:m, monthNum:mn, rampPct:rp, effectiveQuota:eq, totalCapacity:tc, fullQuota:fq,
+    return { month:calLabel, monthShort:m, monthNum:mn, rampPct:rp, effectiveQuota:eq, totalCapacity:tc, fullQuota:fq,
       capacityLoss:fq-tc, effectiveAEs: Math.round(effectiveAEs*10)/10, attrFactor, attrLoss };
   });
   const totalRampLoss = sellerRamp.reduce((s,r) => s + r.capacityLoss, 0);
@@ -822,13 +862,17 @@ export function computeModel(inputs) {
     return { ...m, targetARR: seasonalTarget, gapToTarget: m.totalARR - seasonalTarget, evenTarget };
   });
 
-  // Multi-year quarterly labels
+  // Multi-year quarterly labels (calendar-anchored)
   const allQuarters = [];
   for (let y = 0; y < numYears; y++) {
-    QUARTERS.forEach((q, qi) => allQuarters.push({
-      label: numYears > 1 ? `Y${y+1} ${q}` : q,
-      yearIndex: y, quarterIndex: qi, globalQi: y * 4 + qi,
-    }));
+    for (let qi = 0; qi < 4; qi++) {
+      const planMonthIdx = y * 12 + qi * 3;
+      allQuarters.push({
+        label: calQuarterLabel(planMonthIdx),
+        shortLabel: numYears > 1 ? `Y${y+1} Q${qi+1}` : `Q${qi+1}`,
+        yearIndex: y, quarterIndex: qi, globalQi: y * 4 + qi,
+      });
+    }
   }
 
   // QBR (multi-year)
@@ -853,7 +897,7 @@ export function computeModel(inputs) {
     const wi=Math.round(inquiriesNeeded/52 * ww * 4.33), wm=Math.round(wi*(inquiryToMqlRate/100)), ws=Math.round(wm*(mqlToSqlRate/100));
     const wmtg=Math.round(ws*(sqlToMeetingRate/100)), wsqo=Math.round(wmtg*(meetingToSqoRate/100));
     wCumInq+=wi; wCumSql+=ws; wCumSqo+=wsqo;
-    return { week:w+1, weekLabel:`W${w+1}`, month:MONTHS[mi],
+    return { week:w+1, weekLabel:`W${w+1}`, month:calMonthLabel(mi), monthShort:MONTHS[mi],
       inquiries:wi, mqls:wm, sqls:ws, meetings:wmtg, sqos:wsqo, pipeline:wsqo*avgDealSize,
       cumulativeInquiries:wCumInq, cumulativeSQLs:wCumSql, cumulativeSQOs:wCumSqo };
   });

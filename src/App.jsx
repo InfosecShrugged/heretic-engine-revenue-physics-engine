@@ -3848,6 +3848,12 @@ export default function App(){
             </div>
 
             {/* Target Mode Toggle */}
+            {/* Plan start date — anchors all calendar labels (workstream D) */}
+            <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Plan Start Date</div>
+            <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"7px 11px",marginBottom:13,gap:6}}>
+              <input type="date" value={inputs.planStartDate||""} onChange={e=>setInputs(p=>({...p,planStartDate:e.target.value}))}
+                style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%",colorScheme:themeMode==="dark"?"dark":"light"}}/>
+            </div>
             <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Target Mode</div>
             <SegmentToggle options={[{value:"absolute",label:"$ ARR"},{value:"growthRate",label:"% Growth"}]} value={inputs.targetMode} onChange={v=>setInputs(p=>({...p,targetMode:v}))}/>
             <div style={{marginTop:8}}/>
