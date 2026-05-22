@@ -252,29 +252,130 @@ Claims provenance is a **horizontal audit plane**, not a vertical layer. *"No au
 
 *"Provenance replaces attribution as the governing discipline."* Immutable, append-only.
 
+### 2j. About page (`/about`)
+
+Claims a **three-layer brand-to-product hierarchy**:
+
+1. **Heretics** — the philosophy / orthodoxy challenge
+2. **NetherOps** — the operations / governing methodology
+3. **OpptyCon** — the engine / opportunity physics
+
+Framing diagnoses: *"motion without clarity,"* *"hidden operational layer"* — between marketing, sales, ops, finance. Each function produces separate numbers; no shared layer governs them all.
+
+Promise: *"makes the hidden layer explicit; analyzes flow of opportunity across the entire operating model."*
+
+### 2k. OpptyCon LP + the five persona pages (`/opptycon/*`)
+
+The OpptyCon landing page itself promises:
+
+- **24+ months modeled** (multi-year horizon ✓)
+- **3.2× coverage enforcement** (specific ratio — site-only, not defined elsewhere)
+- **Dual cost axes** (functional × behavioral ✓)
+- **ΔQ phase-shifted funnel** (notation specific to this page — Q4 spend → Q1 pipeline)
+- **Multi-source pipeline split** (mktg-sourced vs sales-sourced ✓)
+- **Attrition modeling with monthly weight distributions** (✓ in engine)
+
+Tagline: *"Replaces narrative with mechanics. Planning becomes engineering, not theater."*
+
+**Five marketing personas** with dedicated LPs:
+
+| Site persona LP | Diagnosis framing | Promises |
+|---|---|---|
+| **Operators** (`/opptycon/operators/`) | *"Noble little disaster"* — disconnected systems, attribution theater, dirty inputs | Signal integrity, governed definitions, leakage identification by stage/source/time |
+| **GTM Leaders** (`/opptycon/heads-of-gtm/`) | *"Hall of mirrors"* — unstable assumptions, budget pressure, neat-story expectations | Economic coherence, structural-constraint identification, governed decision-making (not reactive reporting) |
+| **Finance** (`/opptycon/finance/`) | *"Costume drama disguised as forecasting"* — squishy attribution, inflated confidence | Testable assumptions, spend-to-return logic by motion/source/time, risk-point visibility |
+| **Leadership** (`/opptycon/leadership/`) | *"Oldest executive disease"* — fragmented truth, no shared operational logic | Cross-functional alignment, structural-bottleneck identification, governed thresholds vs *"executive weather patterns"* |
+| **Capital** (`/opptycon/capital/`) | *"Pricing conviction into incomplete information"* — polished data, operating collapse under scrutiny | Revenue-system maturity assessment, growth-durability signal, *"physics vs stagecraft"* comparison |
+
+Persona-page voice signature: each opens with a sharp diagnosis (*"hall of mirrors,"* *"costume drama,"* *"executive weather patterns"*), lists 5 capabilities, lists 5-7 outcomes, ends with 5 things the persona *"can finally control."*
+
 ---
 
 ## 3. Gap analysis — bidirectional
 
 ### 3a. SITE PROMISES, OPPTYCON DOESN'T HAVE (over-promise)
 
+Significantly larger than the v1 audit. Grouped by category for sanity:
+
+**Agent / control-plane infrastructure (the agent-specs vision)**
+
 | Site claim | OpptyCon reality | Severity |
 |---|---|---|
-| Dual probability model (P_base × P_accel) | Not in product | 🔴 Big gap |
-| 11 agents (spine-v4) / 10 agents (agent-specs) | 6 governance domains | 🔴 Big gap |
-| 7 acquisition motions | 3 motions (CREATE / CONVERT / ACCELERATE) | 🟡 Different framing |
-| BDR bifurcation (Cold Exploration vs Signal Interception) | Single SDR ratio input | 🟡 Conceptual gap |
-| Territory + Pod architecture | Not in product | 🔴 Not represented |
-| Customer Health Agent (health score, churn prob, expansion prob) | Only NRR % + churn rate inputs | 🔴 Big gap |
-| ICP recalibration via Customer Health feedback | Static ICP inputs only | 🟡 Loop closure missing |
-| Control plane primitives (Identity, Permissions, Provenance, Approvals) | Not in product | 🔴 Not built — infrastructure gap |
-| Read-only → recommend → write agent progression | Not in product | 🔴 Not built |
-| Identity Graph (deduplication, canonical IDs) | Not in product | 🔴 Not built |
-| Provenance logging (inputs, weights, model version, evidence) | Not in product | 🔴 Not built |
-| Velocity-as-diagnostic (friction detection patterns) | Velocity is rendered, not diagnosed | 🟡 Half-built |
-| Motion Map (7 modes as distinct categories) | Mapped to 3-motion CREATE/CONVERT/ACCELERATE | 🟡 Framework mismatch |
-| Signal & Intent Agent | Not in product | 🔴 Not built |
-| Marketing Narrative Agent / Content & Positioning Agent | Not in product | 🔴 Not built |
+| 11 agents (spine-v4) / 10 agents (agent-specs registry) | 6 governance domains (verdict engine, not agents) | 🔴 |
+| Control plane primitives (Identity, Permissions, Provenance, Approvals) | Not in product | 🔴 Infrastructure gap |
+| Read-only → recommend → write agent progression | Not in product | 🔴 |
+| Provenance logging — 5 domains with schemas | Not in product | 🔴 The largest unbuilt claim |
+| Approval workflow / human gates / kill switches | Not in product | 🔴 |
+| Policy-as-code enforcement | Not in product | 🔴 |
+| Evaluation harness (offline replay, golden datasets) | Not in product | 🔴 |
+| 8-layer infrastructure stack | Not in product (it's a single React app) | 🟡 Aspirational frame |
+
+**Probability & signal model (the spine-v4 dual-probability vision)**
+
+| Site claim | OpptyCon reality | Severity |
+|---|---|---|
+| Dual probability model (P_base × P_accel) | Not in product | 🔴 |
+| APS (Account Probability Score) at threshold | Not in product (still uses MQL gates) | 🔴 |
+| Signal decay constants, decay λ | Not in product | 🔴 |
+| Probability quadrants driving motion routing | Not in product | 🔴 |
+| Signal & Intent Agent / Signal Provenance | Not in product | 🔴 |
+| Confidence threshold + evidence per decision | Not in product | 🔴 |
+
+**Account-atomic model (the identity-graph vision)**
+
+| Site claim | OpptyCon reality | Severity |
+|---|---|---|
+| Account as atomic unit (not Lead/Contact) | OpptyCon models at deal-funnel level | 🔴 Framework mismatch |
+| 5 buying-group roles weighted in APS | Not in product | 🔴 |
+| Account State lifecycle (Cold → ... → Dormant) | Not in product | 🔴 |
+| Identity Graph (canonical IDs, dedupe, parent mapping) | Not in product | 🔴 |
+| Failure-cascade detection from CRM corruption | Phase 0 diagnostic partial coverage (self-assessment, not detection) | 🟡 |
+
+**Acquisition / motion model — multiple competing taxonomies**
+
+| Site source | Claims | OpptyCon |
+|---|---|---|
+| doctrine page | 7 acquisition motions (Inbound Content, Inbound Paid, etc.) | 3 motions (CREATE/CONVERT/ACCELERATE) |
+| split-funnel-map | 7 acquisition LANES (Capture, Conditioning, Cold, Interception, etc.) | 3 motions |
+| OpptyCon engine | 3 motions (CREATE/CONVERT/ACCELERATE) | same |
+
+This is a **three-way taxonomy collision** — the doctrine page, the split-funnel-map page, and the product all use different categorizations of essentially the same thing. The doctrine's "motions" and split-funnel's "lanes" aren't equivalent either. 🔴 Severity: high.
+
+**Customer-side: expansion + retention + health (the Customer Health Agent vision)**
+
+| Site claim | OpptyCon reality | Severity |
+|---|---|---|
+| Customer Health Agent — health score, churn prob, expansion prob | Only NRR % + churn rate inputs | 🔴 |
+| ICP recalibration via Customer Health feedback loop | Static ICP inputs only | 🔴 |
+| Revenue Density Motion (Lane 07 — expansion/cross-sell/renewal) | Expansion is a top-level revenueMode toggle, not a modeled motion | 🔴 |
+| Narrative Receptivity (ICP dimension) | Not in product | 🔴 |
+
+**Territory / pod / capacity (the spine-v4 + split-funnel field-execution vision)**
+
+| Site claim | OpptyCon reality | Severity |
+|---|---|---|
+| Territory + Pod architecture with APS-driven assignment | Single AE count input | 🔴 |
+| BDR bifurcation: Cold Exploration vs Signal Interception | Single SDR ratio input | 🟡 |
+| Capacity overlay across acquisition lanes | Capacity is a single AE-bench number | 🟡 |
+| Field Acceleration Agent | Not in product | 🔴 |
+
+**Economic anchor metrics**
+
+| Site claim | OpptyCon reality | Severity |
+|---|---|---|
+| SPI (Segment Profitability Index) — 3-yr gross margin return per acquisition $ | Not in product | 🔴 The anchor metric, missing |
+| Revenue Density = `(Win Rate × ACV × Margin × Retention) ÷ Sales Cycle Length` | Not computed | 🔴 |
+| Cost per Lane Outcome (lane-specific KPI) | CAC + CPL, not lane-specific | 🟡 |
+| Learning Latency / Correction Latency | Not measured | 🔴 |
+| Sovereignty Stack (build/hybrid/never-vendor verdicts by layer) | Not in product | 🟢 Sovereignty is a marketing/positioning concept, not modeled |
+
+**OpptyCon LP-specific (the /opptycon/index claims)**
+
+| Site claim | OpptyCon reality |
+|---|---|
+| "3.2× coverage enforcement" (specific number on LP) | Coverage default is 300%, threshold 250%/350% — the 3.2× number isn't anywhere in the product |
+| "ΔQ phase-shifted funnel" notation | Phase-shift exists in engine but the ΔQ notation doesn't appear in UI |
+| "Five vantage points" (Operators / GTM Leaders / Finance / Leadership / Capital) | Product has SEVEN persona views (CFO/CEO/CRO/CMO/VC/Board/RevOps) — **persona mismatch flagged below** |
 
 ### 3b. OPPTYCON HAS, SITE DOESN'T EXPLAIN (under-explain)
 
@@ -290,6 +391,59 @@ Claims provenance is a **horizontal audit plane**, not a vertical layer. *"No au
 | Glideslope with seasonality + NORAM weights | Hinted at via "time-aware modeling" claim | 🟢 Sharpen on site |
 | Multi-year planning horizon (Y2 growth + conversion lift) | Hinted at via "24+ month" claim | 🟢 Sharpen on site |
 | Onboarding wizard with role → persona routing | Not mentioned | 🟢 Add to site |
+
+### 3b-bis. PERSONA MISMATCH — easy fix, visible everywhere
+
+The site's OpptyCon LP advertises **five vantage points** with dedicated landing pages:
+*Operators · GTM Leaders · Finance · Leadership · Capital*.
+
+The product now ships **seven persona views**:
+*CFO · CEO · CRO · CMO · VC · Board · RevOps*.
+
+Approximate mapping:
+
+| Site persona | OpptyCon view(s) | Mapping quality |
+|---|---|---|
+| Operators | **RevOps** | 1:1 ✓ |
+| GTM Leaders | **CRO + CMO** (split into two) | 1:2 — site collapses two roles |
+| Finance | **CFO** | 1:1 ✓ |
+| Leadership | **CEO + Board** (split into two) | 1:2 — site collapses two roles |
+| Capital | **VC** | 1:1 ✓ |
+
+Three options to reconcile:
+
+- **Split the site LPs to match product** — add a CMO LP (operationally distinct from CRO) and a Board LP (operationally distinct from CEO). Site goes from 5 → 7 LPs.
+- **Collapse product views to match site** — merge CRO+CMO into "GTM Leaders," merge CEO+Board into "Leadership." Product goes from 7 → 5 views.
+- **Bridge with a mapping table on each LP** — keep both, add a "this maps to N views in the product" callout. Lowest cost; honest.
+
+I'd recommend **split the site LPs (5 → 7)** — the product's persona breakdown is more useful for buyers (CFOs and CEOs ask different questions; same for CMOs vs CROs). The audit doc that drove the persona views (`PERSONA-AND-DATA-AUDIT.md §1`) supports this split.
+
+### 3d. THE TERMINOLOGY COLLISION (the biggest single find)
+
+The `/lexicon` page explicitly **retires** the funnel-based terminology OpptyCon is built on:
+
+| Retired by the doctrine | What OpptyCon uses today |
+|---|---|
+| **MQL** (retired) | Inquiry → MQL → SQL → SQO funnel is core to engine |
+| **Funnel** (retired) | "Funnel Health" is a top-nav module |
+| **Attribution** (retired in favor of Provenance) | "Attribution Agent" is one of 6 governance domains |
+| **Demand Gen** (retired) | "Marketing Funnel" module exists |
+| **Lead** (retired in favor of Account+Contact) | Engine logic uses lead/inquiry primitives |
+| **CPL** (retired) | CPL is an input field per CREATE channel |
+| **ROI** (retired) | ROI shown on Channel cohort table, CMO view |
+| **Awareness** (retired in favor of Demand Conditioning) | Not used by OpptyCon — but doctrine uses awareness elsewhere |
+
+This isn't "site over-promises something unbuilt." This is "site retires terminology the product is *built on*."
+
+Three options to reconcile:
+
+- **A. Doctrine wins** — retire funnel/MQL/attribution from OpptyCon. Rebuild the model on APS / Account / Lane / Provenance / SPI / Revenue Density. **Massive product change.** 6-12 months minimum, possibly longer. The 7 persona views, Phase 0, Horizon Planner, Data Confidence callout all reference the legacy terms and would need rebuilds.
+- **B. Product wins** — update the lexicon to acknowledge that funnel/MQL/attribution remain in active use because the buyer's CRM is built on them. Treat doctrine's terminology as forward-looking *aspirational* (what we'd use in a fully-governed system); doctrine acknowledges current reality. **Site copy edit only.**
+- **C. Bridge** — keep both, but the lexicon explicitly labels the old terms as "transitional" and explains what each new term replaces it with. Doctrine evolution path is documented. Product can adopt new terms over multiple quarters. **The honest middle.**
+
+Path B is fastest. Path C is most honest. Path A is the doctrine taken to its conclusion, but probably impractical without changing what OpptyCon is *for*.
+
+This is the single biggest decision in the audit — bigger than the 11-agents-vs-6-domains gap. The terminology collision is in every user's first 5 minutes with the property; the agent-architecture gap is invisible until you read the spine-v4 page.
 
 ### 3c. ALIGNED (site claim ↔ product reality match)
 
@@ -370,8 +524,14 @@ going vision. Frames the IP correctly. Standard pattern for any platform with a 
 
 1. **Week 1 — Site reorganization (no product build).**
    - Split `/doctrine` into `/doctrine/today` (live product) and `/doctrine/design` (full vision)
-   - On every spine-v4 / agent-specs claim, add a `📍 SHIPPED` / `🛠️ ROADMAP` / `🔬 RESEARCH`
+   - On every spine-v4 / agent-specs / sovereignty-map / split-funnel-map / identity-graph /
+     infrastructure / provenance claim, add a `📍 SHIPPED` / `🛠️ ROADMAP` / `🔬 RESEARCH`
      badge that grounds the reader
+   - **Address §3d (terminology collision) explicitly** — pick Path B or C and update the
+     `/lexicon` page. This is the single most pressing edit; the lexicon currently retires
+     terminology the product is built on.
+   - **Address §3b-bis (persona mismatch)** — site has 5 `/opptycon/*` LPs, product has 7
+     persona views. Split site LPs to 7, or add mapping callouts. Recommended: split.
    - Add a `/roadmap` page that's the public version of this doc, kept current
 2. **Weeks 2-4 — Highest-leverage doctrine-to-product builds.**
    - **Provenance logging** for every model decision (cheap, foundational, unlocks future agent work)
@@ -380,15 +540,22 @@ going vision. Frames the IP correctly. Standard pattern for any platform with a 
    - **Velocity as diagnostic** — promote the existing velocity module from "display" to
      "flag stalls vs benchmarks" (small change, big perception win)
 3. **Months 2-3 — Bigger product moves (do these only if Weeks 2-4 land well).**
-   - Dual probability model in the Pipeline module (research → MVP)
+   - Dual probability model (P_base × P_accel) in the Pipeline module (research → MVP)
    - BDR bifurcation as a sales-org input (split SDR count into "cold prospecting" and
      "signal-interception" pools — feeds the Coverage agent and Pipeline math)
    - Identity Graph primitive (light version — canonical lead/account IDs in the data
      ingestion adapter)
+   - **Resolve the motion-taxonomy collision** — doctrine says 7 motions, split-funnel says
+     7 lanes, OpptyCon uses 3 motions. Pick one taxonomy and use it everywhere. Most
+     pragmatic: align doctrine to product (3 motions); upgrade if/when segmentation
+     supports lane-level KPIs.
+   - **SPI + Revenue Density** as first-class computed metrics (lexicon names them the
+     anchor metrics; product doesn't compute either)
 
-The other big gaps from §3a (control plane primitives end-to-end, full 11-agent registry,
-Territory + Pod) are real product work — months 4+. Their visibility on the site should be
-behind the `🔬 RESEARCH` or `🛠️ ROADMAP` badges from Week 1.
+The other big gaps from §3a (full 11-agent registry, 8-layer infrastructure stack,
+Account-atomic refactor, Territory + Pod, Sovereignty stack adjudicator, full provenance
+chain) are real product work — months 4+ or never. Their visibility on the site should be
+behind the `🔬 RESEARCH` badges from Week 1, or moved to a separate `/research` section.
 
 ---
 
