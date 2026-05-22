@@ -111,6 +111,36 @@ const MODULE_DOCS = {
     whatChanges: ["motionAllocation %", "motionChannels[].pct and CPL/cost params", "variableMktgPct, fixedMktgPct, martechPctOfVariable", "All funnel conversion rates (cascade to monthly volume)"],
     relatedModules: ["channels", "cacBreakdown", "marketing", "mktgBudget"],
   },
+  vc: {
+    title: "VC View", docRef: "/docs/modules/vc",
+    tooltip: "Rule of 40, Magic, glideslope credibility, all-in CAC, mktg vs sales-led",
+    tldr: "A persona-curated view for the VC / investor seat. Five efficiency-and-credibility checks: Rule of 40 + Magic + LTV:CAC + Burn Multiple, multi-year glideslope feasibility, all-in CAC payback, marketing-vs-sales-led posture. Plus an honest gap for the unfunded-funding-need question.",
+    included: ["Q1: 4 efficiency tiles (Rule of 40, Magic, LTV:CAC, Burn Multiple)", "Q2: Y1/Y2 targets + credibility verdict + ARR glideslope chart", "Q3: All-in CAC payback (the honest number) with investable verdict", "Q4: Gap — funding need + runway (math exists, view doesn't)", "Q5: Mktg-sourced % with led-by verdict + horizontal split visualization"],
+    excluded: ["Funnel detail (see Funnel Health)", "Cost detail (see P&L)", "Capacity (see CRO View)"],
+    assumptions: ["Investable payback: ≤24 months (mid-market cyber default)", "Y2 credibility threshold: ≤100% growth (~10% of mid-market SaaS sustain >100%)", "Marketing-led: ≥60% mktg-sourced; sales-led: ≤35%"],
+    whatChanges: ["All P&L inputs (cascade to Rule of 40)", "Y2 growth rate input", "Marketing budget (cascades to all-in CAC)", "mktgSourcedPct"],
+    relatedModules: ["cfo", "glideslope", "cacBreakdown", "pnl"],
+  },
+  board: {
+    title: "Board View", docRef: "/docs/modules/board",
+    tooltip: "Quarterly waterfall, biggest miss, attainment, investment band, assumptions",
+    tldr: "A persona-curated view for the operating board. Five oversight checks: quarterly closing/SQO/MQL waterfall, biggest leading-indicator miss, AE attainment posture, growth-vs-burn investment band, and a defensibility panel for the six load-bearing assumptions.",
+    included: ["Q1: Quarterly waterfall — closing deals, SQOs needed, MQLs needed across 8 quarters", "Q2: Biggest miss (priority chain across S&M, capacity, funnel, coverage, CAC)", "Q3: Attainment + AE count + attrition tiles", "Q4: S&M band with growth/burn verdict", "Q5: Assumptions panel — 6 load-bearing inputs with source/derivation per row"],
+    excluded: ["Detailed module mechanics (drill in via full nav)", "Channel-level detail (see RevOps View)"],
+    assumptions: ["Board surface intentionally light — most board read on phones at midnight", "Quarterly view defaults to phase-shifted (SQO lead = sqoLeadQuarters; MQL lead = mqlLeadQuarters)"],
+    whatChanges: ["All inputs cascade — Board view is a summarization layer"],
+    relatedModules: ["spine", "qbr", "ceo", "cfo"],
+  },
+  revops: {
+    title: "RevOps View", docRef: "/docs/modules/revops",
+    tooltip: "Funnel diagnostic, channel economics, capacity decomposition, floor flags, leverage",
+    tldr: "The operator persona — the role the alpha was built for today. Five operational diagnostics: where the funnel is breaking, channel-level cost-per-SQO and CAC, theoretical-vs-effective capacity decomposition, floor-bound state flags, and the highest-leverage 5pp conversion improvement.",
+    included: ["Q1: Funnel grade + worst-stage callout", "Q2: Top channels by spend with Cost/SQO + CAC + ROI", "Q3: Capacity waterfall (full minus ramp minus attrition equals effective)", "Q4: Floor-bound flags consolidated (sales + fixed mktg)", "Q5: Highest-leverage stage by absolute gap to 'great' benchmark"],
+    excluded: ["Persona-friendly framing (this view is for the operator)", "Strategic narrative (see CEO/CFO views)"],
+    assumptions: ["Worst-stage detection: prioritizes 'bad' status stages, then 'good' stages with largest gap to 'great'", "Highest-leverage: largest absolute pp gap to 'great' benchmark (compounding through downstream stages)"],
+    whatChanges: ["All funnel conversion rates", "Channel mix + CPL/cost params", "AE count, ramp, attrition", "All cost % inputs"],
+    relatedModules: ["funnelHealth", "channels", "pipeline", "sellerRamp"],
+  },
   dashboard: {
     title: "Command Center", docRef: "/docs/modules/dashboard",
     tooltip: "Top-level health metrics and deal math summary",
@@ -405,6 +435,9 @@ const NAV_SECTIONS=[
     {id:"ceo",label:"CEO View",icon:Activity},
     {id:"cro",label:"CRO View",icon:Users},
     {id:"cmo",label:"CMO View",icon:Megaphone},
+    {id:"vc",label:"VC View",icon:BarChart3},
+    {id:"board",label:"Board View",icon:Shield},
+    {id:"revops",label:"RevOps View",icon:Zap},
   ]},
   { section: "Revenue", items: [
     {id:"targets",label:"Target Tracker",icon:Target},
@@ -1169,6 +1202,375 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
     {/* Footer */}
     <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
       Persona view · Channel data sourced from inputs.motionChannels. Phase-shifted seasonality reflected in monthly demand. Open Revenue Motions for channel-level mechanics, CAC Breakdown for the 4 variants in depth.
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// VC / INVESTOR PERSONA VIEW
+// First-5-min questions (from docs/PERSONA-AND-DATA-AUDIT.md §1):
+//   Q1: Rule of 40 + Magic — efficient or burning?  → 4 unit-economic tiles
+//   Q2: Multi-year glideslope credible?             → Glideslope chart + Y2 feasibility
+//   Q3: CAC payback months — investable?            → All-in CAC + payback verdict
+//   Q4: Funding need to hit the plan?               → gap card (NOT MODELED)
+//   Q5: Marketing-led or sales-led business?        → Mktg-sourced + outbound dependency
+// ════════════════════════════════════════════════════════════
+function VCPage({model, inputs, onInfoClick, mobile}){
+  const { summary: s, glideslope, yearTargets, pnl } = model;
+  const allInCAC = pnl?.blendedAllInCAC || 0;
+  const allInPayback = inputs.avgDealSize > 0 ? allInCAC / (inputs.avgDealSize/12) : 0;
+  const investable = allInPayback <= (inputs.cacPaybackTarget || 24);
+  const y2 = yearTargets && yearTargets[1];
+  const y2GrowthRate = y2 ? y2.growthRate : null;
+  const y2Credible = y2GrowthRate === null ? null : y2GrowthRate <= 100;
+  return(<div>
+    <Header title="VC View" sub="Efficiency metrics, multi-year credibility, investability" icon={BarChart3} moduleId="vc" onInfoClick={onInfoClick}/>
+    
+    {/* Q1 — Efficient or burning */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Efficient or burning?</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:mobile?8:12,marginBottom:24}}>
+      <Metric label="Rule of 40" value={s.rule40.toFixed(0)} sub={s.rule40>=40?"Investable":"Below threshold"} color={s.rule40>=40?C.green:C.red} delay={0}/>
+      <Metric label="Magic Number" value={s.magicNumber.toFixed(2)} sub={s.magicNumber>=0.75?"Efficient":s.magicNumber>=0.5?"Marginal":"Inefficient"} color={s.magicNumber>=0.75?C.green:s.magicNumber>=0.5?C.amber:C.red} delay={1}/>
+      <Metric label="LTV : CAC" value={`${s.ltvCac.toFixed(1)}x`} sub={s.ltvCac>=3?"Healthy":"Below 3x"} color={s.ltvCac>=3?C.green:C.amber} delay={2}/>
+      <Metric label="Burn Multiple" value={s.burnMultiple?s.burnMultiple.toFixed(2):"—"} sub={s.burnMultiple==null?"Profitable":s.burnMultiple<=1?"Best-in-class":s.burnMultiple<=2?"Acceptable":"Inefficient"} color={s.burnMultiple==null||s.burnMultiple<=1?C.green:s.burnMultiple<=2?C.amber:C.red} delay={3}/>
+    </div>
+    
+    {/* Q2 — Multi-year glideslope */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · Multi-year glideslope · credibility</div>
+    <Card style={{marginBottom:24}}>
+      {y2 && (
+        <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
+          <div>
+            <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Y1 Target</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.targetARR)}</div>
+            <div style={{fontSize:10,color:C.dim,marginTop:3}}>{(s.growthRate||0).toFixed(0)}% growth</div>
+          </div>
+          <div>
+            <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Y2 Target</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(y2.targetARR)}</div>
+            <div style={{fontSize:10,color:y2GrowthRate>100?C.amber:C.dim,marginTop:3}}>{y2GrowthRate.toFixed(0)}% over Y1 exit</div>
+          </div>
+          <div>
+            <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Y2 Credibility</div>
+            <div style={{fontSize:14,fontWeight:600,color:y2Credible?C.green:C.amber,marginTop:6}}>{y2Credible?"Plausible":"Historically rare"}</div>
+            <div style={{fontSize:10,color:C.dim,marginTop:6,lineHeight:1.5}}>{y2Credible?"Y2 growth ≤100% — within mid-market SaaS distribution":"Y2 growth >100% — fewer than 10% of mid-market SaaS sustain"}</div>
+          </div>
+        </div>
+      )}
+      {glideslope && glideslope.length > 0 && (
+        <ResponsiveContainer width="100%" height={200}>
+          <ComposedChart data={glideslope} margin={{top:5,right:10,left:10,bottom:5}}>
+            <CartesianGrid strokeDasharray="3 3" stroke={C.borderMid}/>
+            <XAxis dataKey="month" stroke={C.dim} fontSize={9} tickLine={false} interval={2}/>
+            <YAxis stroke={C.dim} fontSize={9} tickFormatter={v=>fmt(v)} tickLine={false} axisLine={false}/>
+            <Tooltip content={<TT/>}/>
+            <Area type="monotone" dataKey="totalARR" stroke={C.accent} fill={C.accentDim} strokeWidth={2} name="Projected ARR"/>
+            <Line type="monotone" dataKey="targetARR" stroke={C.amber} strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Target"/>
+          </ComposedChart>
+        </ResponsiveContainer>
+      )}
+    </Card>
+    
+    {/* Q3 — CAC payback */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · CAC payback — investable?</div>
+    <Card style={{marginBottom:24,borderLeft:`3px solid ${investable?C.green:C.amber}`}}>
+      <div style={{display:"flex",alignItems:"baseline",gap:18,marginBottom:14,flexWrap:"wrap"}}>
+        <div style={{fontSize:42,fontWeight:700,color:investable?C.green:C.amber,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{allInPayback.toFixed(1)}<span style={{fontSize:18,color:C.muted}}>mo</span></div>
+        <div style={{flex:1,minWidth:240}}>
+          <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>All-in CAC payback — the honest number</div>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+            {fmt(allInCAC)} all-in CAC ÷ {fmt(inputs.avgDealSize/12)} monthly customer revenue. Target ≤{inputs.cacPaybackTarget||24}mo. {investable?"Within investable range.":`${(allInPayback-(inputs.cacPaybackTarget||24)).toFixed(1)}mo over target — flags scrutiny.`}
+          </div>
+        </div>
+      </div>
+    </Card>
+    
+    {/* Q4 — Funding need (gap) */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Funding need <span style={{color:C.amber,marginLeft:6}}>↘ on build queue</span></div>
+    <Card style={{marginBottom:18,borderLeft:`2px solid ${C.amber}`,opacity:0.92}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+        <span style={{fontSize:9,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.08em"}}>Q4 · Coming soon</span>
+      </div>
+      <h3 style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:8,lineHeight:1.3}}>What funding does the plan require, and over what runway?</h3>
+      <p style={{fontSize:12,color:C.muted,lineHeight:1.6}}>The VC's last question. Cumulative burn over the planning horizon × current cash position × buffer = funding need + when. The burn math is in CFO View (Q2); pairing it with starting cash and a buffer assumption is on the build queue.</p>
+    </Card>
+    
+    {/* Q5 — Mktg-led vs sales-led */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · Marketing-led or sales-led business?</div>
+    <Card style={{marginBottom:18}}>
+      <div style={{display:"flex",alignItems:"baseline",gap:18,marginBottom:10,flexWrap:"wrap"}}>
+        <div style={{fontSize:36,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{inputs.mktgSourcedPct}<span style={{fontSize:16,color:C.muted}}>%</span></div>
+        <div style={{flex:1,minWidth:240}}>
+          <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>Marketing-sourced pipeline</div>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+            {inputs.mktgSourcedPct >= 60 ? "Marketing-led business. Scales with brand and demand-gen investment; less dependent on individual AE outbound." :
+             inputs.mktgSourcedPct <= 35 ? "Sales-led business. Heavy outbound dependency — capacity scales linearly with AE/SDR headcount." :
+             "Balanced motion. Marketing creates the air cover, sales builds the pipeline."}
+          </div>
+        </div>
+      </div>
+      <div style={{position:"relative",height:10,background:C.bg,borderRadius:0,overflow:"hidden"}}>
+        <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${inputs.mktgSourcedPct}%`,background:C.accent,opacity:0.85}}/>
+        <div style={{position:"absolute",left:`${inputs.mktgSourcedPct}%`,top:0,bottom:0,right:0,background:C.violet,opacity:0.85}}/>
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:5,fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>
+        <span>MARKETING-SOURCED {inputs.mktgSourcedPct}%</span>
+        <span>AE/SDR-SOURCED {100-inputs.mktgSourcedPct}%</span>
+      </div>
+    </Card>
+    
+    <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Persona view · Investability framing uses mid-market SaaS benchmarks. Multi-year credibility based on Y2 growth rate distribution. For sensitivity to misses, see CFO View (Q4 gap).
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// BOARD MEMBER PERSONA VIEW
+// First-5-min questions (from docs/PERSONA-AND-DATA-AUDIT.md §1):
+//   Q1: Where are we vs plan — quarterly waterfall?  → Quarterly target/closing table
+//   Q2: Biggest leading-indicator miss?              → Top-priority threat (shared with CEO)
+//   Q3: Quota attainment trend?                      → Required attainment in context
+//   Q4: Underinvesting or burning toward death?      → S&M band (shared with CFO)
+//   Q5: Are the assumptions defensible?              → Key assumptions panel
+// ════════════════════════════════════════════════════════════
+function BoardPage({model, inputs, onInfoClick, mobile}){
+  const { summary: s, quarterlyTargets } = model;
+  const att = s.attainmentRequired || 100;
+  const attColor = att <= 100 ? C.green : att <= 120 ? C.amber : C.red;
+  const sAndMZone = s.totalSAndMPct < 30 ? "underinvest" : s.totalSAndMPct > 60 ? "burn" : s.totalSAndMPct > 55 ? "stretch" : "growth";
+  const sAndMZoneColor = sAndMZone === "underinvest" ? C.amber : sAndMZone === "burn" ? C.red : sAndMZone === "stretch" ? C.amber : C.green;
+  const sAndMVerdict = sAndMZone === "burn" ? "Burning toward death" : sAndMZone === "underinvest" ? "Underinvesting" : sAndMZone === "stretch" ? "Stretch zone" : "Healthy growth investment";
+  // Biggest miss — same priority chain as CEO
+  let issue;
+  if (s.totalSAndMPct > 60) issue = "S&M burn at " + s.totalSAndMPct.toFixed(1) + "%";
+  else if (att > 120) issue = "Capacity gap — " + att.toFixed(0) + "% AE attainment required";
+  else if (s.funnelGrade === "D") issue = "Funnel grade D";
+  else if (s.coverageHealth === "bad") issue = "Pipeline coverage insufficient";
+  else if (s.cacPayback > 36) issue = "CAC payback " + s.cacPayback.toFixed(0) + "mo";
+  else issue = null;
+  return(<div>
+    <Header title="Board View" sub="Where we are vs plan, biggest miss, attainment posture, investment band, key assumptions" icon={Shield} moduleId="board" onInfoClick={onInfoClick}/>
+    
+    {/* Q1 — Quarterly waterfall */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Where are we vs plan — quarterly waterfall</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:`140px repeat(${Math.min((quarterlyTargets||[]).length,8)},1fr)`,gap:8}}>
+        <div></div>
+        {(quarterlyTargets||[]).slice(0,8).map(q=>(
+          <div key={q.quarter} style={{fontSize:9,fontWeight:700,color:q.isCurrentYear?C.text:C.dim,textTransform:"uppercase",letterSpacing:"0.06em",textAlign:"center"}}>{q.quarter}</div>
+        ))}
+        <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Closing deals</div>
+        {(quarterlyTargets||[]).slice(0,8).map((q,i)=>(
+          <div key={i} style={{fontSize:13,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.closingDeals||0}</div>
+        ))}
+        <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>SQOs needed</div>
+        {(quarterlyTargets||[]).slice(0,8).map((q,i)=>(
+          <div key={i} style={{fontSize:13,fontWeight:600,color:C.blue,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.sqosNeeded||0}</div>
+        ))}
+        <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>MQLs needed</div>
+        {(quarterlyTargets||[]).slice(0,8).map((q,i)=>(
+          <div key={i} style={{fontSize:13,fontWeight:600,color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.mqlsNeeded||0}</div>
+        ))}
+      </div>
+      <div style={{marginTop:14,fontSize:11,color:C.muted,lineHeight:1.6}}>
+        Quarterly waterfall: deals close in their quarter; SQOs come from <strong style={{color:C.text}}>{inputs.sqoLeadQuarters||2} quarter(s) earlier</strong>; MQLs lead SQOs by <strong style={{color:C.text}}>{inputs.mqlLeadQuarters||1}</strong>. Quarter labels marked <span style={{color:C.text}}>brighter</span> are the current planning year.
+      </div>
+    </Card>
+    
+    {/* Q2 — Biggest miss */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · Biggest leading-indicator miss</div>
+    <Card style={{marginBottom:24,borderLeft:`3px solid ${issue?C.amber:C.green}`}}>
+      <div style={{display:"flex",alignItems:"baseline",gap:14,flexWrap:"wrap"}}>
+        <div style={{flex:1,minWidth:240}}>
+          <h3 style={{fontSize:18,fontWeight:600,color:C.text,marginBottom:8,lineHeight:1.2}}>{issue || "No critical leading-indicator misses"}</h3>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
+            {issue ? "Surfaces the single highest-priority signal from the Governance Spine. For the full prioritized verdict list across all six domains (P&L, Stage, ICP, Coverage, Attribution, Forecast), open the Spine module." : "All governance domains are within thresholds at current inputs. Standard quarterly review applies."}
+          </div>
+        </div>
+        <div style={{fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>↘ Open Governance Spine</div>
+      </div>
+    </Card>
+    
+    {/* Q3 — Attainment trend */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · Implied AE attainment</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:24}}>
+      <Metric label="Required Attainment" value={`${att.toFixed(0)}%`} sub={att<=100?"Realistic":att<=120?"Stretch":"Unrealistic"} color={attColor}/>
+      <Metric label="AE Count" value={inputs.aeCount} sub={`Quota ${fmt(inputs.aeQuota)} each`} color={C.text}/>
+      <Metric label="Attrition Rate" value={`${inputs.aeAttritionRate}%`} sub={`Loses ~${((inputs.aeAttritionRate/100)*inputs.aeCount).toFixed(1)} AEs/yr`} color={inputs.aeAttritionRate>=15?C.red:inputs.aeAttritionRate>=10?C.amber:C.green}/>
+    </div>
+    
+    {/* Q4 — Investment posture */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Underinvesting in growth or burning toward death?</div>
+    <Card style={{marginBottom:24,borderLeft:`3px solid ${sAndMZoneColor}`}}>
+      <div style={{display:"flex",alignItems:"baseline",gap:18,marginBottom:8,flexWrap:"wrap"}}>
+        <div style={{fontSize:36,fontWeight:700,color:sAndMZoneColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{s.totalSAndMPct.toFixed(1)}%</div>
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:4}}>S&M ÷ revenue · <span style={{color:sAndMZoneColor}}>{sAndMVerdict}</span></div>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Growth-stage benchmark: 30-55%. Above 60% is burn territory; below 30% is underinvestment relative to growth target.</div>
+        </div>
+      </div>
+    </Card>
+    
+    {/* Q5 — Assumptions panel */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · Are the assumptions defensible?</div>
+    <Card style={{marginBottom:18}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:14}}>
+        {[
+          { label: "Target ARR", value: fmt(s.targetARR), source: inputs.targetMode==="growthRate"?`${inputs.targetGrowthRate}% growth from ${fmt(inputs.startingARR)}`:"Set absolute" },
+          { label: "Avg Deal Size", value: fmt(inputs.avgDealSize), source: "User input — verify against last 4 quarters of closed-won median" },
+          { label: "Funnel Conversion (Inq→Won)", value: `${(s.effectiveFunnelYield*100).toFixed(2)}%`, source: `Compounded from 5 stage rates: ${inputs.inquiryToMqlRate}/${inputs.mqlToSqlRate}/${inputs.sqlToMeetingRate}/${inputs.meetingToSqoRate}/${inputs.sqoToWonRate}%` },
+          { label: "AE Capacity", value: `${inputs.aeCount} × ${fmt(inputs.aeQuota)}`, source: `${inputs.aeRampMonths}mo ramp, ${inputs.aeAttritionRate}% attrition applied` },
+          { label: "NRR", value: `${inputs.nrrPercent}%`, source: "Retention assumption — used to compute retained ARR" },
+          { label: "CAC Payback Target", value: `${inputs.cacPaybackTarget||24}mo`, source: "Benchmark — mid-market cyber 18-30mo" },
+        ].map((row,i)=>(
+          <div key={i} style={{padding:10,background:C.bg,borderRadius:0,borderLeft:`2px solid ${C.borderMid}`}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}>
+              <span style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.04em"}}>{row.label}</span>
+              <span style={{fontSize:13,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{row.value}</span>
+            </div>
+            <div style={{fontSize:10,color:C.dim,lineHeight:1.5}}>{row.source}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{marginTop:14,fontSize:11,color:C.muted,lineHeight:1.6}}>
+        Defensibility = sourcing. Each row's "source" line tells you whether it's an input, a benchmark, or a derived number. Inputs the team can't sourcing back to recent data are the ones to challenge.
+      </div>
+    </Card>
+    
+    <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Persona view · Board surface intentionally light — most board members read on phones at midnight. Drill-in via the full module tree.
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// REVOPS PERSONA VIEW — the operator who knows it all
+// First-5-min questions (from docs/PERSONA-AND-DATA-AUDIT.md §1):
+//   Q1: Where's the funnel breaking and by how much?  → Funnel grade + worst stage
+//   Q2: Cost per SQO / cost per Won by channel?       → Channel CAC table
+//   Q3: Theoretical vs effective capacity gap?         → Capacity loss decomposition
+//   Q4: Where is the model floor-bound?                → Floor-bound flags consolidated
+//   Q5: Next 5pp of conversion improvement?            → Highest-leverage stage
+// ════════════════════════════════════════════════════════════
+function RevOpsPage({model, inputs, onInfoClick, mobile}){
+  const { summary: s, funnelHealth, channels, monthly } = model;
+  // Q1 — worst funnel stage
+  const worstStage = (funnelHealth||[]).filter(f=>f.status==="bad").sort((a,b)=>(b.bench.good-b.rate)-(a.bench.good-a.rate))[0]
+    || (funnelHealth||[]).filter(f=>f.status==="good").sort((a,b)=>(b.bench.great-b.rate)-(a.bench.great-a.rate))[0];
+  // Q3 — capacity decomposition
+  const fullCap = inputs.aeCount * inputs.aeQuota;
+  const rampLoss = s.totalRampLoss || 0;
+  const attrLoss = s.totalAttrLoss || 0;
+  const effCap = fullCap - rampLoss - attrLoss;
+  // Q4 — floor-bound flags
+  const floorFlags = [];
+  if (s.salesIsFloorBound) floorFlags.push({label:"Sales budget", detail:`Headcount cost (${fmt(s.salesHeadcountFloor)}) exceeds formula (${fmt(s.salesOpex)}) by ${fmt(s.salesFloorDelta)}`});
+  if (s.fixedMktgIsFloorBound) floorFlags.push({label:"Fixed marketing", detail:`Minimum viable team costs exceed formula allocation. Floor: ${s.floorPctOfRev?.toFixed(1)}% of revenue.`});
+  // Q5 — highest-leverage stage (largest absolute gap from "great")
+  const leverage = (funnelHealth||[]).map(f=>({stage:f.stage, gap:f.bench.great-f.rate, current:f.rate, target:f.bench.great})).filter(x=>x.gap>0).sort((a,b)=>b.gap-a.gap)[0];
+  // Q2 — top channels by cost-per-SQO
+  const channelsSorted = [...(channels||[])].sort((a,b)=>b.spend-a.spend).slice(0,5);
+  return(<div>
+    <Header title="RevOps View" sub="Funnel diagnostic, channel economics, capacity decomposition, floor-bound flags, leverage points" icon={Zap} moduleId="revops" onInfoClick={onInfoClick}/>
+    
+    {/* Q1 — Funnel break */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Where's the funnel breaking?</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:mobile?8:12,marginBottom:14}}>
+      <Metric label="Funnel Grade" value={s.funnelGrade} sub={`Score ${s.overallFunnelScore}/${s.maxFunnelScore}`} color={s.funnelGrade==="A"?C.green:s.funnelGrade==="B"?C.accent:s.funnelGrade==="C"?C.amber:C.red}/>
+      <Metric label="Inq → Won" value={`${(s.inquiryToWonRate||0).toFixed(2)}%`} sub={`1 deal per ${Math.round(100/(s.inquiryToWonRate||0.01))} inq`} color={C.violet}/>
+      <Metric label="Cost / SQO" value={fmt(s.costPerSqo||0)} sub={`vs $${(inputs.cpSqoBenchmark||12000).toLocaleString()} bench`} color={(s.costPerSqo||0)>(inputs.cpSqoBenchmark||12000)?C.red:C.green}/>
+      <Metric label="Cycle Days" value={s.totalCycleDays||0} sub={s.totalCycleDays>120?"Slow":"Normal"} color={s.totalCycleDays>120?C.amber:C.green}/>
+    </div>
+    {worstStage && (
+      <Card style={{marginBottom:24,borderLeft:`3px solid ${worstStage.status==="bad"?C.red:C.amber}`}}>
+        <div style={{display:"flex",alignItems:"baseline",gap:14,flexWrap:"wrap"}}>
+          <div style={{flex:1,minWidth:240}}>
+            <div style={{fontSize:9,fontWeight:700,color:worstStage.status==="bad"?C.red:C.amber,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Weakest stage</div>
+            <h3 style={{fontSize:17,fontWeight:600,color:C.text,marginBottom:6}}>{worstStage.stage} at <span style={{color:worstStage.status==="bad"?C.red:C.amber}}>{worstStage.rate}%</span></h3>
+            <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Good benchmark: {worstStage.bench.good}% · Great: {worstStage.bench.great}%. Gap to good: <strong style={{color:C.text}}>{Math.max(0,worstStage.bench.good-worstStage.rate)}pp</strong>. Compounds through every downstream stage.</div>
+          </div>
+        </div>
+      </Card>
+    )}
+    
+    {/* Q2 — Channel CAC */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · Channel cost-per-SQO and cost-per-won</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:"1.5fr repeat(4,1fr)",gap:8,padding:"6px 0",fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",borderBottom:`1px solid ${C.borderMid}`}}>
+        <div>Channel</div><div style={{textAlign:"right"}}>Spend</div><div style={{textAlign:"right"}}>Cost/SQO</div><div style={{textAlign:"right"}}>CAC</div><div style={{textAlign:"right"}}>ROI</div>
+      </div>
+      {channelsSorted.map((ch,i)=>(
+        <div key={i} style={{display:"grid",gridTemplateColumns:"1.5fr repeat(4,1fr)",gap:8,padding:"9px 0",borderBottom:i<channelsSorted.length-1?`1px solid ${C.borderMid}`:"none",fontSize:11,alignItems:"baseline"}}>
+          <div style={{color:C.text,fontWeight:500}}>{ch.name}</div>
+          <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{fmt(ch.spend)}</div>
+          <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:ch.costPerSqo>(inputs.cpSqoBenchmark||12000)?C.amber:C.green}}>{fmt(ch.costPerSqo)}</div>
+          <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{fmt(ch.cac)}</div>
+          <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:ch.roi>=2?C.green:ch.roi>=1?C.amber:C.red,fontWeight:600}}>{ch.roi?ch.roi.toFixed(1):"0"}x</div>
+        </div>
+      ))}
+    </Card>
+    
+    {/* Q3 — Capacity decomposition */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · Theoretical vs effective capacity</div>
+    <Card style={{marginBottom:24}}>
+      {[
+        { label: "Full Capacity (theoretical)", value: fullCap, color: C.text },
+        { label: "− Ramp Loss", value: rampLoss, color: C.amber, negative: true },
+        { label: "− Attrition Loss", value: attrLoss, color: C.red, negative: true },
+        { label: "= Effective Capacity", value: effCap, color: effCap>=s.newARRNeeded?C.green:C.red },
+        { label: "Target (New ARR Needed)", value: s.newARRNeeded, color: C.dim, dashed: true },
+      ].map((row,i)=>(
+        <div key={i} style={{display:"grid",gridTemplateColumns:"200px 1fr 120px",gap:10,alignItems:"center",marginBottom:6}}>
+          <div style={{fontSize:11,color:row.color,fontWeight:row.label.startsWith("=")?700:500}}>{row.label}</div>
+          <div style={{height:14,background:C.bg,borderRadius:0,position:"relative",overflow:"hidden"}}>
+            <motion.div initial={{width:0}} animate={{width:`${Math.min(100,(Math.abs(row.value)/Math.max(fullCap,s.newARRNeeded))*100)}%`}} transition={{duration:0.5,delay:i*0.05}}
+              style={{height:"100%",background:row.color,opacity:row.dashed?0:0.85,border:row.dashed?`1px dashed ${row.color}`:"none"}}/>
+          </div>
+          <div style={{fontSize:12,fontWeight:600,color:row.color,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{row.negative?"−":""}{fmt(row.value)}</div>
+        </div>
+      ))}
+    </Card>
+    
+    {/* Q4 — Floor-bound */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Where is the model floor-bound?</div>
+    <Card style={{marginBottom:24}}>
+      {floorFlags.length === 0 ? (
+        <div style={{fontSize:12,color:C.green,padding:8,background:C.greenDim,borderLeft:`2px solid ${C.green}`}}>No floor-bound items. Formula-driven costs exceed minimum-viable team costs at this scale.</div>
+      ) : (
+        floorFlags.map((flag,i)=>(
+          <div key={i} style={{padding:10,background:C.amberDim,borderLeft:`2px solid ${C.amber}`,marginBottom:i<floorFlags.length-1?8:0}}>
+            <div style={{fontSize:11,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.04em",marginBottom:4}}>{flag.label}</div>
+            <div style={{fontSize:11,color:C.text,lineHeight:1.6}}>{flag.detail}</div>
+          </div>
+        ))
+      )}
+      <div style={{marginTop:floorFlags.length===0?0:14,fontSize:10,color:C.dim,lineHeight:1.6}}>
+        Floor-bound = the people you've hired cost more than the % model allocates. Resolves as revenue grows OR by reducing headcount. Early-stage expectation.
+      </div>
+    </Card>
+    
+    {/* Q5 — Highest-leverage improvement */}
+    {leverage && (
+      <>
+        <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · Next 5pp of conversion improvement</div>
+        <Card style={{marginBottom:18,borderLeft:`3px solid ${C.accent}`}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:10,flexWrap:"wrap"}}>
+            <div style={{fontSize:32,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>+{leverage.gap}pp</div>
+            <div style={{flex:1,minWidth:240}}>
+              <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>{leverage.stage} · {leverage.current}% → {leverage.target}%</div>
+              <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Largest absolute gap to "great" benchmark. Fixing this stage compounds through every downstream conversion — highest dollar leverage in the funnel.</div>
+            </div>
+          </div>
+        </Card>
+      </>
+    )}
+    
+    <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Persona view · Diagnostic surface. The deepest persona — open Funnel Health, Pipeline, Channel Mix, Sales Model for the underlying mechanics.
     </div>
   </div>);
 }
@@ -3307,7 +3709,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     setInputs(prev=>({...prev,...overrides}));
