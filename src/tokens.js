@@ -71,11 +71,12 @@ export const darkTheme = {
   dim:          '#666666',
   ghost:        '#444444',
 
-  // Primary accent — LIME (everything on dark)
-  accent:       '#C8FF6E',
-  accentHover:  '#9BE040',
-  accentDim:    'rgba(200,255,110,0.08)',
-  accentGlow:   'rgba(200,255,110,0.15)',
+  // Primary accent — VIOLET (per DS §8 — primary action/active/selected on dark too;
+  // lime moved to semantic "governed state" role, see lime: below)
+  accent:       '#7C5CFF',
+  accentHover:  '#9981FF',
+  accentDim:    'rgba(124,92,255,0.10)',
+  accentGlow:   'rgba(124,92,255,0.20)',
 
   // Breach — governance constraints / alerts only on dark (key kept for back-compat;
   // per DS §8 this is #FF6157, replacing the old rose-as-governance-alert)
@@ -100,8 +101,8 @@ export const darkTheme = {
   violet:       '#8B5CF6',
   violetDim:    'rgba(139,92,246,0.10)',
 
-  // Chart palette (lime leads on dark)
-  chart: ['#C8FF6E','#4A90D9','#2ECC71','#8B5CF6','#F0A030','#7C5CFF'],
+  // Chart palette (violet leads on dark per DS §8; lime moved to semantic governed state)
+  chart: ['#7C5CFF','#4A90D9','#2ECC71','#C8FF6E','#F0A030','#FF6157'],
 
   // Inverse
   inv:          '#111111',
