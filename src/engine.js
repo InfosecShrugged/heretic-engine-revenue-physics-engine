@@ -998,6 +998,91 @@ export function computeModel(inputs) {
     };
   }).filter(q => q.closingDeals > 0 || q.sqosNeeded > 0 || q.mqlsNeeded > 0);
 
+  // ── INVERSE MARKETING PLAN (Kellogg-style waterfall) ────────────────
+  // Take target ARR → derive required inputs at each stage. Run sensitivity
+  // analysis showing how a ±5pp shift in any single conversion rate changes
+  // the inquiry requirement at the top of the funnel. Built as a dedicated
+  // shape for the Marketing Plan view, distinct from the existing
+  // phaseShiftedFunnel which serves CRO View's quarterly coverage.
+  const inverseMarketingPlan = (() => {
+    function recomputeFunnel(rates) {
+      const sqos = dealsNeeded > 0 ? Math.ceil(dealsNeeded / (rates.sqoToWonRate / 100)) : 0;
+      const meet = sqos > 0 ? Math.ceil(sqos / (rates.meetingToSqoRate / 100)) : 0;
+      const sqls = meet > 0 ? Math.ceil(meet / (rates.sqlToMeetingRate / 100)) : 0;
+      const mqls = sqls > 0 ? Math.ceil(sqls / (rates.mqlToSqlRate / 100)) : 0;
+      const inq  = mqls > 0 ? Math.ceil(mqls / (rates.inquiryToMqlRate / 100)) : 0;
+      return { sqos, meetings: meet, sqls, mqls, inquiries: inq };
+    }
+
+    const baseRates = { inquiryToMqlRate, mqlToSqlRate, sqlToMeetingRate, meetingToSqoRate, sqoToWonRate };
+    const base = recomputeFunnel(baseRates);
+
+    // Waterfall stages — top-down for visual rendering (Inquiry → Won)
+    const stages = [
+      { key: "inquiry", label: "Inquiries", count: base.inquiries, conversion: inquiryToMqlRate, conversionLabel: "Inquiry → MQL", owner: "Marketing", description: "Raw top-of-funnel — captured leads, all sources" },
+      { key: "mql",     label: "MQLs",      count: base.mqls,      conversion: mqlToSqlRate,    conversionLabel: "MQL → SQL",     owner: "Marketing → BDR", description: "Fit + behavior signal — marketing-qualified" },
+      { key: "sql",     label: "SQLs",      count: base.sqls,      conversion: sqlToMeetingRate, conversionLabel: "SQL → Meeting", owner: "BDR / SDR",        description: "Intent confirmed — BDR-qualified, meeting candidate" },
+      { key: "meeting", label: "Meetings",  count: base.meetings,  conversion: meetingToSqoRate, conversionLabel: "Meeting → SQO", owner: "AE / SDR",         description: "Held discovery — fit + need confirmed in conversation" },
+      { key: "sqo",     label: "SQOs",      count: base.sqos,      conversion: sqoToWonRate,    conversionLabel: "SQO → Won",     owner: "AE close",         description: "Pipeline-stage opportunity — accepted by sales" },
+      { key: "won",     label: "Wins",      count: dealsNeeded,    conversion: null,             conversionLabel: null,            owner: "AE close",         description: `${dealsNeeded} deals × $${(avgDealSize/1000).toFixed(0)}K = $${(newARRNeeded/1e6).toFixed(1)}M new ARR` },
+    ];
+
+    // Sensitivity — ±5pp on each conversion rate, impact on required inquiries at top
+    const sensitivities = [
+      { key: "sqoToWonRate",    label: "SQO → Won",     baseRate: sqoToWonRate },
+      { key: "meetingToSqoRate", label: "Meeting → SQO", baseRate: meetingToSqoRate },
+      { key: "sqlToMeetingRate", label: "SQL → Meeting", baseRate: sqlToMeetingRate },
+      { key: "mqlToSqlRate",    label: "MQL → SQL",     baseRate: mqlToSqlRate },
+      { key: "inquiryToMqlRate", label: "Inquiry → MQL", baseRate: inquiryToMqlRate },
+    ].map(s => {
+      const minus5 = { ...baseRates, [s.key]: Math.max(1, s.baseRate - 5) };
+      const plus5  = { ...baseRates, [s.key]: Math.min(99, s.baseRate + 5) };
+      const m5 = recomputeFunnel(minus5);
+      const p5 = recomputeFunnel(plus5);
+      return {
+        stage: s.label,
+        baseRate: s.baseRate,
+        // POSITIVE means MORE inquiries needed (worse outcome)
+        impactMinus5pp: m5.inquiries - base.inquiries,
+        impactPlus5pp:  p5.inquiries - base.inquiries,
+        minus5Inquiries: m5.inquiries,
+        plus5Inquiries:  p5.inquiries,
+      };
+    });
+
+    // Quarterly distribution — apply seasonal weights across all quarters in horizon
+    const quarterly = allQuarters.map(aq => {
+      const yt = yearTargets[aq.yearIndex];
+      const qShare = qWeights[aq.quarterIndex];
+      const qDeals = Math.round(yt.dealsNeeded * qShare);
+      const qSqos = Math.round(yt.sqosNeeded * qShare);
+      // Re-derive earlier stages from quarter's SQO requirement
+      const qMeet = qSqos > 0 ? Math.ceil(qSqos / (meetingToSqoRate / 100)) : 0;
+      const qSqls = qMeet > 0 ? Math.ceil(qMeet / (sqlToMeetingRate / 100)) : 0;
+      const qMqls = qSqls > 0 ? Math.ceil(qSqls / (mqlToSqlRate / 100)) : 0;
+      const qInq  = qMqls > 0 ? Math.ceil(qMqls / (inquiryToMqlRate / 100)) : 0;
+      return {
+        quarter: aq.label, yearIndex: aq.yearIndex, quarterIndex: aq.quarterIndex,
+        globalQi: aq.globalQi, isCurrentYear: aq.yearIndex === 0,
+        seasonalPct: (qShare * 100).toFixed(0),
+        wins: qDeals, sqos: qSqos, meetings: qMeet, sqls: qSqls, mqls: qMqls, inquiries: qInq,
+      };
+    });
+
+    return {
+      stages,         // top-down waterfall
+      sensitivities,  // ±5pp impact per stage
+      quarterly,      // per-quarter distribution
+      base,           // headline totals
+      inputs: {
+        targetARR, startingARR, retainedARR, newARRNeeded, dealsNeeded,
+        avgDealSize, numYears,
+        rates: baseRates,
+      },
+    };
+  })();
+
+
   // ── Time-horizon planner (workstream F) ────────────────────────────
   // The engine BACK-SOLVES from targetARR — so projected ARR always matches
   // the target by design. This planner asks a different question: given the
@@ -1112,7 +1197,7 @@ export function computeModel(inputs) {
       // Attrition
       totalAttrLoss,
     },
-    monthly, channels, sellerRamp, stages, yearTargets, numYears, horizonPlanner,
+    monthly, channels, sellerRamp, stages, yearTargets, numYears, horizonPlanner, inverseMarketingPlan,
     // Revenue Motions
     motions: {
       allocation: ma, createBudget, convertBudget, accelBudget,

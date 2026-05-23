@@ -845,6 +845,7 @@ const NAV_SECTIONS=[
   ]},
   { section: "Pipeline", items: [
     {id:"funnelHealth",label:"Funnel Health",icon:Heart},
+    {id:"marketingPlan",label:"Marketing Plan",icon:Target},
     {id:"pipeline",label:"Pipeline",icon:GitBranch},
     {id:"marketing",label:"Marketing Funnel",icon:Megaphone},
     {id:"velocity",label:"Velocity",icon:Clock},
@@ -1847,6 +1848,185 @@ function VCPage({model, inputs, onInfoClick, mobile}){
     
     <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
       Persona view · Investability framing uses mid-market SaaS benchmarks. Multi-year credibility based on Y2 growth rate distribution. For sensitivity to misses, see CFO View (Q4 gap).
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// MARKETING PLAN — Kellogg-style inverse waterfall
+// Inverts the marketing planning question: instead of starting with
+// activities and forecasting outcomes, starts with the revenue commit
+// and derives required inputs at each funnel stage. Then runs
+// sensitivity analysis on per-stage conversion rates, and shows the
+// quarterly distribution applied via seasonal weights + phase-shift.
+function MarketingPlanPage({model, inputs, onInfoClick, mobile}){
+  const imp = model.inverseMarketingPlan;
+  if (!imp) return <div><Header title="Marketing Plan" sub="Inverse waterfall" icon={Target} moduleId="marketingPlan" onInfoClick={onInfoClick}/><div style={{padding:20,color:C.muted}}>Marketing plan data unavailable. Check engine model output.</div></div>;
+  const { stages, sensitivities, quarterly, base, inputs: ipInputs } = imp;
+  const headlineInquiries = base.inquiries;
+  const headlineMQLs = base.mqls;
+  const headlineSQOs = base.sqos;
+  const headlineWins = ipInputs.dealsNeeded;
+  return(<div>
+    <Header title="Marketing Plan" sub="Inverse waterfall — target revenue → required inquiries, with sensitivity" icon={Target} moduleId="marketingPlan" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
+    <HorizonPlannerCard model={model} inputs={inputs} mobile={mobile}/>
+
+    {/* Q1 — The Commit */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · The commit · what marketing has to produce</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:mobile?10:14,marginBottom:18}}>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Revenue target</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(ipInputs.targetARR)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:3}}>by end of plan · {ipInputs.numYears}yr horizon</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>New ARR needed</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(ipInputs.newARRNeeded)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:3}}>after retained: {fmt(ipInputs.retainedARR)}</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Wins needed</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{fN(headlineWins)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:3}}>@ {fmt(ipInputs.avgDealSize)} ASP</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Required inquiries</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fN(headlineInquiries)}</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:3}}>top of funnel · all sources</div>
+        </div>
+      </div>
+      <div style={{fontSize:11,color:C.muted,lineHeight:1.7,paddingTop:14,borderTop:`1px solid ${C.borderMid}`}}>
+        <b style={{color:C.text}}>The inverse read.</b> Marketing's job is to produce <b style={{color:C.amber}}>{fN(headlineInquiries)}</b> inquiries that convert through the funnel to <b style={{color:C.green}}>{fN(headlineWins)} wins</b>. Every stage's conversion rate is a load-bearing assumption. If any of them shifts, the inquiry requirement at the top moves. See Q3 below.
+      </div>
+    </Card>
+
+    {/* Q2 — The waterfall */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · The waterfall · stage by stage</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"flex",flexDirection:"column",gap:0}}>
+        {stages.map((stage, i) => {
+          const isTop = i === 0;
+          const isBottom = i === stages.length - 1;
+          const widthPct = headlineInquiries > 0 ? Math.max(8, (stage.count / headlineInquiries) * 100) : 0;
+          const stageColor = isBottom ? C.green : isTop ? C.amber : i <= 1 ? C.blue : i === 2 ? C.violet : C.accent;
+          return (
+            <div key={stage.key} style={{display:"grid",gridTemplateColumns:mobile?"110px 1fr":"160px 1fr 100px",gap:14,alignItems:"center",padding:"14px 0",borderBottom:isBottom?"none":`1px solid ${C.borderSubtle}`}}>
+              <div>
+                <div style={{fontSize:13,fontWeight:700,color:C.text}}>{stage.label}</div>
+                <div style={{fontSize:9,color:C.dim,marginTop:2,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{stage.owner.toUpperCase()}</div>
+              </div>
+              <div>
+                <div style={{height:24,background:C.bg,borderRadius:0,position:"relative",overflow:"hidden"}}>
+                  <motion.div initial={{width:0}} animate={{width:`${widthPct}%`}} transition={{duration:0.6,delay:i*0.08}} style={{height:"100%",background:stageColor,opacity:0.85,display:"flex",alignItems:"center",paddingLeft:10}}>
+                    <span style={{fontSize:13,fontWeight:700,color:C.bg,fontFamily:"'Chivo Mono',monospace"}}>{fN(stage.count)}</span>
+                  </motion.div>
+                </div>
+                {!mobile && <div style={{fontSize:10,color:C.muted,marginTop:6,lineHeight:1.5}}>{stage.description}</div>}
+              </div>
+              {!mobile && stage.conversion !== null && (
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:11,fontWeight:700,color:stageColor,fontFamily:"'Chivo Mono',monospace"}}>{stage.conversion}%</div>
+                  <div style={{fontSize:9,color:C.dim,marginTop:2}}>{stage.conversionLabel}</div>
+                </div>
+              )}
+              {!mobile && stage.conversion === null && (
+                <div style={{textAlign:"right",fontSize:9,color:C.dim,fontStyle:"italic"}}>terminal</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{marginTop:18,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:10,color:C.dim,lineHeight:1.7}}>
+        Each row shows the required count at that stage and the conversion rate to the next. Conversion rates set in Global Drivers (right rail) under <b style={{color:C.muted}}>Lifecycle</b>. Edit them there to see this waterfall recompute.
+      </div>
+    </Card>
+
+    {/* Q3 — Sensitivity */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · Sensitivity · which assumption is load-bearing</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{fontSize:11,color:C.muted,marginBottom:14,lineHeight:1.6}}>
+        Each row asks: <b style={{color:C.text}}>if this single conversion rate shifts ±5pp from its current value, how many MORE or FEWER inquiries does marketing have to produce</b> to still hit {fN(headlineWins)} wins?
+      </div>
+      <div style={{overflowX:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+          <thead>
+            <tr>
+              <th style={{textAlign:"left",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>Stage gate</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>Base rate</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>−5pp impact</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>+5pp impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sensitivities.map((sens, i) => {
+              const m5color = sens.impactMinus5pp > headlineInquiries * 0.10 ? C.red : sens.impactMinus5pp > 0 ? C.amber : C.muted;
+              const p5color = sens.impactPlus5pp < -headlineInquiries * 0.10 ? C.green : sens.impactPlus5pp < 0 ? C.green : C.muted;
+              return (
+                <tr key={sens.stage} style={{borderBottom:i<sensitivities.length-1?`1px solid ${C.borderSubtle}`:"none"}}>
+                  <td style={{padding:"12px 12px",color:C.text,fontWeight:600}}>{sens.stage}</td>
+                  <td style={{textAlign:"right",padding:"12px 12px",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{sens.baseRate}%</td>
+                  <td style={{textAlign:"right",padding:"12px 12px",color:m5color,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>
+                    {sens.impactMinus5pp > 0 ? "+" : ""}{fN(sens.impactMinus5pp)}
+                    <div style={{fontSize:9,color:C.dim,fontWeight:400,marginTop:2}}>{fN(sens.minus5Inquiries)} total inquiries</div>
+                  </td>
+                  <td style={{textAlign:"right",padding:"12px 12px",color:p5color,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>
+                    {sens.impactPlus5pp > 0 ? "+" : ""}{fN(sens.impactPlus5pp)}
+                    <div style={{fontSize:9,color:C.dim,fontWeight:400,marginTop:2}}>{fN(sens.plus5Inquiries)} total inquiries</div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div style={{marginTop:18,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:10,color:C.dim,lineHeight:1.7}}>
+        <b style={{color:C.muted}}>Read this as risk.</b> A stage where −5pp adds tens of thousands of inquiries is your most fragile assumption. That's where data quality, A/B testing, and process discipline matter most. A stage where the impact is small is well-buffered.
+      </div>
+    </Card>
+
+    {/* Q4 — Quarterly distribution */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Quarterly distribution · seasonal weights applied</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{overflowX:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,minWidth:680}}>
+          <thead>
+            <tr>
+              <th style={{textAlign:"left",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>Quarter</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>Inquiries</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>MQLs</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>SQLs</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>Meetings</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>SQOs</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>Wins</th>
+              <th style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.08em",borderBottom:`1px solid ${C.borderMid}`}}>Season %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quarterly.map((q, i) => (
+              <tr key={q.globalQi} style={{borderBottom:i<quarterly.length-1?`1px solid ${C.borderSubtle}`:"none",background:q.isCurrentYear?"transparent":C.bgAlt}}>
+                <td style={{padding:"10px 12px",color:C.text,fontWeight:q.isCurrentYear?600:400}}>{q.quarter}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.amber,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fN(q.inquiries)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{fN(q.mqls)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{fN(q.sqls)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{fN(q.meetings)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.accent,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fN(q.sqos)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.green,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fN(q.wins)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{q.seasonalPct}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div style={{marginTop:14,fontSize:10,color:C.dim,lineHeight:1.7}}>
+        Quarterly weights applied from NORAM B2B seasonality (front-loaded fall, summer dip). Adjust in Global Drivers → Seasonality. Current year quarters in solid type; future-year quarters in dimmer background.
+      </div>
+    </Card>
+
+    <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Inverse marketing plan · Kellogg-inspired waterfall · sensitivity ±5pp per stage · seasonal quarterly distribution. Conversion rates editable in Global Drivers right rail. For headcount feasibility, see Horizon Planner above.
     </div>
   </div>);
 }
@@ -4361,7 +4541,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,pe:<PEPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,phase0:<CRMReadinessPage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,pe:<PEPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,marketingPlan:<MarketingPlanPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,phase0:<CRMReadinessPage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     const{_persona, ...modelInputs} = overrides || {};
