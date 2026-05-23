@@ -68,6 +68,61 @@ const Input=({label,value,onChange,prefix="",suffix="",min,max,step=1,compact})=
   </div>
 );
 
+// ════════════════════════════════════════════════════════════
+// AE QUOTA BENCHMARKS — Global Drivers helper
+// Compact expandable table of cyber AE quota benchmarks by
+// segment. Sources cited in tooltip — all from public-ish
+// benchmark reports (Bridge Group, Pavilion, RepVue, Kellblog,
+// SaaS Capital). Click a row to apply the midpoint as quota.
+// ════════════════════════════════════════════════════════════
+const QUOTA_BENCHMARKS = [
+  { seg: "SMB",       acv: "$5–25K",  range: "$600K–$1.0M", mid: 800000,  deals: "30–80/yr" },
+  { seg: "Mid-Market",acv: "$25–100K",range: "$800K–$1.2M", mid: 1000000, deals: "10–30/yr" },
+  { seg: "Enterprise",acv: "$100–500K",range:"$1.0M–$1.5M",mid: 1250000, deals: "4–10/yr"  },
+  { seg: "Strategic", acv: "$500K+",  range: "$1.5M–$3.0M", mid: 2250000, deals: "2–5/yr"   },
+  { seg: "Federal",   acv: "$200K+",  range: "$1.2M–$2.5M", mid: 1850000, deals: "3–8/yr"   },
+];
+const QuotaBenchmarks=({C,currentQuota,onPick})=>{
+  const [open,setOpen]=useState(false);
+  const fmtK=(n)=>n>=1e6?`$${(n/1e6).toFixed(2)}M`:`$${Math.round(n/1000)}K`;
+  return (
+    <div style={{marginTop:-4,marginBottom:8}}>
+      <button onClick={()=>setOpen(o=>!o)}
+        style={{display:"flex",alignItems:"center",gap:4,background:"transparent",border:"none",padding:0,cursor:"pointer",
+          fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.06em"}}>
+        <span style={{color:C.accent,fontSize:10}}>{open?"−":"+"}</span>
+        <span>Cyber benchmarks</span>
+      </button>
+      {open&&(
+        <div style={{marginTop:6,padding:8,background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0}}>
+          <div style={{display:"grid",gridTemplateColumns:"54px 1fr auto",gap:4,fontSize:9,color:C.dim,
+            fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4,paddingBottom:4,borderBottom:`1px solid ${C.borderMid}`}}>
+            <span>Seg</span><span>Range</span><span>Apply</span>
+          </div>
+          {QUOTA_BENCHMARKS.map(b=>{
+            const isCurrent=Math.abs(currentQuota-b.mid)<50000;
+            return (
+              <div key={b.seg} title={`${b.seg} cyber AE — ACV ${b.acv}, ${b.deals}`}
+                style={{display:"grid",gridTemplateColumns:"54px 1fr auto",gap:4,alignItems:"center",padding:"3px 0",
+                  fontSize:10,fontFamily:"'Chivo Mono',monospace",color:isCurrent?C.accent:C.text}}>
+                <span style={{fontWeight:600}}>{b.seg}</span>
+                <span style={{color:C.muted,fontSize:9}}>{b.range}</span>
+                <button onClick={()=>onPick(b.mid)}
+                  style={{background:isCurrent?C.accent:"transparent",color:isCurrent?C.bg:C.accent,
+                    border:`1px solid ${C.accent}`,borderRadius:0,padding:"1px 5px",cursor:"pointer",
+                    fontSize:9,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{fmtK(b.mid)}</button>
+              </div>
+            );
+          })}
+          <div style={{marginTop:6,paddingTop:6,borderTop:`1px solid ${C.borderMid}`,fontSize:8,color:C.dim,lineHeight:1.4}}>
+            Sources: Bridge Group SaaS, Pavilion, RepVue, Kellblog, SaaS Capital. Cyber runs ~20% below horizontal SaaS at same ACV (longer cycles, heavier SE).
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 // ════════════════════════════════════════════════════════════
 // DATA CONFIDENCE — workstream C v1
@@ -4714,6 +4769,7 @@ export default function App(){
             <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Sales</div>
             <Input compact label="AEs" value={inputs.aeCount} onChange={v=>setInputs(p=>({...p,aeCount:v}))} min={1}/>
             <Input compact label="Quota" value={inputs.aeQuota} onChange={v=>setInputs(p=>({...p,aeQuota:v}))} prefix="$" step={25000}/>
+            <QuotaBenchmarks C={C} currentQuota={inputs.aeQuota} onPick={(v)=>setInputs(p=>({...p,aeQuota:v}))}/>
             <Input compact label="Ramp" value={inputs.aeRampMonths} onChange={v=>setInputs(p=>({...p,aeRampMonths:v}))} suffix="mo"/>
             <Input compact label="Attrition" value={inputs.aeAttritionRate} onChange={v=>setInputs(p=>({...p,aeAttritionRate:v}))} suffix="% yr" step={5}/>
             <Input compact label="Mktg-Sourced %" value={inputs.mktgSourcedPct} onChange={v=>setInputs(p=>({...p,mktgSourcedPct:v}))} suffix="%" min={10} max={100} step={5}/>
