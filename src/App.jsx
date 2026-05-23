@@ -833,6 +833,7 @@ const NAV_SECTIONS=[
     {id:"cro",label:"CRO View",icon:Users},
     {id:"cmo",label:"CMO View",icon:Megaphone},
     {id:"vc",label:"VC View",icon:BarChart3},
+    {id:"pe",label:"PE View",icon:BarChart3},
     {id:"board",label:"Board View",icon:Shield},
     {id:"revops",label:"RevOps View",icon:Zap},
   ]},
@@ -1841,6 +1842,109 @@ function VCPage({model, inputs, onInfoClick, mobile}){
     <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
       Persona view · Investability framing uses mid-market SaaS benchmarks. Multi-year credibility based on Y2 growth rate distribution. For sensitivity to misses, see CFO View (Q4 gap).
     </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// PE PERSONA VIEW
+// Private Equity buyer / operating partner. Different from VC:
+// FCF + EBITDA discipline, exit multiple math, 5-7yr horizon,
+// operational lever extraction. Less tolerance for burn; more
+// focus on Rule of 50/60+, margin expansion path, and customer
+// concentration risk.
+function PEPage({model, inputs, onInfoClick, mobile}){
+  const { summary: s, glideslope, yearTargets, pnl } = model;
+  const allInCAC = pnl?.blendedAllInCAC || 0;
+  const allInPayback = inputs.avgDealSize > 0 ? allInCAC / (inputs.avgDealSize/12) : 0;
+  // PE thresholds are stricter than VC: payback < 18mo target, Rule of 50+
+  const investablePE = allInPayback <= 18;
+  const ruleOf50 = s.rule40 >= 50;
+  const ruleOf60 = s.rule40 >= 60;
+  // EBITDA-like margin proxy: ARR growth + operating-margin signals
+  const sandmRev = pnl?.sandmAsPctRevenue || 0;
+  const grossMargin = inputs.grossMargin || 80;
+  const opMarginProxy = grossMargin - sandmRev - 20; // rough G&A + R&D estimate
+  const fcfHealthy = opMarginProxy >= 15;
+  const fcfApproaching = opMarginProxy >= 5;
+  // Exit multiple range — Rule of 40 + growth correlation
+  const exitMultLow = s.rule40 >= 60 ? 12 : s.rule40 >= 50 ? 8 : s.rule40 >= 40 ? 6 : 4;
+  const exitMultHigh = s.rule40 >= 60 ? 18 : s.rule40 >= 50 ? 12 : s.rule40 >= 40 ? 9 : 6;
+  const targetEntryMult = 5; // typical PE entry multiple for SaaS
+  const multipleExpansion = ((exitMultLow / targetEntryMult) - 1) * 100;
+  // NRR — PE cares about this more than VC
+  const nrr = (inputs.nrr || 100);
+  const nrrHealthy = nrr >= 115;
+  const nrrAcceptable = nrr >= 105;
+  return(<div>
+    <Header title="PE View" sub="Margin trajectory, exit multiple thesis, operational levers" icon={BarChart3} moduleId="pe" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
+
+    {/* Q1 — Margin trajectory */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Margin trajectory · Rule of 50+</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:mobile?8:12,marginBottom:24}}>
+      <Metric label="Rule of 40" value={s.rule40.toFixed(0)} sub={ruleOf60?"Rule of 60 · elite":ruleOf50?"Rule of 50 · PE-fundable":s.rule40>=40?"Min threshold met":"Below PE threshold"} color={ruleOf60?C.green:ruleOf50?C.green:s.rule40>=40?C.amber:C.red} delay={0}/>
+      <Metric label="Op Margin (est.)" value={`${opMarginProxy.toFixed(0)}%`} sub={fcfHealthy?"FCF-positive territory":fcfApproaching?"Approaching FCF+":"Burn-funded"} color={fcfHealthy?C.green:fcfApproaching?C.amber:C.red} delay={1}/>
+      <Metric label="Gross Margin" value={`${grossMargin.toFixed(0)}%`} sub={grossMargin>=75?"SaaS-grade":grossMargin>=65?"Services-heavy":"Capex-heavy"} color={grossMargin>=75?C.green:grossMargin>=65?C.amber:C.red} delay={2}/>
+      <Metric label="S&M / Revenue" value={`${sandmRev.toFixed(0)}%`} sub={sandmRev<=35?"Efficient":sandmRev<=50?"Growth-stage":"Heavy spend"} color={sandmRev<=35?C.green:sandmRev<=50?C.amber:C.red} delay={3}/>
+    </div>
+
+    {/* Q2 — Exit multiple thesis */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q2 · Exit multiple thesis · 5-7yr hold</div>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Entry mult. (typical)</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{targetEntryMult}x ARR</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:3}}>Mid-market SaaS PE comparable</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Exit mult. range</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{exitMultLow}–{exitMultHigh}x ARR</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:3}}>Based on Rule of {s.rule40.toFixed(0)} at exit</div>
+        </div>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Multiple expansion</div>
+          <div style={{fontSize:18,fontWeight:700,color:multipleExpansion>=50?C.green:multipleExpansion>=0?C.amber:C.red,fontFamily:"'Chivo Mono',monospace"}}>{multipleExpansion>0?'+':''}{multipleExpansion.toFixed(0)}%</div>
+          <div style={{fontSize:10,color:C.dim,marginTop:3}}>{multipleExpansion>=50?"Strong expansion thesis":multipleExpansion>=0?"Flat — operate-up-only":"Multiple compression risk"}</div>
+        </div>
+      </div>
+      <div style={{fontSize:11,color:C.muted,lineHeight:1.6,paddingTop:14,borderTop:`1px solid ${C.border}`}}>
+        <b style={{color:C.text}}>The PE thesis</b> — at current Rule of {s.rule40.toFixed(0)}, the exit multiple lands {exitMultLow}–{exitMultHigh}x ARR. Against a {targetEntryMult}x entry, that's {multipleExpansion>=50?'a strong multiple-expansion deal':multipleExpansion>=0?'an operate-up play (margin + growth, no multiple help)':'multiple compression risk — depends on margin gains'}. The number the LP partners care about: at year 5, what ARR × what multiple gets to the target gross MOIC?
+      </div>
+    </Card>
+
+    {/* Q3 — Capital efficiency at scale */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · Capital efficiency · payback discipline</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:mobile?8:12,marginBottom:24}}>
+      <Metric label="CAC Payback" value={`${allInPayback.toFixed(1)}mo`} sub={investablePE?"PE-fundable":allInPayback<=24?"VC-acceptable":"Inefficient"} color={investablePE?C.green:allInPayback<=24?C.amber:C.red} delay={0}/>
+      <Metric label="LTV : CAC" value={`${s.ltvCac.toFixed(1)}x`} sub={s.ltvCac>=4?"PE-grade":s.ltvCac>=3?"Acceptable":"Tight"} color={s.ltvCac>=4?C.green:s.ltvCac>=3?C.amber:C.red} delay={1}/>
+      <Metric label="NRR" value={`${nrr}%`} sub={nrrHealthy?"Expansion engine":nrrAcceptable?"Holding":"Churn problem"} color={nrrHealthy?C.green:nrrAcceptable?C.amber:C.red} delay={2}/>
+      <Metric label="Magic Number" value={s.magicNumber.toFixed(2)} sub={s.magicNumber>=1?"Re-invest more":s.magicNumber>=0.75?"Efficient":"Slow it down"} color={s.magicNumber>=1?C.green:s.magicNumber>=0.75?C.amber:C.red} delay={3}/>
+    </div>
+
+    {/* Q4 — Operational levers */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Operational levers · where margin expands</div>
+    <Card>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(2,1fr)",gap:14}}>
+        <div style={{padding:14,background:C.surface,borderRadius:6}}>
+          <div style={{fontSize:10,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>{sandmRev>40?"◆ S&M efficiency":"◇ S&M efficient"}</div>
+          <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>S&M is <b>{sandmRev.toFixed(0)}%</b> of revenue. {sandmRev>50?"Heavy spend — primary margin lever. A 10pp reduction adds 10pp to op margin.":sandmRev>40?"Above PE-comfortable. Consolidate channels, rationalize AE bench, push for inbound mix.":"Already efficient — protect this; further cuts risk pipeline."}</div>
+        </div>
+        <div style={{padding:14,background:C.surface,borderRadius:6}}>
+          <div style={{fontSize:10,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>{nrrHealthy?"◇ Retention engine":"◆ NRR opportunity"}</div>
+          <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>NRR is <b>{nrr}%</b>. {nrrHealthy?"Expansion is doing real work — the cheapest revenue you'll book. Defend it.":nrrAcceptable?"Holding ground but not expanding. Customer success investment likely under-funded.":"Below 100% — paying CAC to backfill churn. The most expensive way to grow."}</div>
+        </div>
+        <div style={{padding:14,background:C.surface,borderRadius:6}}>
+          <div style={{fontSize:10,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>{grossMargin>=75?"◇ Gross margin solid":"◆ Gross margin lever"}</div>
+          <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Gross margin is <b>{grossMargin.toFixed(0)}%</b>. {grossMargin>=80?"SaaS-elite. Multiple expansion friendly.":grossMargin>=70?"Standard SaaS. Push toward 80% via infra optimization, fewer pro-services.":"Services-heavy or unit-cost-heavy. Restructure the COGS line or accept lower multiples."}</div>
+        </div>
+        <div style={{padding:14,background:C.surface,borderRadius:6}}>
+          <div style={{fontSize:10,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>{ruleOf50?"◇ Composite score":"◆ Composite focus"}</div>
+          <div style={{fontSize:13,color:C.text,lineHeight:1.6}}>Rule of {s.rule40.toFixed(0)}. {ruleOf60?"Top-decile composite — keep both arms working.":ruleOf50?"PE-fundable composite. Hold the line; small operating gains compound into multiple expansion.":"Below 50. Bias toward margin over growth — investors pay for efficient growth, not growth-at-any-cost."}</div>
+        </div>
+      </div>
+    </Card>
   </div>);
 }
 
@@ -4249,7 +4353,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,phase0:<CRMReadinessPage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,pe:<PEPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,phase0:<CRMReadinessPage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     const{_persona, ...modelInputs} = overrides || {};
