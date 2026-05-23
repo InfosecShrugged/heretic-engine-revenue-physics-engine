@@ -38,6 +38,13 @@ export const DEFAULT_INPUTS = {
   // Sales capacity
   aeCount: 8, aeRampMonths: 6, aeQuota: 750000, sdrsPerAe: 1.5,
   aeAttritionRate: 10,       // annual AE attrition % (turnover)
+  // AE Hiring Plan — distinguishes TODAY (nameplate roster) from TARGET (aeCount above)
+  // currentAeCount = roster you have on day-zero. aeCount above is the target needed
+  // to land the plan. The hiring schedule bridges the two with realistic ramp+lead-time.
+  currentAeCount: 6,         // AEs on payroll TODAY (vs. aeCount which is target)
+  aeTimeToHire: 2,           // months from open req → onboarded (sourcing+interview+notice)
+  realisticAeAttainment: 75, // % of $aeQuota a productive AE actually books (60-85 typical cyber)
+  hiringPlanMode: 'frontload',// 'frontload' | 'linear' | 'custom'
   mktgSourcedPct: 50,        // % of pipeline sourced from marketing (rest is AE self-sourced)
   // Phase-shifted funnel (pipeline lead time)
   sqoLeadQuarters: 2,        // SQOs needed this many quarters before close (sales cycle lag)
@@ -196,6 +203,7 @@ export function computeModel(inputs) {
     motionAllocation, motionChannels, accelDaysReduced, accelWinRateLift, accelAccountsCoverage,
     aeCount, aeRampMonths, aeQuota, sdrsPerAe,
     aeAttritionRate, mktgSourcedPct, sqoLeadQuarters, mqlLeadQuarters,
+    currentAeCount, aeTimeToHire, realisticAeAttainment, hiringPlanMode,
     grossMargin, gAndAPct, rAndDPct, salesOpexPct, variableMktgPct,
     salesVariablePct, fixedMktgPct, martechPctOfVariable,
     executiveTier, pmmTier, coreMarTechTier, elasticMktgBreakdown,
@@ -459,6 +467,127 @@ export function computeModel(inputs) {
   });
   const totalRampLoss = sellerRamp.reduce((s,r) => s + r.capacityLoss, 0);
   const totalAttrLoss = sellerRamp.reduce((s,r) => s + r.attrLoss, 0);
+
+  // ──────────────────────────────────────────────────────────
+  // AE HIRING PLAN — bridges currentAeCount (today) with aeCount (target)
+  // Models cohorts: each cohort = AEs hired in a given month.
+  // Productive capacity per month = Σ cohort.count × min(1, monthsSinceHire / rampMonths)
+  // Required productive AEs = monthlyNewARR / (aeQuota × realisticAttainment / 12)
+  // ──────────────────────────────────────────────────────────
+  const startNameplate = currentAeCount || aeCount; // fallback: assume current = target
+  const targetNameplate = aeCount;
+  const hiresNeeded = Math.max(0, targetNameplate - startNameplate);
+  const horizonMonths = monthly.length;
+  const ramp = Math.max(1, aeRampMonths || 6);
+  const realAtt = (realisticAeAttainment || 75) / 100;
+  const monthlyQuotaPerAE = aeQuota / 12;
+
+  // Distribute hires across the planning window
+  // 'frontload' = 60% in first third, 30% middle, 10% last (gives ramp room)
+  // 'linear'    = even distribution
+  // Lead time pushes the FIRST hire by aeTimeToHire months (req-open to onboarded)
+  const hireSchedule = new Array(horizonMonths).fill(0);
+  if (hiresNeeded > 0) {
+    const leadOffset = Math.min(horizonMonths - 1, aeTimeToHire || 0);
+    const hiringWindow = Math.max(1, Math.floor(horizonMonths * 0.6) - leadOffset);
+    if (hiringPlanMode === 'linear') {
+      // even distribution
+      const perMonth = hiresNeeded / hiringWindow;
+      let remaining = hiresNeeded;
+      for (let m = leadOffset; m < leadOffset + hiringWindow && remaining > 0; m++) {
+        const h = Math.min(remaining, Math.ceil(perMonth));
+        hireSchedule[m] = h;
+        remaining -= h;
+      }
+    } else {
+      // frontload: 60/30/10 across three thirds of the hiring window
+      const third = Math.max(1, Math.floor(hiringWindow / 3));
+      const w1 = Math.round(hiresNeeded * 0.6);
+      const w2 = Math.round(hiresNeeded * 0.3);
+      const w3 = hiresNeeded - w1 - w2;
+      const distribute = (count, start, len) => {
+        if (count <= 0 || len <= 0) return;
+        const perMo = Math.ceil(count / len);
+        let rem = count;
+        for (let m = start; m < Math.min(horizonMonths, start + len) && rem > 0; m++) {
+          const h = Math.min(rem, perMo);
+          hireSchedule[m] += h;
+          rem -= h;
+        }
+      };
+      distribute(w1, leadOffset, third);
+      distribute(w2, leadOffset + third, third);
+      distribute(w3, leadOffset + 2 * third, hiringWindow - 2 * third);
+    }
+  }
+
+  // Build cohorts: day-zero cohort starts ramped (assume on-payroll AEs are productive)
+  // New hire cohorts ramp from month-of-hire over rampMonths
+  const aeHiringPlan = monthly.map((mo, mi) => {
+    // Nameplate = starting + cumulative hires through this month
+    let cumulativeHires = 0;
+    for (let j = 0; j <= mi; j++) cumulativeHires += hireSchedule[j];
+    const nameplate = startNameplate + cumulativeHires;
+
+    // Productive: day-zero cohort fully ramped; each new cohort at its own ramp%
+    let productive = startNameplate; // existing AEs assumed productive
+    for (let j = 0; j <= mi; j++) {
+      const cohortSize = hireSchedule[j];
+      if (cohortSize === 0) continue;
+      const monthsSinceHire = mi - j;
+      const rampPct = Math.min(1, (monthsSinceHire + 0.5) / ramp); // +0.5 = mid-month
+      productive += cohortSize * rampPct;
+    }
+
+    // Required productive = monthly new ARR / (quota × realistic attainment / 12)
+    const monthlyTarget = mo.monthlyNewARR || mo.newLogoARR || 0;
+    const productivePerAE = monthlyQuotaPerAE * realAtt;
+    const requiredProductive = productivePerAE > 0 ? monthlyTarget / productivePerAE : 0;
+    const gap = productive - requiredProductive; // positive = surplus, negative = deficit
+
+    // Comp burn this month (nameplate × fully-loaded / 12)
+    const aeFullyLoadedMonthly = ((aeOTE || 280000) * (aeBenefitsLoad || 1.25)) / 12;
+    const monthlyAeComp = nameplate * aeFullyLoadedMonthly;
+
+    return {
+      monthIndex: mi,
+      monthShort: mo.month,
+      monthLong: mo.calLabel || mo.month,
+      hiresThisMonth: hireSchedule[mi],
+      cumulativeHires,
+      nameplate: Math.round(nameplate * 10) / 10,
+      productive: Math.round(productive * 10) / 10,
+      requiredProductive: Math.round(requiredProductive * 10) / 10,
+      gap: Math.round(gap * 10) / 10,
+      monthlyAeComp,
+      gapStatus: gap >= 0 ? 'surplus' : gap >= -1 ? 'tight' : 'deficit',
+    };
+  });
+
+  // Summary across the plan
+  const aeHiringSummary = (() => {
+    const peakGapEntry = aeHiringPlan.reduce((worst, m) => m.gap < worst.gap ? m : worst, { gap: Infinity });
+    const peakRequired = aeHiringPlan.reduce((m, x) => Math.max(m, x.requiredProductive), 0);
+    const totalComp = aeHiringPlan.reduce((s, m) => s + m.monthlyAeComp, 0);
+    const monthsInDeficit = aeHiringPlan.filter(m => m.gap < 0).length;
+    const finalNameplate = aeHiringPlan[aeHiringPlan.length - 1]?.nameplate || targetNameplate;
+    const finalProductive = aeHiringPlan[aeHiringPlan.length - 1]?.productive || 0;
+    // First month productive ≥ required (the "in the green" date)
+    const firstMonthGreen = aeHiringPlan.find(m => m.gap >= 0)?.monthLong || null;
+    return {
+      startNameplate, targetNameplate, hiresNeeded,
+      peakRequired: Math.round(peakRequired * 10) / 10,
+      peakGap: peakGapEntry.gap === Infinity ? 0 : peakGapEntry.gap,
+      peakGapMonth: peakGapEntry.monthLong || null,
+      monthsInDeficit,
+      finalNameplate, finalProductive,
+      totalComp,
+      firstMonthGreen,
+      hiringPlanMode: hiringPlanMode || 'frontload',
+      aeTimeToHire: aeTimeToHire || 0,
+      realisticAttainment: realAtt * 100,
+    };
+  })();
 
   // Stages
   // Stages (show both total and marketing-sourced)
@@ -1198,6 +1327,7 @@ export function computeModel(inputs) {
       totalAttrLoss,
     },
     monthly, channels, sellerRamp, stages, yearTargets, numYears, horizonPlanner, inverseMarketingPlan,
+    aeHiringPlan, aeHiringSummary,
     // Revenue Motions
     motions: {
       allocation: ma, createBudget, convertBudget, accelBudget,

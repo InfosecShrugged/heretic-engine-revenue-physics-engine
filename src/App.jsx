@@ -912,6 +912,7 @@ const NAV_SECTIONS=[
     {id:"cacBreakdown",label:"CAC Breakdown",icon:PieIcon},
     {id:"sales",label:"Sales Model",icon:Users},
     {id:"sellerRamp",label:"Seller Ramp",icon:TrendingUp},
+    {id:"aeHiringPlan",label:"AE Hiring Plan",icon:Users},
   ]},
   { section: "Finance", items: [
     {id:"pnl",label:"P&L",icon:DollarSign},
@@ -2082,6 +2083,145 @@ function MarketingPlanPage({model, inputs, onInfoClick, mobile}){
 
     <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
       Inverse marketing plan · Kellogg-inspired waterfall · sensitivity ±5pp per stage · seasonal quarterly distribution. Conversion rates editable in Global Drivers right rail. For headcount feasibility, see Horizon Planner above.
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// AE HIRING PLAN — bridges current AE roster (today) with target
+// AE roster (needed to land the plan). Models cohort ramps with
+// hire lead time + realistic attainment. Surfaces month-by-month
+// productive capacity vs required productive capacity — the most
+// common failure mode in aggressive growth plans (over-counting
+// AEs you haven't hired yet or that haven't ramped).
+// ════════════════════════════════════════════════════════════
+function AeHiringPlanPage({model, inputs, setInputs, onInfoClick, mobile}){
+  const plan = model.aeHiringPlan;
+  const summary = model.aeHiringSummary;
+  if (!plan || !summary) return <div><Header title="AE Hiring Plan" sub="Capacity bridge" icon={Users} moduleId="sellerRamp" onInfoClick={onInfoClick}/><div style={{padding:20,color:C.muted}}>Hiring plan data unavailable. Check engine model output.</div></div>;
+
+  const fmtAe = (n) => Math.round(n * 10) / 10;
+  const gapColor = (g) => g >= 0 ? C.green : g >= -1 ? C.amber : C.red;
+
+  return(<div>
+    <Header title="AE Hiring Plan" sub="The capacity bridge — what you have today vs what the plan requires" icon={Users} moduleId="sellerRamp" onInfoClick={onInfoClick}/>
+    <DataConfidenceCallout inputs={inputs}/>
+
+    {/* Q1 — The Bridge */}
+    <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · The bridge · today → target</div>
+    <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:10,marginBottom:18}}>
+      <Metric label="AEs Today" value={summary.startNameplate} sub="Current nameplate roster" color={C.text}/>
+      <Metric label="AEs Needed (target)" value={summary.targetNameplate} sub={`At plan exit · ${(summary.realisticAttainment).toFixed(0)}% attain`} color={C.text}/>
+      <Metric label="Hires Needed" value={summary.hiresNeeded} sub={`${summary.aeTimeToHire}mo hire lead time`} color={summary.hiresNeeded > 0 ? C.accent : C.green}/>
+      <Metric label="Peak Required" value={fmtAe(summary.peakRequired)} sub="Peak productive AEs needed" color={C.text}/>
+    </div>
+
+    {/* Q2 — Capacity gap callout */}
+    <Card>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+        <div>
+          <h3 style={{fontSize:13,fontWeight:600,color:C.text,margin:0,marginBottom:4}}>Capacity Gap Read</h3>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Productive AE supply vs demand month by month. Deficit months = plan won't hit unless you front-load hiring or accelerate ramp.</div>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase"}}>Months in deficit</div>
+          <div style={{fontSize:24,fontWeight:300,color:summary.monthsInDeficit > 6 ? C.red : summary.monthsInDeficit > 2 ? C.amber : C.green,fontFamily:"'Chivo Mono',monospace"}}>{summary.monthsInDeficit} <span style={{fontSize:11,color:C.dim}}>/ {plan.length}</span></div>
+        </div>
+      </div>
+      <div style={{padding:12,background:summary.monthsInDeficit > 6 ? C.redDim : summary.monthsInDeficit > 2 ? C.amberDim : C.greenDim,border:`1px solid ${summary.monthsInDeficit > 6 ? C.red : summary.monthsInDeficit > 2 ? C.amber : C.green}`,borderRadius:0,fontSize:12,color:C.text,lineHeight:1.6}}>
+        {summary.monthsInDeficit === 0 ? (
+          <span><b>Plan is feasible from day one.</b> Current roster of {summary.startNameplate} productive AEs covers required capacity throughout the plan. Watch for ramp loss as you hire — productive ≠ nameplate.</span>
+        ) : summary.firstMonthGreen ? (
+          <span><b>Plan goes green {summary.firstMonthGreen}.</b> Before that, productive capacity is below required — {summary.monthsInDeficit} months in deficit. Peak gap: {fmtAe(Math.abs(summary.peakGap))} AEs short in {summary.peakGapMonth}. To close this faster: hire earlier, reduce ramp time, or pull a year forward.</span>
+        ) : (
+          <span><b>Plan never reaches productive coverage.</b> {summary.monthsInDeficit} of {plan.length} months in deficit. Peak shortage: {fmtAe(Math.abs(summary.peakGap))} AEs in {summary.peakGapMonth}. The hiring plan as configured cannot land this revenue plan — either lower the target, raise quota, raise ASP, or massively accelerate hiring.</span>
+        )}
+      </div>
+    </Card>
+
+    {/* Q3 — Capacity curve chart */}
+    <Card>
+      <h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>Productive Capacity vs Required · Month by Month</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <ComposedChart data={plan} margin={{top:10,right:20,bottom:5,left:0}}>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.borderMid}/>
+          <XAxis dataKey="monthShort" stroke={C.dim} fontSize={10} tickLine={false}/>
+          <YAxis stroke={C.dim} fontSize={11} tickLine={false} axisLine={false} label={{value:'AEs',angle:-90,position:'insideLeft',style:{fontSize:10,fill:C.dim}}}/>
+          <Tooltip content={<TT/>}/>
+          <Bar dataKey="nameplate" fill={C.borderMid} stroke={C.borderStrong} strokeWidth={1} name="Nameplate (hired)" radius={[2,2,0,0]}/>
+          <Line type="monotone" dataKey="productive" stroke={C.accent} strokeWidth={2.5} dot={{r:3,fill:C.accent}} name="Productive AEs"/>
+          <Line type="monotone" dataKey="requiredProductive" stroke={C.red} strokeWidth={2} strokeDasharray="5 5" dot={false} name="Required (red dashed)"/>
+        </ComposedChart>
+      </ResponsiveContainer>
+      <div style={{marginTop:10,fontSize:10,color:C.dim,lineHeight:1.6}}>
+        Bars = nameplate (warm bodies on payroll). Solid line = productive capacity (cohorts × ramp%). Dashed red = required productive ({(summary.realisticAttainment).toFixed(0)}% attainment of ${(inputs.aeQuota/1000).toFixed(0)}K quota). Where the line drops below dashed red = deficit month.
+      </div>
+    </Card>
+
+    {/* Q4 — Hiring schedule table */}
+    <Card>
+      <h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>Hiring Schedule · {summary.hiringPlanMode === 'frontload' ? 'Front-loaded (60/30/10)' : 'Linear'}</h3>
+      <div style={{overflowX:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+          <thead>
+            <tr style={{borderBottom:`1px solid ${C.borderStrong}`}}>
+              <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Month</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Hires</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Nameplate</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Productive</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Required</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Gap</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Monthly Comp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {plan.map((m, i) => (
+              <tr key={i} style={{borderBottom:`1px solid ${C.borderMid}`,background: i % 2 === 0 ? C.bg : 'transparent'}}>
+                <td style={{padding:"6px 8px",color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.monthLong}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:m.hiresThisMonth > 0 ? C.accent : C.dim,fontFamily:"'Chivo Mono',monospace",fontWeight:m.hiresThisMonth > 0 ? 700 : 400}}>{m.hiresThisMonth > 0 ? `+${m.hiresThisMonth}` : '—'}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.nameplate}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.productive}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{m.requiredProductive}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:gapColor(m.gap),fontFamily:"'Chivo Mono',monospace",fontWeight:600}}>{m.gap >= 0 ? `+${m.gap}` : m.gap}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{fmt(m.monthlyAeComp)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr style={{borderTop:`2px solid ${C.borderStrong}`,background:C.bg}}>
+              <td style={{padding:"8px",color:C.dim,fontFamily:"'Chivo Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em"}}>Plan total</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.accent,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>+{summary.hiresNeeded}</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{summary.finalNameplate}</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmtAe(summary.finalProductive)}</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>—</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>—</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(summary.totalComp)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div style={{marginTop:14,fontSize:10,color:C.dim,lineHeight:1.7}}>
+        Total AE comp over plan: <b style={{color:C.text}}>{fmt(summary.totalComp)}</b> ({(summary.totalComp / 1000000).toFixed(2)}M) — fully-loaded (OTE × {((inputs.aeBenefitsLoad || 1.25) * 100).toFixed(0)}% benefits load). Does not include SDRs, SEs, sales leadership, marketing, or tools — see CFO View or S&M Budget for full GTM cost.
+      </div>
+    </Card>
+
+    {/* Q5 — Inline controls */}
+    <Card>
+      <h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>Tune the Plan</h3>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:12}}>
+        <Input label="AEs Today" value={inputs.currentAeCount} onChange={v=>setInputs(p=>({...p,currentAeCount:v}))} min={0} step={1}/>
+        <Input label="Target AEs" value={inputs.aeCount} onChange={v=>setInputs(p=>({...p,aeCount:v}))} min={1} step={1}/>
+        <Input label="Hire Lead Time" value={inputs.aeTimeToHire} onChange={v=>setInputs(p=>({...p,aeTimeToHire:v}))} suffix="mo" min={0} max={6} step={1}/>
+        <Input label="Realistic Attain" value={inputs.realisticAeAttainment} onChange={v=>setInputs(p=>({...p,realisticAeAttainment:v}))} suffix="%" min={50} max={100} step={5}/>
+      </div>
+      <div style={{marginTop:14,padding:10,background:C.bg,border:`1px solid ${C.borderMid}`,fontSize:11,color:C.muted,lineHeight:1.6}}>
+        <b style={{color:C.text}}>Tip:</b> The biggest lever is <b style={{color:C.accent}}>realistic attainment</b>. Most plans assume 85-100% — reality is 60-75%. Drop this to 70% and watch the required AE count rise (and your hire schedule with it). Be brutal here; this is where plans break.
+      </div>
+    </Card>
+
+    <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      AE hiring plan · Cohort ramp math · Hire lead time + realistic attainment · For the seller productivity curve see Seller Ramp; for headcount feasibility against the target date see Horizon Planner.
     </div>
   </div>);
 }
@@ -4596,7 +4736,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,pe:<PEPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,marketingPlan:<MarketingPlanPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,phase0:<CRMReadinessPage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,pe:<PEPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,marketingPlan:<MarketingPlanPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,aeHiringPlan:<AeHiringPlanPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,phase0:<CRMReadinessPage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     const{_persona, ...modelInputs} = overrides || {};
@@ -4767,10 +4907,13 @@ export default function App(){
             <Input compact label="MQL→SQO lag" value={inputs.mqlLeadQuarters} onChange={v=>setInputs(p=>({...p,mqlLeadQuarters:v}))} suffix="Qtrs" min={1} max={3}/>
             <div style={{height:1,background:C.borderMid,margin:"8px 0"}}/>
             <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Sales</div>
-            <Input compact label="AEs" value={inputs.aeCount} onChange={v=>setInputs(p=>({...p,aeCount:v}))} min={1}/>
+            <Input compact label="AEs Today" value={inputs.currentAeCount} onChange={v=>setInputs(p=>({...p,currentAeCount:v}))} min={0}/>
+            <Input compact label="AEs (target)" value={inputs.aeCount} onChange={v=>setInputs(p=>({...p,aeCount:v}))} min={1}/>
             <Input compact label="Quota" value={inputs.aeQuota} onChange={v=>setInputs(p=>({...p,aeQuota:v}))} prefix="$" step={25000}/>
             <QuotaBenchmarks C={C} currentQuota={inputs.aeQuota} onPick={(v)=>setInputs(p=>({...p,aeQuota:v}))}/>
+            <Input compact label="Realistic Attain" value={inputs.realisticAeAttainment} onChange={v=>setInputs(p=>({...p,realisticAeAttainment:v}))} suffix="%" min={50} max={100} step={5}/>
             <Input compact label="Ramp" value={inputs.aeRampMonths} onChange={v=>setInputs(p=>({...p,aeRampMonths:v}))} suffix="mo"/>
+            <Input compact label="Hire Lead" value={inputs.aeTimeToHire} onChange={v=>setInputs(p=>({...p,aeTimeToHire:v}))} suffix="mo" min={0} max={6}/>
             <Input compact label="Attrition" value={inputs.aeAttritionRate} onChange={v=>setInputs(p=>({...p,aeAttritionRate:v}))} suffix="% yr" step={5}/>
             <Input compact label="Mktg-Sourced %" value={inputs.mktgSourcedPct} onChange={v=>setInputs(p=>({...p,mktgSourcedPct:v}))} suffix="%" min={10} max={100} step={5}/>
             <div style={{height:1,background:C.borderMid,margin:"8px 0"}}/>
