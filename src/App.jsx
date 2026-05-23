@@ -973,6 +973,7 @@ function CFOPage({model, inputs, onInfoClick, mobile}){
   return(<div>
     <Header title="CFO View" sub="Unit economics, cash sustainability, and the S&M investment band" icon={DollarSign} moduleId="cfo" onInfoClick={onInfoClick}/>
     <DataConfidenceCallout inputs={inputs}/>
+    <HorizonPlannerCard model={model} inputs={inputs} mobile={mobile}/>
     
     {/* Q1 — Unit Economics */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Is unit economics sustainable?</div>
@@ -1253,6 +1254,7 @@ function CROPage({model, inputs, onInfoClick, mobile}){
   return(<div>
     <Header title="CRO View" sub="Ramped capacity, quarterly pipeline coverage, hire timing, and the SDR engine" icon={Users} moduleId="cro" onInfoClick={onInfoClick}/>
     <DataConfidenceCallout inputs={inputs}/>
+    <HorizonPlannerCard model={model} inputs={inputs} mobile={mobile}/>
     
     {/* Q1 — Capacity vs target */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Do I have enough ramped quota capacity?</div>
@@ -1458,6 +1460,7 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
   return(<div>
     <Header title="CMO View" sub="Monthly demand, CAC variants, channel concentration, fixed/variable split, motion mix" icon={Megaphone} moduleId="cmo" onInfoClick={onInfoClick}/>
     <DataConfidenceCallout inputs={inputs}/>
+    <HorizonPlannerCard model={model} inputs={inputs} mobile={mobile}/>
     
     {/* Q1 — Monthly demand */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · How many inquiries / MQLs per month?</div>
@@ -1882,6 +1885,7 @@ function PEPage({model, inputs, onInfoClick, mobile}){
   return(<div>
     <Header title="PE View" sub="Margin trajectory, exit multiple thesis, operational levers" icon={BarChart3} moduleId="pe" onInfoClick={onInfoClick}/>
     <DataConfidenceCallout inputs={inputs}/>
+    <HorizonPlannerCard model={model} inputs={inputs} mobile={mobile}/>
 
     {/* Q1 — Margin trajectory */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Margin trajectory · Rule of 50+</div>
@@ -1979,6 +1983,7 @@ function BoardPage({model, inputs, onInfoClick, mobile}){
   return(<div>
     <Header title="Board View" sub="Where we are vs plan, biggest miss, attainment posture, investment band, key assumptions" icon={Shield} moduleId="board" onInfoClick={onInfoClick}/>
     <DataConfidenceCallout inputs={inputs}/>
+    <HorizonPlannerCard model={model} inputs={inputs} mobile={mobile}/>
     
     {/* Q1 — Quarterly waterfall */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Where are we vs plan — quarterly waterfall</div>
