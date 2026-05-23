@@ -607,7 +607,56 @@ These need a human call. None can be made from the audit alone.
 
 ---
 
-## 8. Audit doc + this doc — read together
+## 6. Field Audit module — queued (2026-05-23)
+
+**User input:** SFDC/MAP field best-practices spreadsheet, queued for inclusion as a new diagnostic module ([source data preserved at `docs/FIELD-AUDIT-SOURCE.md`](./FIELD-AUDIT-SOURCE.md)).
+
+### What it is
+
+A check-box-driven audit of attribution and pipeline field hygiene across SFDC + HubSpot. ~50 fields organized by object (Contact / Lead / Deal-Opportunity), with definitions, examples, and notes. Far more granular than the existing Phase 0 — CRM Readiness module (which is 15 macro questions).
+
+### Why this fits
+
+- **Cyber-specific value:** Cyber companies have notoriously bad field hygiene because long cycles + complex buying committees break standard attribution. Field audit names the silent problem.
+- **Complements Phase 0:** Phase 0 = macro/governance maturity; Field Audit = field-level inventory + maturity. Different abstraction, both load-bearing.
+- **Sets up Attribution Agent:** Field hygiene is the prerequisite to anything the Attribution Agent does. Building this surfaces the dependency.
+- **Lead magnet:** A 50-field self-audit with an A-F grade per object = the kind of thing CMOs/RevOps share. Same flywheel as Phase 0.
+
+### Build plan — staged
+
+**v1 (1 week):**
+- Field inventory loaded from `docs/FIELD-AUDIT-SOURCE.md`
+- New module under System nav (or extend Phase 0 with a "Fields & Attribution" sub-tab — decision pending)
+- For each field: user marks **Yes / Partial / No / Don't know**
+- Weighted scoring per object (Contact, Deal, Lead-if-used)
+- Output: A-F grade per object + overall, ranked list of "top 8 fields to add for biggest score jump"
+
+**v1.1 (1 week later):**
+- "What this costs you" layer — for each missing field, name the downstream consequence (e.g., "Without HIRO Date, you can't compute Stage 1 → Won probability — your pipeline coverage is directional only")
+- Suggested workflows for each field (when to lock, when to update, source-of-truth rules)
+- Export to PDF / send to inbox
+
+**v1.2 (future):**
+- Connect to live SFDC via ingestion adapter — auto-detect which fields exist, pre-fill answers
+- Tie field gaps to specific OpptyCon metrics that become unreliable as a result
+
+### Open decisions
+
+- [ ] **Standalone module vs Phase 0 extension?** Recommendation: standalone (clearer story, easier to surface as a lead magnet). Phase 0 extension would shrink the module's apparent scope.
+- [ ] **Public-facing name?** "Field Audit" is the working name. Alternatives: "Attribution Field Audit," "CRM Field Maturity," "Field Coverage Diagnostic."
+- [ ] **Persona affinity?** RevOps + MarOps will use it directly. CMOs benefit from the output ("here's why your attribution is noise"). CFOs benefit from the "pipeline coverage is directional" callout. Lands on multiple persona dashboards.
+- [ ] **Weight model?** Equal-weight all fields vs weighted by downstream impact. Recommendation: weighted (UTM fields differ in importance, e.g., First-Touch UTM Source > Last-Touch UTM Content for most companies).
+- [ ] **Maturity tiers?** Same A-F as Phase 0, or simpler "Foundation / Operational / Advanced" tiers?
+
+### Dependencies
+
+- None for v1 (pure UI + scoring against `FIELD-AUDIT-SOURCE.md` data).
+- v1.1 depends on writing the "consequence" copy per field.
+- v1.2 depends on SFDC/HubSpot ingestion adapter (already on roadmap separately).
+
+---
+
+## 7. Audit doc + this doc — read together
 
 `docs/PERSONA-AND-DATA-AUDIT.md` (the upstream audit) covers:
 - Who each persona is and what they ask
