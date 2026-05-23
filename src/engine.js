@@ -360,20 +360,30 @@ export function computeModel(inputs) {
 
   const MONTH_LABELS = Array.from({length: totalMonths}, (_, i) => calMonthLabel(i));
 
-  // Per-year targets
+  // Per-year targets — back-solve from targetARR (the END of the plan).
+  // For multi-year plans, the FINAL year exits at targetARR. Earlier years are
+  // derived by walking backwards through Y2Growth so the year sequence
+  // interpolates correctly to the target.
+  //
+  // Example: 2-year plan, $5M start, $20M target, Y2Growth=60%
+  //   Y2 exits at $20M (the target)
+  //   Y1 exits at $20M / 1.60 = $12.5M
+  //   Y1 new = $12.5M - $5M = $7.5M; Y2 new = $20M - $12.5M = $7.5M
+  //   Total new = $15M (matches summary.newARRNeeded — no over-count)
+  //
+  // Prior logic set Y1 target = full targetARR and grew Y2 past it ($32M),
+  // which over-counted plan totals and made quarterly math hot.
+  const yGrowthPct = (y2GrowthRate || 60) / 100;
+  const yearExits = new Array(numYears);
+  yearExits[numYears - 1] = targetARR;
+  for (let y = numYears - 2; y >= 0; y--) {
+    yearExits[y] = yearExits[y + 1] / (1 + yGrowthPct);
+  }
+
   const yearTargets = [];
-  let yrStartARR = retainedARR;
-  let yrTargetARR = targetARR;
   for (let y = 0; y < numYears; y++) {
-    if (y === 0) {
-      yrStartARR = retainedARR;
-      yrTargetARR = targetARR;
-    } else {
-      // Y2+ starts from prior year's exit ARR, grows by y2GrowthRate
-      yrStartARR = yearTargets[y-1].exitARR;
-      const yGrowth = y2GrowthRate || 60;
-      yrTargetARR = yrStartARR * (1 + yGrowth / 100);
-    }
+    const yrStartARR = y === 0 ? retainedARR : yearExits[y - 1];
+    const yrTargetARR = yearExits[y];
     const yrNewARRNeeded = Math.max(0, yrTargetARR - yrStartARR);
     const yrDeals = Math.ceil(yrNewARRNeeded / avgDealSize);
     const convLift = y > 0 ? (y2ConversionLift || 0) / 100 : 0;
