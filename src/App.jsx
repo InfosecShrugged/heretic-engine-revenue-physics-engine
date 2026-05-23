@@ -1224,7 +1224,7 @@ function CEOPage({model, inputs, onInfoClick, mobile}){
 //   Q5: Attainment realism — implied % per AE?   → Required attainment vs industry benchmark
 // ════════════════════════════════════════════════════════════
 function CROPage({model, inputs, onInfoClick, mobile}){
-  const { summary: s, monthly, quarterlyTargets } = model;
+  const { summary: s, monthly, quarterlyTargets, phaseShiftedFunnel } = model;
   // Q1 — Capacity layers
   const fullCapacity = inputs.aeCount * inputs.aeQuota;
   const rampedCapacity = s.steadyStateQuota || 0;
@@ -1245,8 +1245,11 @@ function CROPage({model, inputs, onInfoClick, mobile}){
   const att = s.attainmentRequired || 100;
   const attColor = att <= 85 ? C.green : att <= 100 ? C.amber : att <= 120 ? C.red : C.red;
   const attBand = att <= 85 ? "Realistic" : att <= 100 ? "Stretch" : att <= 120 ? "Aggressive" : "Unrealistic";
-  // Q2 — quarterly coverage rows
-  const qRows = (quarterlyTargets || []).slice(0, 8);
+  // Q2 — quarterly coverage rows. Read from phaseShiftedFunnel (which has the
+  // correct field names — closingDeals, sqosNeeded, mqlsNeeded). The
+  // quarterlyTargets object uses different naming (sqoTarget, dealsTarget,
+  // no mql field) and was returning zeros from missing-field fallback.
+  const qRows = (phaseShiftedFunnel || []).slice(0, 8);
   return(<div>
     <Header title="CRO View" sub="Ramped capacity, quarterly pipeline coverage, hire timing, and the SDR engine" icon={Users} moduleId="cro" onInfoClick={onInfoClick}/>
     <DataConfidenceCallout inputs={inputs}/>
