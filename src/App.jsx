@@ -578,7 +578,7 @@ function FieldAuditPage({onInfoClick, mobile}){
   };
 
   return(<div>
-    <Header title="Field Audit" sub="47-field SFDC/HubSpot attribution + pipeline hygiene diagnostic. Phase 0 grades the practice; this grades the plumbing." icon={BookOpen} moduleId="phase0" onInfoClick={onInfoClick}/>
+    <Header title="Field Audit" sub="51-field SFDC/HubSpot attribution + pipeline hygiene diagnostic. Phase 0 grades the practice; this grades the plumbing." icon={BookOpen} moduleId="phase0" onInfoClick={onInfoClick}/>
 
     {/* Score summary */}
     <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr 1fr",gap:14,marginBottom:18}}>
