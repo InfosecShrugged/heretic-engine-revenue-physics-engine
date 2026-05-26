@@ -15,6 +15,7 @@ import SpinePage from './SpinePage';
 import DataIngestionPage from './DataIngestionPage';
 import AlphaGate, { hasAlphaAccess } from './AlphaGate';
 import { lightTheme, darkTheme, fonts, shadows } from './tokens';
+import { FIELD_AUDIT, scoreObject, gradeFromPct, topFixes, answeredCount } from './fieldAuditData';
 
 // ─── THEME — Three-Mode Dual Accent System ───
 // Module-level C that gets swapped when theme changes.
@@ -506,6 +507,236 @@ function CRMReadinessPage({onInfoClick, mobile}){
     <div style={{marginTop:14,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
       Phase 0 framework · Read the diagnostic alongside the Data Confidence callout on persona views — they answer different questions (inputs you've confirmed vs CRM that can support those inputs). Both being green is the bar for forecast-grade output.
     </div>
+    {/* Cross-link to Field Audit — deeper inventory at the field level */}
+    <div style={{marginTop:14,padding:14,background:C.violetDim,border:`1px solid ${C.violet}`,borderRadius:0}}>
+      <div style={{fontSize:10,fontWeight:700,color:C.violet,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Go deeper · Field Audit</div>
+      <div style={{fontSize:12,color:C.text,lineHeight:1.6}}>Phase 0 grades the <b>practice</b> (15 questions about how you run the CRM). The <b>Field Audit</b> grades the <b>plumbing</b> — 47 specific SFDC/HubSpot fields across Contact + Deal objects. Same A-F framework, much more granular.</div>
+    </div>
+  </div>);
+}
+
+
+// ════════════════════════════════════════════════════════════
+// FIELD AUDIT — Phase 0's deeper companion
+// 47-field SFDC/HubSpot attribution + pipeline hygiene checklist.
+// Weighted scoring (Critical/Important/Standard), A-F grade per object,
+// top-fixes recommendations. State persists to localStorage.
+// Data: src/fieldAuditData.js
+// ════════════════════════════════════════════════════════════
+function FieldAuditPage({onInfoClick, mobile}){
+  const [answers, setAnswers] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('opptycon-field-audit') || '{}'); }
+    catch(e) { return {}; }
+  });
+  const [fieldNames, setFieldNames] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('opptycon-field-audit-names') || '{}'); }
+    catch(e) { return {}; }
+  });
+  const setAnswer = (id, value) => {
+    setAnswers(prev => {
+      const next = {...prev, [id]: value};
+      try { localStorage.setItem('opptycon-field-audit', JSON.stringify(next)); } catch(e) {}
+      return next;
+    });
+  };
+  const setFieldName = (id, value) => {
+    setFieldNames(prev => {
+      const next = {...prev, [id]: value};
+      try { localStorage.setItem('opptycon-field-audit-names', JSON.stringify(next)); } catch(e) {}
+      return next;
+    });
+  };
+
+  const contactScore = scoreObject(FIELD_AUDIT.contact.fields, answers);
+  const dealScore = scoreObject(FIELD_AUDIT.deal.fields, answers);
+  const allFields = [...FIELD_AUDIT.contact.fields, ...FIELD_AUDIT.deal.fields];
+  const overallScore = scoreObject(allFields, answers);
+  const overallGrade = gradeFromPct(overallScore.pct);
+  const contactGrade = gradeFromPct(contactScore.pct);
+  const dealGrade = gradeFromPct(dealScore.pct);
+  const fixes = topFixes(answers, 8);
+  const ans = answeredCount(answers);
+
+  const gradeColor = (g) => g === 'A' ? C.green : g === 'B' ? C.green : g === 'C' ? C.amber : C.red;
+  const verdict = overallGrade === 'A' ? "Attribution + pipeline data is forecast-grade"
+    : overallGrade === 'B' ? "Mostly there — close the gaps and you're production-ready"
+    : overallGrade === 'C' ? "Foundation is shaky — most attribution numbers are directional only"
+    : overallGrade === 'D' ? "Significant field gaps — re-read every channel ROI number with skepticism"
+    : "Field hygiene is the bottleneck — fix this before trusting any attribution math";
+
+  const statusBtn = (id, value, label, color) => {
+    const active = answers[id] === value;
+    return (
+      <button onClick={() => setAnswer(id, value)} style={{
+        padding:"4px 8px",border:`1px solid ${active?color:C.borderMid}`,
+        background:active?color:"transparent",color:active?'#fff':C.muted,
+        fontSize:9,fontWeight:600,fontFamily:"'Chivo Mono',monospace",
+        letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",
+        borderRadius:0,transition:"all .15s",minWidth:48,
+      }}>{label}</button>
+    );
+  };
+
+  return(<div>
+    <Header title="Field Audit" sub="47-field SFDC/HubSpot attribution + pipeline hygiene diagnostic. Phase 0 grades the practice; this grades the plumbing." icon={BookOpen} moduleId="phase0" onInfoClick={onInfoClick}/>
+
+    {/* Score summary */}
+    <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr 1fr",gap:14,marginBottom:18}}>
+      <Card style={{borderLeft:`3px solid ${gradeColor(overallGrade)}`}}>
+        <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Overall</div>
+        <div style={{display:"flex",alignItems:"baseline",gap:12,marginBottom:8}}>
+          <div style={{fontSize:64,fontWeight:700,color:gradeColor(overallGrade),fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{overallGrade}</div>
+          <div>
+            <div style={{fontSize:13,fontWeight:600,color:C.text}}>{overallScore.earned} <span style={{color:C.muted,fontWeight:400}}>/ {overallScore.total}</span></div>
+            <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{overallScore.pct.toFixed(0)}%</div>
+          </div>
+        </div>
+        <div style={{fontSize:11,color:C.text,fontWeight:500,lineHeight:1.5}}>{verdict}</div>
+      </Card>
+      <Card style={{borderLeft:`3px solid ${gradeColor(contactGrade)}`}}>
+        <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Contact object</div>
+        <div style={{display:"flex",alignItems:"baseline",gap:12,marginBottom:8}}>
+          <div style={{fontSize:48,fontWeight:700,color:gradeColor(contactGrade),fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{contactGrade}</div>
+          <div>
+            <div style={{fontSize:12,fontWeight:600,color:C.text}}>{contactScore.earned}<span style={{color:C.muted,fontWeight:400}}> / {contactScore.total}</span></div>
+            <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{contactScore.pct.toFixed(0)}% · {FIELD_AUDIT.contact.fields.length} fields</div>
+          </div>
+        </div>
+      </Card>
+      <Card style={{borderLeft:`3px solid ${gradeColor(dealGrade)}`}}>
+        <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Deal / opportunity</div>
+        <div style={{display:"flex",alignItems:"baseline",gap:12,marginBottom:8}}>
+          <div style={{fontSize:48,fontWeight:700,color:gradeColor(dealGrade),fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{dealGrade}</div>
+          <div>
+            <div style={{fontSize:12,fontWeight:600,color:C.text}}>{dealScore.earned}<span style={{color:C.muted,fontWeight:400}}> / {dealScore.total}</span></div>
+            <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{dealScore.pct.toFixed(0)}% · {FIELD_AUDIT.deal.fields.length} fields</div>
+          </div>
+        </div>
+      </Card>
+    </div>
+
+    {/* Coverage indicator */}
+    <div style={{marginBottom:24,padding:"10px 14px",background:C.bg,border:`1px solid ${C.borderMid}`,display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",flexWrap:"wrap",gap:10}}>
+      <span style={{color:C.muted}}>{ans.answered} of {ans.total} fields answered</span>
+      <span style={{color:ans.answered === ans.total ? C.green : C.amber}}>
+        {ans.answered === ans.total ? "✓ Complete audit" : `${ans.total - ans.answered} unknown — score weighted accordingly`}
+      </span>
+    </div>
+
+    {/* Top fixes — biggest score jumps */}
+    {fixes.length > 0 && overallScore.pct < 100 && (
+      <Card style={{marginBottom:24,borderLeft:`3px solid ${C.violet}`}}>
+        <div style={{fontSize:10,fontWeight:700,color:C.violet,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Top 8 fixes — biggest score jumps if added</div>
+        <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:8}}>
+          {fixes.map((f,i)=>(
+            <div key={f.id} style={{padding:"8px 10px",background:C.bg,borderLeft:`2px solid ${f.weight===3?C.red:f.weight===2?C.amber:C.muted}`}}>
+              <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:3,lineHeight:1.3}}>{f.label}</div>
+              <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",textTransform:"uppercase",marginBottom:4}}>
+                {f.objLabel.split(' ')[0]} · weight {f.weight === 3 ? 'CRITICAL' : f.weight === 2 ? 'IMPORTANT' : 'STANDARD'}
+              </div>
+              <div style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{f.consequence}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    )}
+
+    {/* Field tables — Contact first, then Deal */}
+    {Object.entries(FIELD_AUDIT).map(([objKey, obj]) => {
+      const score = scoreObject(obj.fields, answers);
+      const grade = gradeFromPct(score.pct);
+      const color = obj.color === 'violet' ? C.violet : C.accent;
+      return (
+        <Card key={objKey} style={{marginBottom:20}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,flexWrap:"wrap",gap:10}}>
+            <div>
+              <h3 style={{fontSize:14,fontWeight:700,color:C.text,margin:0,marginBottom:4,letterSpacing:"-0.01em"}}>{obj.label} <span style={{fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",fontWeight:400,marginLeft:6}}>· {obj.fields.length} FIELDS</span></h3>
+              <div style={{fontSize:11,color:C.muted,lineHeight:1.5,maxWidth:600}}>{obj.desc}</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.06em"}}>Section grade</div>
+              <div style={{fontSize:28,fontWeight:700,color:gradeColor(grade),fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{grade}</div>
+              <div style={{fontSize:9,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{score.pct.toFixed(0)}%</div>
+            </div>
+          </div>
+
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+              <thead>
+                <tr style={{borderBottom:`1px solid ${C.borderStrong}`}}>
+                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace",width:32}}>Wt</th>
+                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Field</th>
+                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace",width:mobile?120:160}}>Your field name</th>
+                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace",width:240}}>Exists?</th>
+                </tr>
+              </thead>
+              <tbody>
+                {obj.fields.map(f => {
+                  const wtColor = f.weight === 3 ? C.red : f.weight === 2 ? C.amber : C.muted;
+                  const wtLabel = f.weight === 3 ? 'CRIT' : f.weight === 2 ? 'IMP' : 'STD';
+                  return (
+                    <tr key={f.id} style={{borderBottom:`1px solid ${C.borderMid}`}}>
+                      <td style={{padding:"8px",verticalAlign:"top"}}>
+                        <span style={{fontSize:8,fontWeight:700,color:wtColor,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.06em",padding:"2px 4px",border:`1px solid ${wtColor}`,borderRadius:0}}>{wtLabel}</span>
+                      </td>
+                      <td style={{padding:"8px",verticalAlign:"top"}}>
+                        <div style={{fontSize:12,fontWeight:600,color:C.text,marginBottom:2,lineHeight:1.3}}>{f.label}{f.locked && <span style={{fontSize:9,color:C.violet,marginLeft:6,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>🔒 LOCKED</span>}</div>
+                        <div style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{f.definition}</div>
+                        {f.example && f.example !== '—' && <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",marginTop:3,lineHeight:1.4}}>e.g. {f.example}</div>}
+                      </td>
+                      <td style={{padding:"8px",verticalAlign:"top"}}>
+                        <input
+                          type="text"
+                          value={fieldNames[f.id] || ''}
+                          onChange={e => setFieldName(f.id, e.target.value)}
+                          placeholder="SFDC field name"
+                          style={{width:"100%",fontSize:10,fontFamily:"'Chivo Mono',monospace",color:C.text,background:C.bg,border:`1px solid ${C.borderMid}`,padding:"5px 7px",borderRadius:0,outline:"none"}}
+                        />
+                      </td>
+                      <td style={{padding:"8px",verticalAlign:"top"}}>
+                        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                          {statusBtn(f.id, 'yes', 'YES', C.green)}
+                          {statusBtn(f.id, 'partial', 'PARTIAL', C.amber)}
+                          {statusBtn(f.id, 'no', 'NO', C.red)}
+                          {statusBtn(f.id, 'unknown', '?', C.muted)}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      );
+    })}
+
+    {/* Reset + footer */}
+    <Card>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+        <div style={{fontSize:11,color:C.muted,lineHeight:1.5,maxWidth:600}}>
+          Answers persist in your browser (localStorage). Reset clears everything. No data leaves your machine.
+        </div>
+        <button onClick={() => {
+          if (confirm('Clear all field-audit answers? This cannot be undone.')) {
+            setAnswers({});
+            setFieldNames({});
+            try {
+              localStorage.removeItem('opptycon-field-audit');
+              localStorage.removeItem('opptycon-field-audit-names');
+            } catch(e) {}
+          }
+        }} style={{
+          padding:"7px 12px",border:`1px solid ${C.red}`,background:"transparent",color:C.red,
+          fontSize:10,fontWeight:600,fontFamily:"'Chivo Mono',monospace",
+          letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",borderRadius:0
+        }}>Reset audit</button>
+      </div>
+    </Card>
+
+    <div style={{marginTop:24,paddingTop:14,borderTop:`1px solid ${C.borderMid}`,fontSize:9,color:C.dim,lineHeight:1.7,letterSpacing:"0.04em"}}>
+      Field Audit · 47 fields across Contact + Deal objects · Weighted scoring (Critical=3, Important=2, Standard=1) · Yes=100%, Partial=50%, No/Unknown=0%. Source: opptycon docs/FIELD-AUDIT-SOURCE.md. The diagnostic complements Phase 0 — Phase 0 grades the practice, Field Audit grades the plumbing.
+    </div>
   </div>);
 }
 
@@ -919,6 +1150,7 @@ const NAV_SECTIONS=[
   ]},
   { section: "System", items: [
     {id:"phase0",label:"Phase 0 — CRM Readiness",icon:BookOpen},
+    {id:"fieldAudit",label:"Field Audit",icon:BookOpen},
     {id:"spine",label:"Governance Spine",icon:Shield},
     {id:"data",label:"Data Sources",icon:Zap},
     {id:"architecture",label:"Architecture",icon:Activity},
@@ -4736,7 +4968,7 @@ export default function App(){
   const model=useMemo(()=>computeModel(inputs),[inputs]);
   const onInfoClick=(moduleId)=>setInfoPanel(prev=>prev===moduleId?null:moduleId);
   const pp={model,inputs,setInputs,onInfoClick,mobile,tablet,themeMode};
-  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,pe:<PEPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,marketingPlan:<MarketingPlanPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,aeHiringPlan:<AeHiringPlanPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,phase0:<CRMReadinessPage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
+  const pages={dashboard:<DashboardPage {...pp}/>,cfo:<CFOPage {...pp}/>,ceo:<CEOPage {...pp}/>,cro:<CROPage {...pp}/>,cmo:<CMOPage {...pp}/>,vc:<VCPage {...pp}/>,pe:<PEPage {...pp}/>,board:<BoardPage {...pp}/>,revops:<RevOpsPage {...pp}/>,targets:<TargetTrackerPage {...pp}/>,funnelHealth:<FunnelHealthPage {...pp}/>,marketingPlan:<MarketingPlanPage {...pp}/>,sales:<SalesPage {...pp}/>,marketing:<FunnelPage {...pp}/>,channels:<ChannelsPage {...pp}/>,mktgBudget:<MarketingBudgetPage {...pp}/>,sandmBudget:<SandMBudgetPage {...pp}/>,cacBreakdown:<CACBreakdownPage {...pp}/>,pipeline:<PipelinePage {...pp}/>,velocity:<VelocityPage {...pp}/>,sellerRamp:<RampPage {...pp}/>,aeHiringPlan:<AeHiringPlanPage {...pp}/>,pnl:<PnLPage {...pp}/>,glideslope:<GlideslopePage {...pp}/>,qbr:<QBRPage {...pp}/>,weekly:<WeeklyPage {...pp}/>,spine:<SpinePage {...pp}/>,phase0:<CRMReadinessPage {...pp}/>,fieldAudit:<FieldAuditPage {...pp}/>,data:<DataIngestionPage onDataImported={()=>setInputs(prev=>({...prev}))} mobile={mobile}/>,architecture:<ArchitectureDiagram/>};
 
   const handleOnboardComplete=(overrides)=>{
     const{_persona, ...modelInputs} = overrides || {};
