@@ -380,6 +380,17 @@ export default function AlphaGate({ onAccessGranted }) {
           netherops.com — governed revenue architecture
         </div>
 
+        {/* Legal links — heretics.io canonical Terms + Privacy */}
+        <div style={{
+          textAlign: "center", marginTop: 8,
+          fontSize: 9, color: C.dim, fontFamily: "'Chivo Mono', monospace",
+          letterSpacing: "0.08em", textTransform: "uppercase",
+        }}>
+          <a href="https://heretics.io/terms" style={{ color: "inherit", textDecoration: "none", margin: "0 8px" }} target="_blank" rel="noopener">Terms</a>
+          ·
+          <a href="https://heretics.io/privacy" style={{ color: "inherit", textDecoration: "none", margin: "0 8px" }} target="_blank" rel="noopener">Privacy</a>
+        </div>
+
         {/* Shared cross-property HouseMap — reads --house-* tokens set by
             App.jsx's theme effect, so it renders in OpptyCon's accent. */}
         <heretics-house-map current="opptycon" style={{ marginTop: 28, display: "block" }}></heretics-house-map>
