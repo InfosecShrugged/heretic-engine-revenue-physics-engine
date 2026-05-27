@@ -4993,7 +4993,7 @@ export default function App(){
       borderBottom:`1px solid ${C.borderMid}`,
       flexShrink:0
     }}>
-      <a href="https://app.heretics.io" style={{
+      <a href="https://netherops.com" style={{
         fontFamily:"'Chivo Mono',monospace",
         fontSize:10, fontWeight:500,
         letterSpacing:"0.04em",
@@ -5040,7 +5040,7 @@ export default function App(){
         <aside style={{width:mobile?260:220,height:"100vh",background:C.bgAlt,borderRight:`1px solid ${C.borderMid}`,display:"flex",flexDirection:"column",flexShrink:0,
           ...(mobile?{position:"fixed",left:0,top:0,zIndex:150}:{})}}>
           <div style={{padding:"16px 16px 20px"}}>
-            <img src={LOGO_URL} alt="NetherOps" style={{height:28,marginBottom:6,filter:C.bg==='#0F0F0F'?"invert(1) hue-rotate(180deg)":"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
+            <img src={LOGO_URL} alt="NetherOps" style={{height:28,marginBottom:6,filter:mode==='dark'?"invert(1) hue-rotate(180deg)":"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
             <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>OpptyCon</div>
           </div>
           <nav style={{flex:1,padding:"0 6px",overflowY:"auto"}}>
