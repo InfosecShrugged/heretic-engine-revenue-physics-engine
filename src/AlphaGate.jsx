@@ -173,24 +173,44 @@ export default function AlphaGate({ onAccessGranted }) {
                 <p style={{
                   fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 24px 0",
                 }}>
-                  The operating system for demand leaders who inherited a number
-                  and need to reverse-engineer the machine that hits it.
-                  Inverse-funnel math, governance constraints, and cost physics — live.
+                  The revenue physics engine for cybersecurity GTM leaders who
+                  inherited a number and need to reverse-engineer the machine
+                  that hits it. Inverse-funnel math, governance constraints,
+                  and cost physics — across eight persona-curated views, live.
                 </p>
+
+                {/* Persona views callout */}
+                <div style={{
+                  padding: "12px 14px", marginBottom: 18,
+                  border: `1px solid ${C.borderL}`, background: C.bgAlt,
+                }}>
+                  <div style={{
+                    fontFamily: "'Chivo Mono', monospace", fontSize: 9, fontWeight: 600,
+                    color: C.muted, letterSpacing: "0.1em", textTransform: "uppercase",
+                    marginBottom: 6,
+                  }}>
+                    Eight persona views
+                  </div>
+                  <div style={{
+                    fontSize: 11, color: C.text, lineHeight: 1.6, letterSpacing: "0.01em",
+                  }}>
+                    CFO · CEO · CRO · CMO · VC · PE · Board · RevOps
+                  </div>
+                </div>
 
                 {/* What's inside */}
                 <div style={{
                   display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 28,
                 }}>
                   {[
-                    "Inverse funnel model",
+                    "Cyber TAM segmentation",
                     "Governance spine",
-                    "Cost physics (P&L)",
+                    "Inverse funnel model",
                     "Pipeline coverage",
-                    "Revenue motions",
+                    "Cost physics (P&L)",
                     "Seller ramp + attrition",
+                    "Revenue motions",
                     "Multi-year glideslope",
-                    "Real-time recalculation",
                   ].map((f, i) => (
                     <div key={i} style={{
                       display: "flex", alignItems: "center", gap: 6,
@@ -357,7 +377,7 @@ export default function AlphaGate({ onAccessGranted }) {
           fontSize: 10, color: C.dim, fontFamily: "'Chivo Mono', monospace",
           letterSpacing: "0.04em",
         }}>
-          netherops.io — governed revenue architecture
+          netherops.com — governed revenue architecture
         </div>
       </motion.div>
     </div>
