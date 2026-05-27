@@ -4961,8 +4961,28 @@ export default function App(){
   const[themeMode,setThemeMode]=useState(()=>{
     if(typeof window!=='undefined'){const saved=localStorage.getItem('opptycon-theme');if(saved)return saved;return window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}return'dark';
   });
-  useEffect(()=>{setC(themeMode);document.documentElement.style.background=C.bg;document.documentElement.style.color=C.text;},[themeMode]);
-  const toggleTheme=()=>{const next=themeMode==='dark'?'light':'dark';setThemeMode(next);localStorage.setItem('opptycon-theme',next);};
+  useEffect(()=>{
+    setC(themeMode);
+    const ds = document.documentElement.style;
+    ds.background = C.bg;
+    ds.color = C.text;
+    /* Map OpptyCon tokens onto the --house-* aliases the shared
+       <heretics-house-map> reads. Brand split holds — accent is OpptyCon's
+       (lime on dark, violet on light), not MIS red. */
+    ds.setProperty('--house-bg', C.bg);
+    ds.setProperty('--house-ink', C.text);
+    ds.setProperty('--house-mut', C.muted);
+    ds.setProperty('--house-faint', C.dim);
+    ds.setProperty('--house-line', C.borderMid);
+    ds.setProperty('--house-accent', C.accent);
+  },[themeMode]);
+  const toggleTheme=()=>{
+    const next=themeMode==='dark'?'light':'dark';
+    setThemeMode(next);
+    localStorage.setItem('opptycon-theme',next);
+    /* Push to the shared ecosystem theme key so sibling properties inherit. */
+    if (typeof window.heretics_pushTheme === 'function') window.heretics_pushTheme(next);
+  };
   const mobile=useMediaQuery("(max-width:768px)");
   const tablet=useMediaQuery("(max-width:1024px)");
   const model=useMemo(()=>computeModel(inputs),[inputs]);

@@ -379,6 +379,10 @@ export default function AlphaGate({ onAccessGranted }) {
         }}>
           netherops.com — governed revenue architecture
         </div>
+
+        {/* Shared cross-property HouseMap — reads --house-* tokens set by
+            App.jsx's theme effect, so it renders in OpptyCon's accent. */}
+        <heretics-house-map current="opptycon" style={{ marginTop: 28, display: "block" }}></heretics-house-map>
       </motion.div>
     </div>
   );

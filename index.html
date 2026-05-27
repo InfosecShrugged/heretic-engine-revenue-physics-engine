@@ -48,6 +48,20 @@
 
       gtag('config', 'G-3Y14KHPXRM');
     </script>
+
+    <!-- Heretics House bridge — must be declared BEFORE the shared bundle loads
+         so the bundle's ?h= ingest can route through OpptyCon's own theme key.
+         App.jsx reads localStorage('opptycon-theme') on mount, so the ingest
+         flow ?h=light|dark → localStorage write → App reads on mount works
+         end-to-end for cross-property entry. -->
+    <script>
+      window.HERETICS_LOCAL_THEME_KEY = 'opptycon-theme';
+      /* Apply callback is a no-op here because App.jsx owns the React state
+         that drives theme. App.jsx reads localStorage on mount (line 4962) so
+         the ingest-then-mount sequence picks up the incoming theme naturally. */
+      window.HERETICS_APPLY_THEME = function () {};
+    </script>
+    <script src="https://marketsinsecurity.com/assets/heretics-house.js" defer></script>
   </head>
   <body>
     <form name="alpha-access" netlify netlify-honeypot="bot-field" hidden>
