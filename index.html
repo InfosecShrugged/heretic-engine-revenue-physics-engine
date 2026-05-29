@@ -12,6 +12,24 @@
       @font-face { font-family: 'TWK Everett'; src: url('/fonts/TWKEverett-Light.otf') format('opentype'); font-weight: 300; font-display: swap; }
       @font-face { font-family: 'TWK Everett'; src: url('/fonts/TWKEverett-Regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
       @font-face { font-family: 'TWK Everett'; src: url('/fonts/TWKEverett-Bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
+      /* Bauhaus Quil — canonical name per brief §3. URL chain falls through
+         GX woff2 (pending Mojomox license) to Medium 500 woff2/woff (today).
+         When GX lands at /fonts/BauhausQuilDisplayGX.woff2 every wght request
+         hits the variable axis automatically. */
+      @font-face {
+        font-family: 'BauhausQuilDisplayGX';
+        src: url('/fonts/BauhausQuilDisplayGX.woff2') format('woff2-variations'),
+             url('/fonts/BauhausQuilDisplayGX.woff2') format('woff2'),
+             url('/fonts/BauhausQuilDisplay-Medium.woff2') format('woff2'),
+             url('/fonts/BauhausQuilDisplay-Medium.woff') format('woff');
+        font-weight: 100 900; font-style: normal; font-display: swap;
+      }
+      @font-face {
+        font-family: 'BauhausSansGeoNeuVF';
+        src: url('/fonts/BauhausSansGeoNeuVF.woff2') format('woff2-variations'),
+             url('/fonts/BauhausSansGeoNeuVF.woff2') format('woff2');
+        font-weight: 100 900; font-style: normal; font-display: swap;
+      }
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2322d3ee'/><text x='16' y='22' text-anchor='middle' font-size='18' fill='%23000'>⚡</text></svg>" />
     <style>

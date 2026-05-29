@@ -14,18 +14,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 const STORAGE_KEY = 'opptycon_alpha_access';
 const FORM_NAME = 'alpha-access';
 
-// ─── TOKENS (matches engine design system) ───
+// ─── TOKENS (Heretics House — NetherOps family, violet accent) ───
+// Per fix-sheet B4: warm-paper canvas, violet accent, warm near-black ink.
+// The light-mode violet is the deepened #5B3DF0 per the Albers rule (the
+// dark-mode #8C73FF is too pastel against paper).
 const C = {
-  bg:"#EBEBEB", bgAlt:"#F4F4F2", card:"#FFFFFF",
-  border:"rgba(0,0,0,0.13)", borderL:"rgba(0,0,0,0.07)",
-  accent:"#111111", accentD:"rgba(0,0,0,0.06)", accentGlow:"rgba(0,0,0,0.12)",
-  lime:"#C8FF6E", limeD:"rgba(200,255,110,0.15)",
-  green:"#2E7D32", greenD:"rgba(46,125,50,0.10)",
-  rose:"#D44C38", roseD:"rgba(212,76,56,0.10)",
-  text:"#111111", muted:"#555555", dim:"#909090",
+  bg:"#F4F1EA", bgAlt:"#FBFAF6", card:"#FFFFFF",
+  border:"rgba(20,18,14,0.12)", borderL:"rgba(20,18,14,0.07)",
+  accent:"#5B3DF0", accentD:"rgba(91,61,240,0.10)", accentGlow:"rgba(91,61,240,0.18)",
+  green:"#1A8A4A", greenD:"rgba(26,138,74,0.10)",
+  rose:"#CC3340", roseD:"rgba(204,51,64,0.10)",
+  text:"#1A1A1E", muted:"#57544D", dim:"#8E8A80",
 };
-
-const LOGO_URL = "/netherops-logo.svg";
 
 // ─── CHECK IF USER HAS ACCESS ───
 export function hasAlphaAccess() {
@@ -123,15 +123,39 @@ export default function AlphaGate({ onAccessGranted }) {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         style={{ width: "100%", maxWidth: 520 }}
       >
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <img src={LOGO_URL} alt="NetherOps" style={{ height: 32, marginBottom: 8 }}
-            onError={e => { e.target.style.display = 'none' }} />
+        {/* Brand lockup — raven + netherops parent wordmark + >opptycon sub-brand.
+            Per brief §4 sizing floor: raven 40 / parent wm 28 / sub wm 24. */}
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            {/* Raven — mask-image so background-color drives the recolor (ink on light) */}
+            <span aria-hidden="true" style={{
+              display: "inline-block", width: 40, height: 40, flex: "none",
+              backgroundColor: C.text,
+              WebkitMask: "url('/raven/raven-simplified.svg') center/contain no-repeat",
+              mask: "url('/raven/raven-simplified.svg') center/contain no-repeat",
+            }} />
+            {/* netherops parent wordmark — ink monochrome on light per recolor rule */}
+            <span aria-hidden="true" style={{
+              display: "inline-block", height: 28, width: 180, flex: "none",
+              backgroundColor: C.text,
+              WebkitMask: "url('/wordmarks/wordmark-netherops.svg') left center no-repeat",
+              mask: "url('/wordmarks/wordmark-netherops.svg') left center no-repeat",
+              WebkitMaskSize: "auto 28px", maskSize: "auto 28px",
+            }} />
+            {/* >opptycon sub-brand wordmark — accent (violet/amber-deep) per sub-brand rule */}
+            <span aria-hidden="true" style={{
+              display: "inline-block", height: 24, width: 110, flex: "none",
+              backgroundColor: C.accent,
+              WebkitMask: "url('/wordmarks/wordmark-opptycon.svg') left center no-repeat",
+              mask: "url('/wordmarks/wordmark-opptycon.svg') left center no-repeat",
+              WebkitMaskSize: "auto 24px", maskSize: "auto 24px",
+            }} />
+          </div>
           <div style={{
             fontFamily: "'Chivo Mono', monospace", fontSize: 9, color: C.dim,
             letterSpacing: "0.1em", textTransform: "uppercase",
           }}>
-            governed revenue architecture
+            Governed revenue architecture
           </div>
         </div>
 
@@ -164,8 +188,10 @@ export default function AlphaGate({ onAccessGranted }) {
                 </div>
 
                 <h1 style={{
-                  fontSize: 22, fontWeight: 700, color: C.text,
-                  margin: "0 0 8px 0", lineHeight: 1.3,
+                  fontFamily: "'BauhausQuilDisplayGX', 'Bauhaus Quil', 'Fraunces', Georgia, serif",
+                  fontSize: "clamp(28px, 4.5vw, 40px)", fontWeight: 600,
+                  textTransform: "uppercase", letterSpacing: "-0.005em",
+                  color: C.text, margin: "0 0 8px 0", lineHeight: 0.98,
                 }}>
                   OpptyCon
                 </h1>
@@ -377,7 +403,7 @@ export default function AlphaGate({ onAccessGranted }) {
           fontSize: 10, color: C.dim, fontFamily: "'Chivo Mono', monospace",
           letterSpacing: "0.04em",
         }}>
-          netherops.com — governed revenue architecture
+          netherops.com · governed revenue architecture
         </div>
 
         {/* Legal links — heretics.io canonical Terms + Privacy */}
