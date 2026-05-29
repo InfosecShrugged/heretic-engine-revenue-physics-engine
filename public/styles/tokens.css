@@ -148,7 +148,7 @@ h1 {
   font-weight: 425;
   font-size: clamp(36px, 6vw, 84px);
   line-height: 1.02;
-  letter-spacing: -.02em;
+  letter-spacing: -.012em;
   font-variation-settings: "opsz" 144, "wght" 425, "SOFT" 0, "WONK" 0;
 }
 
