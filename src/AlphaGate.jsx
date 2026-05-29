@@ -152,7 +152,7 @@ export default function AlphaGate({ onAccessGranted }) {
             }} />
           </div>
           <div style={{
-            fontFamily: "'Chivo Mono', monospace", fontSize: 9, color: C.dim,
+            fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace", fontSize: 9, color: C.dim,
             letterSpacing: "0.1em", textTransform: "uppercase",
           }}>
             Governed revenue architecture
@@ -180,29 +180,33 @@ export default function AlphaGate({ onAccessGranted }) {
                 }}>
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
                   <span style={{
-                    fontFamily: "'Chivo Mono', monospace", fontSize: 9, fontWeight: 700,
+                    fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace", fontSize: 9, fontWeight: 700,
                     color: C.accent, textTransform: "uppercase", letterSpacing: "0.06em",
                   }}>
                     Private Alpha
                   </span>
                 </div>
 
+                {/* Hero per the canonical hero set 2026-05-29 — Fraunces display,
+                    accent-tinted second line, two-line break for emphasis. */}
                 <h1 style={{
-                  fontFamily: "'BauhausQuilDisplayGX', 'Bauhaus Quil', 'Fraunces', Georgia, serif",
-                  fontSize: "clamp(28px, 4.5vw, 40px)", fontWeight: 600,
-                  textTransform: "uppercase", letterSpacing: "-0.005em",
+                  fontFamily: "'Fraunces', Georgia, 'Times New Roman', serif",
+                  fontVariationSettings: '"opsz" 144, "SOFT" 0, "WONK" 0',
+                  fontSize: "clamp(30px, 4.8vw, 46px)", fontWeight: 900,
+                  textTransform: "uppercase", letterSpacing: "-0.02em",
                   color: C.text, margin: "0 0 8px 0", lineHeight: 0.98,
                 }}>
-                  OpptyCon
+                  Don't just operate cyber GTM.{" "}
+                  <span style={{ color: C.accent, display: "block" }}>Govern it.</span>
                 </h1>
 
                 <p style={{
                   fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 24px 0",
                 }}>
-                  The revenue physics engine for cybersecurity GTM leaders who
-                  inherited a number and need to reverse-engineer the machine
-                  that hits it. Inverse-funnel math, governance constraints,
-                  and cost physics — across eight persona-curated views, live.
+                  Operating cyber GTM is the easy part — most teams already do it.
+                  Governing it is what holds the number together when capital,
+                  capacity, and constraints all stop agreeing. Inverse-funnel math,
+                  cost physics, and the governance spine — across eight persona views, live.
                 </p>
 
                 {/* Persona views callout */}
@@ -211,7 +215,7 @@ export default function AlphaGate({ onAccessGranted }) {
                   border: `1px solid ${C.borderL}`, background: C.bgAlt,
                 }}>
                   <div style={{
-                    fontFamily: "'Chivo Mono', monospace", fontSize: 9, fontWeight: 600,
+                    fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace", fontSize: 9, fontWeight: 600,
                     color: C.muted, letterSpacing: "0.1em", textTransform: "uppercase",
                     marginBottom: 6,
                   }}>
@@ -242,7 +246,7 @@ export default function AlphaGate({ onAccessGranted }) {
                       display: "flex", alignItems: "center", gap: 6,
                       fontSize: 11, color: C.text,
                     }}>
-                      <span style={{ color: C.accent, fontSize: 10, fontFamily: "'Chivo Mono', monospace" }}>→</span>
+                      <span style={{ color: C.accent, fontSize: 10, fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace" }}>→</span>
                       {f}
                     </div>
                   ))}
@@ -273,7 +277,7 @@ export default function AlphaGate({ onAccessGranted }) {
                       style={{
                         width: "100%", padding: "10px 14px",
                         background: C.bg, border: `1px solid ${C.border}`,
-                        fontSize: 14, fontFamily: "'Chivo Mono', monospace",
+                        fontSize: 14, fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace",
                         color: C.text, outline: "none",
                         transition: "border-color 0.2s",
                       }}
@@ -400,7 +404,7 @@ export default function AlphaGate({ onAccessGranted }) {
         {/* Footer */}
         <div style={{
           textAlign: "center", marginTop: 20,
-          fontSize: 10, color: C.dim, fontFamily: "'Chivo Mono', monospace",
+          fontSize: 10, color: C.dim, fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace",
           letterSpacing: "0.04em",
         }}>
           netherops.com · governed revenue architecture
@@ -409,7 +413,7 @@ export default function AlphaGate({ onAccessGranted }) {
         {/* Legal links — heretics.io canonical Terms + Privacy */}
         <div style={{
           textAlign: "center", marginTop: 8,
-          fontSize: 9, color: C.dim, fontFamily: "'Chivo Mono', monospace",
+          fontSize: 9, color: C.dim, fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace",
           letterSpacing: "0.08em", textTransform: "uppercase",
         }}>
           <a href="https://heretics.io/terms" style={{ color: "inherit", textDecoration: "none", margin: "0 8px" }} target="_blank" rel="noopener">Terms</a>

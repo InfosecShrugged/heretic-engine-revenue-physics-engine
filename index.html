@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-property="opptycon" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,29 +7,15 @@
     <meta name="description" content="OpptyCon — Revenue simulation and governance control surface by NetherOps" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+    <!-- House canon: Fraunces (display) + JetBrains Mono (mono). Chivo Mono retired. -->
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,100..900,0..100,0..1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/tokens.css" />
     <style>
+      /* TWK Everett — body face. Bauhaus @font-face retired per HERETICS-BRAND.md
+         2026-05-28; Bauhaus lives only inside SVG lockups now. */
       @font-face { font-family: 'TWK Everett'; src: url('/fonts/TWKEverett-Light.otf') format('opentype'); font-weight: 300; font-display: swap; }
       @font-face { font-family: 'TWK Everett'; src: url('/fonts/TWKEverett-Regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
       @font-face { font-family: 'TWK Everett'; src: url('/fonts/TWKEverett-Bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
-      /* Bauhaus Quil — canonical name per brief §3. URL chain falls through
-         GX woff2 (pending Mojomox license) to Medium 500 woff2/woff (today).
-         When GX lands at /fonts/BauhausQuilDisplayGX.woff2 every wght request
-         hits the variable axis automatically. */
-      @font-face {
-        font-family: 'BauhausQuilDisplayGX';
-        src: url('/fonts/BauhausQuilDisplayGX.woff2') format('woff2-variations'),
-             url('/fonts/BauhausQuilDisplayGX.woff2') format('woff2'),
-             url('/fonts/BauhausQuilDisplay-Medium.woff2') format('woff2'),
-             url('/fonts/BauhausQuilDisplay-Medium.woff') format('woff');
-        font-weight: 100 900; font-style: normal; font-display: swap;
-      }
-      @font-face {
-        font-family: 'BauhausSansGeoNeuVF';
-        src: url('/fonts/BauhausSansGeoNeuVF.woff2') format('woff2-variations'),
-             url('/fonts/BauhausSansGeoNeuVF.woff2') format('woff2');
-        font-weight: 100 900; font-style: normal; font-display: swap;
-      }
     </style>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2322d3ee'/><text x='16' y='22' text-anchor='middle' font-size='18' fill='%23000'>⚡</text></svg>" />
     <style>
