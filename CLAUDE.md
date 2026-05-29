@@ -22,7 +22,9 @@
 
 ## Design System — OpptyCon (Dual-Mode Profile)
 
-> **Updated 2026-05-22 per DS spec §8:** Brand accent rose → violet (#7C5CFF). Ground refresh: light #EBEBEB→#D6D6D1, dark #0F0F0F→#0F0F13. Governance rose → breach red #FF6157. Dark mode accent (#C8FF6E lime) NOT yet shifted to violet — that's a larger refactor pending.
+> **Heretics House alignment status (2026-05-28):** The user's "Heretics House — Reskin & Build Guide for Claude Code" (canonical visual spec at `~/Downloads/heretics-house-design-system.html`) is now the contract. OpptyCon is a NetherOps-family property → **violet** `#8C73FF` (dark) / `#5B3DF0` (light) per the guide. Asset kit (raven + Bauhaus Quil + wordmark-netherops.svg + wordmark-opptycon.svg) landed on `staging` branch this session; staging-noindex edge function in place. **NOT yet done:** App.jsx nav lockup swap (raven + netherops + >opptycon wordmark), App.jsx footer firewall stamp, dark-mode lime → violet primary-accent shift, light-mode #7C5CFF → #5B3DF0 deepening per Albers. These are the larger workstream §8 flagged; see "Outstanding house-alignment work" at the bottom.
+
+> **Updated 2026-05-22 per DS spec §8:** Brand accent rose → violet (#7C5CFF). Ground refresh: light #EBEBEB→#D6D6D1, dark #0F0F0F→#0F0F13. Governance rose → breach red #FF6157. Dark mode accent (#C8FF6E lime) NOT yet shifted to violet — that's a larger refactor pending. (Reskin guide formalizes this — target value is `#8C73FF` on dark, `#5B3DF0` on light.)
 
 > **CRITICAL: This app uses the OpptyCon design system, which is derived from the NetherOps design language. NOT BigFilter. NOT Syne/DM Sans/IBM Plex Mono. NOT orange #E85D2A or #ff6e3e. If you see these anywhere, they are WRONG.**
 
@@ -319,3 +321,42 @@ These are from a DIFFERENT project (BigFilter) or outdated instructions. Do NOT 
 When writing JS files with template literals, ALWAYS run `node --check filename.js` 
 after creating or editing. Claude Code sometimes escapes backticks as \` during file 
 creation, which silently kills the entire script with no visible error.
+
+---
+
+## Outstanding house-alignment work (separate workstream)
+
+Per the 2026-05-28 brand-layer reskin pass, the asset foundation is in place
+on `staging` but App.jsx remains on the pre-house tokens + nav lockup. These
+items need a dedicated session with regression testing of the OpptyCon tool
+UX (modeling, charts, theme toggle behavior in both modes):
+
+1. **`src/tokens.js` dark-mode accent shift** — `C.accent` on dark currently
+   resolves to lime `#C8FF6E`. Target: violet `#8C73FF`. Every `C.accent`
+   reference in App.jsx (~5000 lines, mostly inline styles) will pick up the
+   new color automatically. Lime stays as the fill/governance "live signal"
+   token, not the primary accent.
+
+2. **Light-mode violet deepening** — `C.accent` on light is `#7C5CFF`. Per
+   Albers / paper-safe contrast, deepen to `#5B3DF0`.
+
+3. **App.jsx nav lockup swap** — replace the existing NetherOps PNG logo
+   (`/netherops-logo-{inv,black}.svg`) with the canonical raven + parent +
+   sub-brand lockup:
+   - 40px raven (`/raven/raven-simplified.svg`, mask-image, `--accent` fill)
+   - 28px `wordmark-netherops.svg` (parent, `--ink` fill)
+   - 24px italic `wordmark-opptycon.svg` (sub-brand, `--accent` fill)
+   Implementation pattern is established in arena + atlas's staging commits.
+
+4. **App.jsx quiet brand footer** — raven glyph at .55 opacity + the
+   NetherOps property line. OpptyCon is a tool surface, not marketing, so
+   keep this minimal — small corner stamp only, no firewall language.
+
+5. **Bauhaus Quil display moments** — register the @font-face in
+   `src/index.css` and use sparingly for the 1-2 display moments per page
+   (likely hero / module headers). Body stays TWK Everett.
+
+Order of operations when picking this up: tokens.js first (so the rest of
+the app re-themes correctly), then App.jsx nav, then footer, then optional
+Bauhaus Quil display polish. Test theme toggle + chart legibility +
+governance breach state in both modes before pushing.
