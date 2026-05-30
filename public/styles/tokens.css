@@ -76,13 +76,13 @@
   --accent-light: #A8840E;
   --accent-ink: var(--accent);
 }
-[data-property="heretics"]  { --accent: #F5D610; --accent-light: #A8840E; }
-[data-property="arcology"]  { --accent: #F5D610; --accent-light: #A8840E; }
-[data-property="mis"]       { --accent: #E2504A; --accent-light: #B0302A; }
-[data-property="atlas"]     { --accent: #E2504A; --accent-light: #B0302A; }
-[data-property="kumite"]    { --accent: #E2504A; --accent-light: #B0302A; }
-[data-property="netherops"] { --accent: #8C73FF; --accent-light: #5B3DF0; }
-[data-property="opptycon"]  { --accent: #8C73FF; --accent-light: #5B3DF0; }
+[data-property="heretics"]  { --accent: #F5D610; --accent-light: #A8840E; --flame-accent: #E2504A; }
+[data-property="arcology"]  { --accent: #F5D610; --accent-light: #A8840E; --flame-accent: #E2504A; }
+[data-property="mis"]       { --accent: #E2504A; --accent-light: #B0302A; --flame-accent: #F5D610; }
+[data-property="atlas"]     { --accent: #E2504A; --accent-light: #B0302A; --flame-accent: #F5D610; }
+[data-property="kumite"]    { --accent: #E2504A; --accent-light: #B0302A; --flame-accent: #F5D610; }
+[data-property="netherops"] { --accent: #8C73FF; --accent-light: #5B3DF0; --flame-accent: #E2504A; }
+[data-property="opptycon"]  { --accent: #8C73FF; --accent-light: #5B3DF0; --flame-accent: #E2504A; }
 
 /* ---------- 4. THEME (dark default, light override) ---------- */
 :root,
