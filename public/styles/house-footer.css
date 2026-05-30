@@ -135,7 +135,7 @@ html[data-property="arcology"] .hf-mast-raven {
   margin-bottom: 6px;
   text-decoration: none;
   line-height: 1.18;
-  font-variation-settings: "opsz" 36, "SOFT" 0, "WONK" 0;
+  font-variation-settings: "opsz" 36, "wght" 600, "SOFT" 0, "WONK" 0;
 }
 .hf-col-name:hover { color: var(--accent-ink); }
 .hf-col-tag {
