@@ -14,6 +14,7 @@ import ArchitectureDiagram from './ArchitectureDiagram';
 import SpinePage from './SpinePage';
 import DataIngestionPage from './DataIngestionPage';
 import AlphaGate, { hasAlphaAccess } from './AlphaGate';
+import HouseFooter from './HouseFooter';
 import { lightTheme, darkTheme, fonts, shadows } from './tokens';
 import { FIELD_AUDIT, scoreObject, gradeFromPct, topFixes, answeredCount } from './fieldAuditData';
 
@@ -5093,6 +5094,10 @@ export default function App(){
         <AnimatePresence mode="wait"><motion.div key={page} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:0.2}}>
           {pages[page]}
         </motion.div></AnimatePresence>
+        {/* House footer rendered at the bottom of every persona view per user
+            direction — single mount inside main so it scrolls with the page
+            content rather than fixing at viewport bottom. */}
+        <HouseFooter property="opptycon" />
       </main>
 
       <AnimatePresence>{drivers&&(
