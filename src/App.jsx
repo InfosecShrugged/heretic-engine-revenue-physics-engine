@@ -4952,7 +4952,12 @@ function OnboardingWizard({onComplete}){
 }
 
 export default function App(){
-  const[gated,setGated]=useState(!hasAlphaAccess());
+  // T6: gate disabled. The gate didn't enforce anyway (anyone could hit /
+  // directly and bypass it), and the new flow routes through the
+  // heretics.io/opptycon overview which serves as the soft intro.
+  // Keep the AlphaGate component file in case gating returns with a
+  // real waitlist + seat scarcity model.
+  const[gated,setGated]=useState(false);
   const[onboarded,setOnboarded]=useState(false);
   const[page,setPage]=useState("dashboard");
   const[drivers,setDrivers]=useState(false);
