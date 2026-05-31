@@ -10,22 +10,23 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import HouseFooter from './HouseFooter';
 
 const STORAGE_KEY = 'opptycon_alpha_access';
 const FORM_NAME = 'alpha-access';
 
-// ─── TOKENS (matches engine design system) ───
+// ─── TOKENS (Heretics House — NetherOps family, violet accent) ───
+// Per fix-sheet B4: warm-paper canvas, violet accent, warm near-black ink.
+// The light-mode violet is the deepened #5B3DF0 per the Albers rule (the
+// dark-mode #8C73FF is too pastel against paper).
 const C = {
-  bg:"#EBEBEB", bgAlt:"#F4F4F2", card:"#FFFFFF",
-  border:"rgba(0,0,0,0.13)", borderL:"rgba(0,0,0,0.07)",
-  accent:"#111111", accentD:"rgba(0,0,0,0.06)", accentGlow:"rgba(0,0,0,0.12)",
-  lime:"#C8FF6E", limeD:"rgba(200,255,110,0.15)",
-  green:"#2E7D32", greenD:"rgba(46,125,50,0.10)",
-  rose:"#D44C38", roseD:"rgba(212,76,56,0.10)",
-  text:"#111111", muted:"#555555", dim:"#909090",
+  bg:"#F4F1EA", bgAlt:"#FBFAF6", card:"#FFFFFF",
+  border:"rgba(20,18,14,0.12)", borderL:"rgba(20,18,14,0.07)",
+  accent:"#5B3DF0", accentD:"rgba(91,61,240,0.10)", accentGlow:"rgba(91,61,240,0.18)",
+  green:"#1A8A4A", greenD:"rgba(26,138,74,0.10)",
+  rose:"#CC3340", roseD:"rgba(204,51,64,0.10)",
+  text:"#1A1A1E", muted:"#57544D", dim:"#8E8A80",
 };
-
-const LOGO_URL = "/netherops-logo.svg";
 
 // ─── CHECK IF USER HAS ACCESS ───
 export function hasAlphaAccess() {
@@ -123,15 +124,39 @@ export default function AlphaGate({ onAccessGranted }) {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         style={{ width: "100%", maxWidth: 520 }}
       >
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <img src={LOGO_URL} alt="NetherOps" style={{ height: 32, marginBottom: 8 }}
-            onError={e => { e.target.style.display = 'none' }} />
+        {/* Brand lockup — raven + netherops parent wordmark + >opptycon sub-brand.
+            Per brief §4 sizing floor: raven 40 / parent wm 28 / sub wm 24. */}
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            {/* Raven — mask-image so background-color drives the recolor (ink on light) */}
+            <span aria-hidden="true" style={{
+              display: "inline-block", width: 40, height: 40, flex: "none",
+              backgroundColor: C.text,
+              WebkitMask: "url('/raven/raven-simplified.svg') center/contain no-repeat",
+              mask: "url('/raven/raven-simplified.svg') center/contain no-repeat",
+            }} />
+            {/* netherops parent wordmark — ink monochrome on light per recolor rule */}
+            <span aria-hidden="true" style={{
+              display: "inline-block", height: 28, width: 180, flex: "none",
+              backgroundColor: C.text,
+              WebkitMask: "url('/wordmarks/wordmark-netherops.svg') left center no-repeat",
+              mask: "url('/wordmarks/wordmark-netherops.svg') left center no-repeat",
+              WebkitMaskSize: "auto 28px", maskSize: "auto 28px",
+            }} />
+            {/* >opptycon sub-brand wordmark — accent (violet/amber-deep) per sub-brand rule */}
+            <span aria-hidden="true" style={{
+              display: "inline-block", height: 24, width: 110, flex: "none",
+              backgroundColor: C.accent,
+              WebkitMask: "url('/wordmarks/wordmark-opptycon.svg') left center no-repeat",
+              mask: "url('/wordmarks/wordmark-opptycon.svg') left center no-repeat",
+              WebkitMaskSize: "auto 24px", maskSize: "auto 24px",
+            }} />
+          </div>
           <div style={{
-            fontFamily: "'Chivo Mono', monospace", fontSize: 9, color: C.dim,
+            fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace", fontSize: 9, color: C.dim,
             letterSpacing: "0.1em", textTransform: "uppercase",
           }}>
-            governed revenue architecture
+            Governed revenue architecture
           </div>
         </div>
 
@@ -156,27 +181,33 @@ export default function AlphaGate({ onAccessGranted }) {
                 }}>
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
                   <span style={{
-                    fontFamily: "'Chivo Mono', monospace", fontSize: 9, fontWeight: 700,
+                    fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace", fontSize: 9, fontWeight: 700,
                     color: C.accent, textTransform: "uppercase", letterSpacing: "0.06em",
                   }}>
                     Private Alpha
                   </span>
                 </div>
 
+                {/* Hero per the canonical hero set 2026-05-29 — Fraunces display,
+                    accent-tinted second line, two-line break for emphasis. */}
                 <h1 style={{
-                  fontSize: 22, fontWeight: 700, color: C.text,
-                  margin: "0 0 8px 0", lineHeight: 1.3,
+                  fontFamily: "'Fraunces', Georgia, 'Times New Roman', serif",
+                  fontVariationSettings: '"opsz" 144, "SOFT" 0, "WONK" 0',
+                  fontSize: "clamp(30px, 4.8vw, 46px)", fontWeight: 900,
+                  textTransform: "uppercase", letterSpacing: "-0.02em",
+                  color: C.text, margin: "0 0 8px 0", lineHeight: 0.98,
                 }}>
-                  OpptyCon
+                  Don't just operate cyber GTM.{" "}
+                  <span style={{ color: C.accent, display: "block" }}>Govern it.</span>
                 </h1>
 
                 <p style={{
                   fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 24px 0",
                 }}>
-                  The revenue physics engine for cybersecurity GTM leaders who
-                  inherited a number and need to reverse-engineer the machine
-                  that hits it. Inverse-funnel math, governance constraints,
-                  and cost physics — across eight persona-curated views, live.
+                  Operating cyber GTM is the easy part — most teams already do it.
+                  Governing it is what holds the number together when capital,
+                  capacity, and constraints all stop agreeing. Inverse-funnel math,
+                  cost physics, and the governance spine — across eight persona views, live.
                 </p>
 
                 {/* Persona views callout */}
@@ -185,7 +216,7 @@ export default function AlphaGate({ onAccessGranted }) {
                   border: `1px solid ${C.borderL}`, background: C.bgAlt,
                 }}>
                   <div style={{
-                    fontFamily: "'Chivo Mono', monospace", fontSize: 9, fontWeight: 600,
+                    fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace", fontSize: 9, fontWeight: 600,
                     color: C.muted, letterSpacing: "0.1em", textTransform: "uppercase",
                     marginBottom: 6,
                   }}>
@@ -216,7 +247,7 @@ export default function AlphaGate({ onAccessGranted }) {
                       display: "flex", alignItems: "center", gap: 6,
                       fontSize: 11, color: C.text,
                     }}>
-                      <span style={{ color: C.accent, fontSize: 10, fontFamily: "'Chivo Mono', monospace" }}>→</span>
+                      <span style={{ color: C.accent, fontSize: 10, fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace" }}>→</span>
                       {f}
                     </div>
                   ))}
@@ -247,7 +278,7 @@ export default function AlphaGate({ onAccessGranted }) {
                       style={{
                         width: "100%", padding: "10px 14px",
                         background: C.bg, border: `1px solid ${C.border}`,
-                        fontSize: 14, fontFamily: "'Chivo Mono', monospace",
+                        fontSize: 14, fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace",
                         color: C.text, outline: "none",
                         transition: "border-color 0.2s",
                       }}
@@ -374,16 +405,16 @@ export default function AlphaGate({ onAccessGranted }) {
         {/* Footer */}
         <div style={{
           textAlign: "center", marginTop: 20,
-          fontSize: 10, color: C.dim, fontFamily: "'Chivo Mono', monospace",
+          fontSize: 10, color: C.dim, fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace",
           letterSpacing: "0.04em",
         }}>
-          netherops.com — governed revenue architecture
+          netherops.com · governed revenue architecture
         </div>
 
         {/* Legal links — heretics.io canonical Terms + Privacy */}
         <div style={{
           textAlign: "center", marginTop: 8,
-          fontSize: 9, color: C.dim, fontFamily: "'Chivo Mono', monospace",
+          fontSize: 9, color: C.dim, fontFamily: "'JetBrains Mono', 'SF Mono', ui-monospace, monospace",
           letterSpacing: "0.08em", textTransform: "uppercase",
         }}>
           <a href="https://heretics.io/terms" style={{ color: "inherit", textDecoration: "none", margin: "0 8px" }} target="_blank" rel="noopener">Terms</a>
@@ -395,6 +426,11 @@ export default function AlphaGate({ onAccessGranted }) {
             App.jsx's theme effect, so it renders in OpptyCon's accent. */}
         <heretics-house-map current="opptycon" style={{ marginTop: 28, display: "block" }}></heretics-house-map>
       </motion.div>
+
+      {/* Canonical Heretics House footer — lamplight raven + 5-col grid +
+          engagement bridge back to heretics.io. Loads /styles/house-footer.css
+          and sets data-property="opptycon" on <html> for accent + bridge gating. */}
+      <HouseFooter property="opptycon" />
     </div>
   );
 }

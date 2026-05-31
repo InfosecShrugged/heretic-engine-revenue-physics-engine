@@ -1,0 +1,311 @@
+/* ============================================================
+   HERETICS HOUSE — GLOBAL FOOTER
+   Drop-in replacement for the .house-footer / .hf-* rules.
+
+   Critical fix: forces a VERTICAL stack across .wrap children
+   (mast → intro → grid → engagement → legal). Previous render
+   was collapsing them onto one horizontal row because
+   something upstream (likely .wrap inheriting display:flex
+   from a sibling) was overriding the intent.
+   ============================================================ */
+
+.house-footer {
+  background: var(--dark, #16161A);
+  color: #9A968C;
+  padding: 72px 0 32px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  font-family: var(--sans);
+}
+
+/* Force vertical block layout — no flex/grid on .wrap */
+.house-footer .wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: block !important;  /* defensive — beat any inherited flex */
+}
+.house-footer .wrap > * { display: block; }
+.house-footer .wrap > .hf-mast { display: flex; }      /* mast itself is internally flex */
+.house-footer .wrap > .hf-grid { display: grid; }      /* grid itself is internally grid */
+.house-footer .wrap > .hf-legal { display: block; }
+
+/* ---------- MAST: lamplight raven + tagline ----------
+   The mast uses the FULL lamplight raven, not the head glyph.
+   Aspect ratio 251:298 (vertical), so a 96px height gives ~81px width.
+
+   Body color follows the property accent. Lantern flame follows the
+   --lantern-flame rule below: gold pointing home on non-Heretics,
+   red pointing inward on Heretics/Arcology (the diagnostic light
+   coming from the desk).
+   ---------- */
+.hf-mast {
+  align-items: flex-end;
+  gap: 22px;
+  padding-bottom: 28px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.hf-mast-raven {
+  width: auto;
+  height: 96px;       /* lamplight is taller than head; 96px gives the lantern room */
+  color: var(--accent-ink);
+  flex-shrink: 0;
+  display: block;
+  --lantern-flame: #F5D610;  /* default: gold flame (MIS / NetherOps families) */
+}
+
+/* Heretics + Arcology: flame switches to red — the diagnostic light pointing in */
+html[data-property="heretics"] .hf-mast-raven,
+html[data-property="arcology"] .hf-mast-raven {
+  --lantern-flame: #E2504A;
+}
+
+/* In the inline SVG, the body path should use fill="currentColor"
+   and the flame path should use fill="var(--lantern-flame)".
+   See: /assets/illustration/lamplight-raven.svg */
+
+.hf-mast-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1;
+}
+.hf-mast-title {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 30px;     /* up from 24 */
+  font-weight: 425;
+  letter-spacing: -.015em;
+  line-height: 1.05;
+  color: #ECEAE3;
+  font-variation-settings: "opsz" 144, "wght" 425, "SOFT" 0, "WONK" 0;
+}
+.hf-mast-title em {
+  font-style: italic;
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+.hf-mast-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .22em;   /* up from .18 — heritage feel */
+  text-transform: uppercase;
+  color: #56564E;
+  font-weight: 500;
+}
+
+/* ---------- INTRO: italic editorial line, sits ABOVE the grid ---------- */
+.hf-intro {
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 425;
+  font-size: 19px;          /* up from 17 */
+  line-height: 1.5;
+  letter-spacing: -.006em;
+  color: #ECEAE3;
+  margin: 0 0 52px;          /* generous breathing room before the grid */
+  max-width: 56ch;
+  font-variation-settings: "opsz" 72, "wght" 400, "SOFT" 0, "WONK" 0;
+}
+
+/* ---------- 5-COLUMN GRID: properties of the house ---------- */
+.hf-grid {
+  grid-template-columns: 1fr 1.2fr 1fr 1fr 1fr;  /* extra room for "Markets InSecurity" */
+  gap: 36px 26px;
+  margin-bottom: 44px;
+}
+.hf-col { position: relative; }
+
+.hf-col-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: #56564E;
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+.hf-col-name {
+  display: block;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 16px;
+  color: #ECEAE3;
+  letter-spacing: -.012em;
+  margin-bottom: 6px;
+  text-decoration: none;
+  line-height: 1.18;
+  font-variation-settings: "opsz" 36, "wght" 600, "SOFT" 0, "WONK" 0;
+}
+.hf-col-name:hover { color: var(--accent-ink); }
+.hf-col-tag {
+  font-size: 11.5px;
+  color: #7E7A74;
+  line-height: 1.55;
+  margin: 0 0 16px;
+  max-width: 22ch;
+}
+.hf-col-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hf-col-links a {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #7E7A74;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color .15s;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.hf-col-links a:hover { color: var(--accent-ink); }
+.hf-col-links a .arr {
+  color: #3A3833;
+  font-weight: 400;
+  flex-shrink: 0;
+  transition: color .15s;
+}
+.hf-col-links a:hover .arr { color: var(--accent-ink); }
+
+/* ---------- "YOU ARE HERE" marker on the current property's column ---------- */
+/* Adds an accent rule above the column AND tints the name */
+html[data-property="heretics"]  .hf-col[data-house="firm"],
+html[data-property="arcology"]  .hf-col[data-house="firm"],
+html[data-property="mis"]       .hf-col[data-house="desk"],
+html[data-property="atlas"]     .hf-col[data-house="desk"],
+html[data-property="kumite"]    .hf-col[data-house="arena"],
+html[data-property="arena"]     .hf-col[data-house="arena"],
+html[data-property="netherops"] .hf-col[data-house="operators"],
+html[data-property="opptycon"]  .hf-col[data-house="operators"] {
+  padding-top: 14px;
+  margin-top: -14px;
+  border-top: 1px solid var(--accent-ink);
+}
+html[data-property="heretics"]  .hf-col[data-house="firm"]     .hf-col-name,
+html[data-property="arcology"]  .hf-col[data-house="firm"]     .hf-col-name,
+html[data-property="mis"]       .hf-col[data-house="desk"]     .hf-col-name,
+html[data-property="atlas"]     .hf-col[data-house="desk"]     .hf-col-name,
+html[data-property="kumite"]    .hf-col[data-house="arena"]    .hf-col-name,
+html[data-property="arena"]     .hf-col[data-house="arena"]    .hf-col-name,
+html[data-property="netherops"] .hf-col[data-house="operators"] .hf-col-name,
+html[data-property="opptycon"]  .hf-col[data-house="operators"] .hf-col-name {
+  color: var(--accent-ink);
+}
+
+/* ---------- ENGAGEMENT BRIDGE — full-width row, NOT a 6th column ---------- */
+.hf-engagement {
+  display: none;       /* fires on non-Heretics properties via selectors below */
+  padding: 22px 28px;
+  margin: 0 0 32px;
+  border-left: 2px solid var(--accent-ink);
+  background: linear-gradient(to right, color-mix(in srgb, var(--accent-ink) 5%, transparent), transparent 70%);
+}
+.hf-engagement-link {
+  display: inline-block;
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 21px;     /* up from 15 — anchor of the bridge */
+  color: var(--accent-ink);
+  text-decoration: none;
+  margin-bottom: 5px;
+  letter-spacing: -.012em;
+  font-variation-settings: "opsz" 96, "wght" 500, "SOFT" 0, "WONK" 0;
+}
+.hf-engagement-text {
+  font-size: 12.5px;
+  color: #9A968C;
+  line-height: 1.6;
+  max-width: 76ch;
+  margin: 0;
+}
+.hf-engagement-text strong {
+  color: #ECEAE3;
+  font-weight: 500;
+}
+
+html[data-property="mis"]       .hf-engagement,
+html[data-property="atlas"]     .hf-engagement,
+html[data-property="kumite"]    .hf-engagement,
+html[data-property="arena"]     .hf-engagement,
+html[data-property="netherops"] .hf-engagement,
+html[data-property="opptycon"]  .hf-engagement {
+  display: block;
+}
+
+/* ---------- LEGAL — copyright row + attribution sentence ---------- */
+.hf-legal {
+  padding-top: 28px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.hf-legal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #56564E;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.hf-legal-row a {
+  color: #7E7A74;
+  text-decoration: none;
+  transition: color .15s;
+}
+.hf-legal-row a:hover { color: var(--accent-ink); }
+.hf-legal .hf-legal-sep {
+  color: #3A3833;
+  margin: 0 8px;
+}
+
+.hf-attribution {
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.7;
+  letter-spacing: .1em;
+  color: #56564E;
+  max-width: 80ch;
+}
+.hf-attribution span { display: block; }
+
+/* ---------- MIS methodology firewall line (optional, retained) ---------- */
+.hf-firewall {
+  margin-top: 24px;
+  padding: 12px 0;
+  border-top: 0.5px solid rgba(255,255,255,.06);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #4A4842;
+  text-align: center;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 1100px) {
+  .hf-grid { grid-template-columns: repeat(3, 1fr); gap: 40px 28px; }
+}
+@media (max-width: 720px) {
+  .house-footer { padding: 48px 0 28px; }
+  .house-footer .wrap { padding: 0 24px; }
+  .hf-grid { grid-template-columns: repeat(2, 1fr); gap: 36px 20px; }
+  .hf-mast { gap: 16px; padding-bottom: 22px; margin-bottom: 32px; }
+  .hf-mast-raven { height: 56px; }
+  .hf-mast-title { font-size: 24px; }
+  .hf-intro { font-size: 17px; margin-bottom: 40px; }
+  .hf-engagement { padding: 18px 20px; }
+  .hf-engagement-link { font-size: 18px; }
+}
+@media (max-width: 480px) {
+  .hf-grid { grid-template-columns: 1fr; gap: 30px; }
+  .hf-legal-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+}

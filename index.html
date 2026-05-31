@@ -1,14 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-property="opptycon" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OpptyCon | NetherOps</title>
-    <meta name="description" content="OpptyCon — Revenue simulation and governance control surface by NetherOps" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+    <title>OpptyCon — NetherOps</title>
+    <meta name="description" content="OpptyCon is the NetherOps revenue physics engine for modeling pipeline, capacity, assumptions, and GTM consequence." />
+    <link rel="canonical" href="https://app.netherops.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://app.netherops.com/" />
+    <meta property="og:title" content="OpptyCon — NetherOps" />
+    <meta property="og:description" content="OpptyCon is the NetherOps revenue physics engine for modeling pipeline, capacity, assumptions, and GTM consequence." />
+    <meta property="og:image" content="https://app.netherops.com/favicon-512x512.png" />
+    <meta property="og:site_name" content="NetherOps" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="OpptyCon — NetherOps" />
+    <meta name="twitter:description" content="OpptyCon is the NetherOps revenue physics engine for modeling pipeline, capacity, assumptions, and GTM consequence." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+    <!-- House canon: Fraunces (display) + JetBrains Mono (mono). Chivo Mono retired. -->
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,100..900,0..100,0..1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/tokens.css" />
     <style>
+      /* TWK Everett — body face. Bauhaus @font-face retired per HERETICS-BRAND.md
+         2026-05-28; Bauhaus lives only inside SVG lockups now. */
       @font-face { font-family: 'TWK Everett'; src: url('/fonts/TWKEverett-Light.otf') format('opentype'); font-weight: 300; font-display: swap; }
       @font-face { font-family: 'TWK Everett'; src: url('/fonts/TWKEverett-Regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
       @font-face { font-family: 'TWK Everett'; src: url('/fonts/TWKEverett-Bold.otf') format('opentype'); font-weight: 700; font-display: swap; }
@@ -67,7 +86,21 @@
     <form name="alpha-access" netlify netlify-honeypot="bot-field" hidden>
       <input name="email" /><input name="role" /><input name="company" /><input name="bot-field" />
     </form>
-    <div id="root"></div>
+    <div id="root">
+      <main style="max-width:680px;margin:0 auto;padding:80px 24px 64px;font-family:'TWK Everett','Helvetica Neue',system-ui,sans-serif;color:#111;line-height:1.55;">
+        <p style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#666;margin:0 0 24px;">NetherOps · Revenue Physics</p>
+        <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(36px,5vw,54px);line-height:1.05;letter-spacing:-0.02em;margin:0 0 24px;">OpptyCon</h1>
+        <p style="font-size:17px;margin:0 0 20px;">OpptyCon is the NetherOps revenue physics engine for modeling pipeline, capacity, assumptions, and GTM consequence.</p>
+        <p style="font-size:15px;color:#555;margin:0 0 32px;">Dual-axis cost modeling, phase-shifted funnel physics, coverage governance, and multi-year carry-over math &mdash; in one control surface used to plan, defend, and re-plan a GTM model end-to-end.</p>
+        <a href="https://app.netherops.com/" style="display:inline-block;background:#5B3DF0;color:#fff;text-decoration:none;padding:14px 24px;border-radius:6px;font-size:15px;font-weight:500;">Build a Model &rarr;</a>
+        <p style="font-size:13px;color:#909090;margin:48px 0 0;">Loading the interactive engine&hellip; If nothing appears, your browser needs JavaScript enabled.</p>
+      </main>
+    </div>
+    <noscript>
+      <div style="max-width:680px;margin:0 auto;padding:24px;font-family:'TWK Everett','Helvetica Neue',system-ui,sans-serif;color:#111;background:#FFFBEC;border:1px solid #E8DDB8;border-radius:6px;">
+        <strong>JavaScript is required.</strong> OpptyCon is an interactive revenue modeling engine. To use the tool, enable JavaScript or contact <a href="mailto:contact@netherops.com" style="color:#5B3DF0;">contact@netherops.com</a> for a guided walkthrough.
+      </div>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -6,6 +6,12 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+# --- Noindex on staging + deploy-previews ---
+# Netlify TOML headers can't be context-scoped, so an Edge Function
+# (netlify/edge-functions/noindex-staging.ts) inspects the host and
+# adds X-Robots-Tag for any non-production hostname. Production hosts
+# (opptycon.netlify.app, app.netherops.com) pass through unchanged.
+
 # SPA redirect (existing)
 [[redirects]]
   from = "/*"

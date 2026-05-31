@@ -1,0 +1,138 @@
+import { useEffect } from 'react';
+
+// Heretics House — Global Footer
+// Mirrors the static HTML house-footer used across heretics-home / arena /
+// atlas / netherops-site. Loads /styles/house-footer.css for the rules and
+// sets data-property="opptycon" + data-theme="dark" on <html> so the
+// engagement bridge fires and the column accent picks up violet.
+
+export default function HouseFooter({ property = 'opptycon', theme = 'dark' }) {
+  useEffect(() => {
+    const html = document.documentElement;
+    if (!html.getAttribute('data-property')) html.setAttribute('data-property', property);
+    if (!html.getAttribute('data-theme')) html.setAttribute('data-theme', theme);
+    // Inject the stylesheet once per page
+    const href = '/styles/house-footer.css';
+    if (!document.querySelector(`link[href="${href}"]`)) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      document.head.appendChild(link);
+    }
+  }, [property, theme]);
+
+  return (
+    <footer className="house-footer">
+      <div className="wrap">
+
+        <div className="hf-mast">
+          <svg className="hf-mast-raven" viewBox="0 0 251 298" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Heretics lamplight raven">
+            <path fill="currentColor" d="M87.667 0c8.22 0 15.77 1.35 23.2 4.67a.857.857 0 0 1 .5.87l-2.24 22.54a.36.36 0 0 1-.124.243.399.399 0 0 1-.266.097c-.133-.007-7.157-.007-21.07 0-13.913 0-20.936.003-21.07.01a.399.399 0 0 1-.27-.1.36.36 0 0 1-.12-.25l-2.25-22.54a.863.863 0 0 1 .114-.52.846.846 0 0 1 .396-.35C71.887 1.35 79.437 0 87.667 0Zm106.142 182.66a.11.11 0 0 0-.155.015.113.113 0 0 0-.024.081.109.109 0 0 0 .039.074l55.82 55.82a.295.295 0 0 1 .063.324.296.296 0 0 1-.273.186h-20.48a.346.346 0 0 0-.339.412.35.35 0 0 0 .089.178l20.94 20.94c.359.358.56.844.56 1.35v34.7a.35.35 0 0 1-.21.313.325.325 0 0 1-.36-.073l-55.59-55.59a.108.108 0 0 0-.074-.04.114.114 0 0 0-.081.025.109.109 0 0 0-.039.074.113.113 0 0 0 .024.081c4.487 7.687 4.044 14.97-1.33 21.85a.905.905 0 0 1-1.048.292.912.912 0 0 1-.322-.212l-38.65-38.64a.34.34 0 0 0-.58.24v37.21a.724.724 0 0 1-.21.51l-27.15 27.15a.26.26 0 0 0 .19.44h13.7a.56.56 0 0 1 .56.56v6a.48.48 0 0 1-.48.48h-45.84c-.468 0-.917-.183-1.25-.51l-6.65-6.65a.54.54 0 0 0-.392-.165.568.568 0 0 0-.398.165l-6.73 6.73a.68.68 0 0 1-.96 0l-4.05-4.04a.71.71 0 0 1 0-1l11.68-11.68a.644.644 0 0 1 .448-.182c.167 0 .325.065.442.182l9.72 9.73c.25.243.584.38.93.38h17.92a1.61 1.61 0 0 0 1.14-.47l32.14-32.14a.337.337 0 0 0 .108-.252.357.357 0 0 0-.108-.258l-32.34-32.34a2.26 2.26 0 0 0-1.6-.66h-52.48a1.64 1.64 0 0 1-1.15-.48L42.51 207.3a.235.235 0 0 0-.116-.061.23.23 0 0 0-.273.221v6.01a.666.666 0 0 1-.414.619.664.664 0 0 1-.257.051h-5.74a.707.707 0 0 1-.495-.202.686.686 0 0 1-.205-.488v-13.02a1.5 1.5 0 0 0-.44-1.06l-9.84-9.84a.426.426 0 0 0-.457-.091.398.398 0 0 0-.133.091l-9.65 9.65c-.403.404-.63.947-.63 1.51v6.05c0 .088.036.171.1.233s.15.097.24.097h6.31a.322.322 0 0 0 .296-.191.303.303 0 0 0 .024-.119v-6.33a.608.608 0 0 1 .61-.61h5.93c.18 0 .354.071.481.196.128.126.2.296.2.474v12.7c0 .615.244 1.208.68 1.65l12.28 12.28a3.75 3.75 0 0 1 1.03 1.92l6.87 35.03a.943.943 0 0 1-.026.465.988.988 0 0 1-.245.405l-11.82 11.82a.23.23 0 0 0 .17.39h9a.522.522 0 0 1 .52.52v6.09a.491.491 0 0 1-.49.49H2.62a.259.259 0 0 1-.26-.26v-6.53c0-.085.033-.166.091-.226a.305.305 0 0 1 .22-.094h9.29a.194.194 0 0 0 .167-.118.192.192 0 0 0-.038-.202L.45 265.17a1.54 1.54 0 0 1-.42-1.39l6.78-34.55a4.066 4.066 0 0 1 1.13-2.12l12.42-12.42a.32.32 0 0 0 .073-.359.34.34 0 0 0-.125-.151.342.342 0 0 0-.188-.06H7.28a.542.542 0 0 1-.54-.54v-15.79c0-.57.227-1.117.63-1.52l16.61-16.61a.642.642 0 0 1 .9 0l39.18 39.18a.511.511 0 0 0 .72 0l21.33-21.32a.515.515 0 0 0 .146-.358.495.495 0 0 0-.146-.352l-39-38.99a2.08 2.08 0 0 1-.61-1.47V91.37a.33.33 0 0 0-.33-.33H30.52a.32.32 0 0 1-.25-.52l22.95-27.33a.29.29 0 0 0 .035-.297.267.267 0 0 0-.245-.153h-7.55a.25.25 0 0 1-.253-.29.25.25 0 0 1 .063-.13l21.55-25.68a.35.35 0 0 0 .046-.359.327.327 0 0 0-.296-.191H46.86a.36.36 0 0 1-.36-.36v-6.42a.32.32 0 0 1 .088-.22.295.295 0 0 1 .212-.09h82.31a.5.5 0 0 1 .5.5v6.08a.514.514 0 0 1-.146.36.496.496 0 0 1-.354.15h-19.66a.276.276 0 0 0-.157.046.277.277 0 0 0-.043.434l5.6 5.59c.352.351.806.586 1.3.67l27.84 4.6c.251.044.488.145.691.296.203.151.368.348.479.574l7.88 16.01a.411.411 0 0 1-.114.501.404.404 0 0 1-.166.079l-43.44 9.2a.742.742 0 0 0-.6.73v15.61a.622.622 0 0 0 .62.62h17.8c.877 0 1.718.345 2.34.96l88.46 88.46a.57.57 0 0 1 .099.665.58.58 0 0 1-.149.185c-7.82 6.22-15.846 6.667-24.08 1.34Zm-169.37 79.72c1.04 0 2.074-.003 3.1-.01a.478.478 0 0 1 .453.294.48.48 0 0 1 .037.186v6.56a.599.599 0 0 0 .6.6h4.27a1.57 1.57 0 0 0 1.11-.46l7.07-7.07a1.11 1.11 0 0 0 .3-1.02l-6.22-29.43a.62.62 0 0 0-.56-.48c-1.16-.087-4.546-.133-10.16-.14-5.606 0-8.99.043-10.15.13a.62.62 0 0 0-.56.48l-6.24 29.43a1.097 1.097 0 0 0 .3 1.02l7.07 7.08c.295.294.694.46 1.11.46h4.27a.599.599 0 0 0 .6-.6v-6.56a.478.478 0 0 1 .49-.49l3.11.02Z"/>
+            <path fill="var(--lantern-flame, #F5D610)" d="M24.427 238.189c.08 0 .157.017.23.05a.316.316 0 0 1 .16.16c3.814 8.02 6.027 12.607 6.64 13.76a1.716 1.716 0 0 1-.09 1.78l-2.89 4.21a1.423 1.423 0 0 1-1.05.61c-.213.04-1.21.06-2.99.06-1.78 0-2.776-.02-2.99-.06a1.432 1.432 0 0 1-1.05-.61l-2.89-4.2a1.714 1.714 0 0 1-.297-.874 1.73 1.73 0 0 1 .197-.906c.614-1.153 2.824-5.743 6.63-13.77a.316.316 0 0 1 .16-.16.555.555 0 0 1 .23-.05Z"/>
+          </svg>
+          <div className="hf-mast-text">
+            <div className="hf-mast-title">a conspiracy of <em>heretics</em></div>
+            <div className="hf-mast-sub">The Heretics House</div>
+          </div>
+        </div>
+
+        <p className="hf-intro">The desk diagnoses from the outside. The firm engages from the inside. The operators govern the work.</p>
+
+        <div className="hf-grid">
+
+          <div className="hf-col" data-house="firm">
+            <div className="hf-col-eyebrow">The Firm</div>
+            <a href="https://heretics.io" className="hf-col-name">Heretics</a>
+            <p className="hf-col-tag">Fractional GTM for cybersecurity. Engagement starts here.</p>
+            <nav className="hf-col-links">
+              <a href="https://heretics.io/#services"><span className="arr" aria-hidden="true">→</span>Services</a>
+              <a href="https://heretics.io/#blueprint"><span className="arr" aria-hidden="true">→</span>Blueprint</a>
+              <a href="https://heretics.io/#work"><span className="arr" aria-hidden="true">→</span>Work</a>
+              <a href="https://heretics.io/#system"><span className="arr" aria-hidden="true">→</span>The System</a>
+              <a href="https://work.heretics.io"><span className="arr" aria-hidden="true">→</span>Arcology Proof Library</a>
+              <a href="https://briefings.heretics.io"><span className="arr" aria-hidden="true">→</span>Briefings</a>
+            </nav>
+          </div>
+
+          <div className="hf-col" data-house="desk">
+            <div className="hf-col-eyebrow">The Desk</div>
+            <a href="https://marketsinsecurity.com" className="hf-col-name">Markets InSecurity</a>
+            <p className="hf-col-tag">Independent GTM analysis for cybersecurity. Outside-in only.</p>
+            <nav className="hf-col-links">
+              <a href="https://marketsinsecurity.com/dispatches"><span className="arr" aria-hidden="true">→</span>Dispatches</a>
+              <a href="https://atlas.marketsinsecurity.com"><span className="arr" aria-hidden="true">→</span>The Atlas</a>
+              <a href="https://marketsinsecurity.com/method"><span className="arr" aria-hidden="true">→</span>Method</a>
+              <a href="https://marketsinsecurity.com/faq"><span className="arr" aria-hidden="true">→</span>FAQ</a>
+              <a href="https://marketsinsecurity.com/independence"><span className="arr" aria-hidden="true">→</span>Editorial Independence</a>
+            </nav>
+          </div>
+
+          <div className="hf-col" data-house="arena">
+            <div className="hf-col-eyebrow">The Arena</div>
+            <a href="https://arena.marketsinsecurity.com" className="hf-col-name">Arena</a>
+            <p className="hf-col-tag">Cyber vendors ranked by market strength, motion durability, competitive exposure.</p>
+            <nav className="hf-col-links">
+              <a href="https://arena.marketsinsecurity.com/kumite"><span className="arr" aria-hidden="true">→</span>Kumite</a>
+              <a href="https://arena.marketsinsecurity.com/banzuke"><span className="arr" aria-hidden="true">→</span>Banzuke</a>
+              <a href="https://arena.marketsinsecurity.com/divisions"><span className="arr" aria-hidden="true">→</span>Divisions</a>
+              <a href="https://arena.marketsinsecurity.com/codex"><span className="arr" aria-hidden="true">→</span>The Codex</a>
+              <a href="https://arena.marketsinsecurity.com/consolidation"><span className="arr" aria-hidden="true">→</span>Consolidation Board</a>
+              <a href="https://arena.marketsinsecurity.com/challengers"><span className="arr" aria-hidden="true">→</span>Challenger&apos;s Gate</a>
+            </nav>
+          </div>
+
+          <div className="hf-col" data-house="operators">
+            <div className="hf-col-eyebrow">The Operators</div>
+            <a href="https://netherops.com" className="hf-col-name">NetherOps</a>
+            <p className="hf-col-tag">Governed revenue architecture. The doctrine, run.</p>
+            <nav className="hf-col-links">
+              <a href="https://netherops.com/#method"><span className="arr" aria-hidden="true">→</span>Method</a>
+              <a href="https://netherops.com/#architecture"><span className="arr" aria-hidden="true">→</span>Architecture</a>
+              <a href="https://netherops.com/#doctrine"><span className="arr" aria-hidden="true">→</span>Doctrine</a>
+              <a href="https://app.netherops.com"><span className="arr" aria-hidden="true">→</span>OpptyCon</a>
+              <a href="https://docs.heretics.io"><span className="arr" aria-hidden="true">→</span>Docs</a>
+              <a href="https://netherops.com/#briefing"><span className="arr" aria-hidden="true">→</span>Briefing</a>
+            </nav>
+          </div>
+
+          <div className="hf-col" data-house="utility">
+            <div className="hf-col-eyebrow">Utility</div>
+            <span className="hf-col-name" style={{ cursor: 'default' }}>Across the House</span>
+            <p className="hf-col-tag">Contact, contribute, comply.</p>
+            <nav className="hf-col-links">
+              <a href="https://heretics.io/#contact"><span className="arr" aria-hidden="true">→</span>Contact</a>
+              <a href="https://marketsinsecurity.com/sponsor"><span className="arr" aria-hidden="true">→</span>Sponsor the Desk</a>
+              <a href="https://arena.marketsinsecurity.com/challengers"><span className="arr" aria-hidden="true">→</span>Submit to Kumite</a>
+              <a href="https://www.linkedin.com/in/nicksorenson" rel="noopener noreferrer" target="_blank"><span className="arr" aria-hidden="true">→</span>LinkedIn</a>
+              <a href="https://marketsinsecurity.com/terms"><span className="arr" aria-hidden="true">→</span>Terms</a>
+              <a href="https://marketsinsecurity.com/privacy"><span className="arr" aria-hidden="true">→</span>Privacy</a>
+            </nav>
+          </div>
+
+        </div>
+
+        <div className="hf-engagement">
+          <a href="https://heretics.io/#contact" className="hf-engagement-link">Engagement starts at heretics.io <span aria-hidden="true">→</span></a>
+          <p className="hf-engagement-text">The desk diagnoses from the outside; the firm engages from the inside. If a teardown surfaces a motion problem you want fixed, that work happens at <strong style={{ color: '#ECEAE3' }}>heretics.io</strong> &mdash; not here.</p>
+        </div>
+
+        <div className="hf-legal">
+          <div className="hf-legal-row">
+            <span>&copy; 2026 The Heretics House. All rights reserved.</span>
+            <span>
+              <a href="https://marketsinsecurity.com/terms">Terms</a>
+              <span className="hf-legal-sep">&middot;</span>
+              <a href="https://marketsinsecurity.com/privacy">Privacy</a>
+            </span>
+          </div>
+          <div className="hf-attribution">
+            <span>Heretics is the commercial advisory firm.</span>
+            <span>Markets InSecurity is the independent analyst desk.</span>
+            <span>NetherOps is the governed revenue architecture layer.</span>
+          </div>
+        </div>
+
+      </div>
+    </footer>
+  );
+}
