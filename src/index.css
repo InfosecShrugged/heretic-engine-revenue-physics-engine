@@ -18,6 +18,16 @@ html, body, #root {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* T7: override the editorial Fraunces inherited from /styles/tokens.css.
+   The marketing site uses Fraunces for display, but the product surface
+   needs TWK Everett's readability for dense numerical UI (form fields,
+   sliders, tables, charts). Reserve Fraunces for marketing surfaces. */
+#root h1, #root h2, #root h3, #root h4, #root h5, #root h6,
+#root .display {
+  font-family: 'TWK Everett', 'Helvetica Neue', system-ui, sans-serif;
+  font-variation-settings: normal;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 4px;

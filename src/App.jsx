@@ -1158,7 +1158,7 @@ const NAV_SECTIONS=[
   ]},
 ];
 
-const LOGO_URL = "/netherops-logo.svg";
+const LOGO_URL = "/wordmarks/wordmark-netherops.svg";
 
 // ════════════════════════════════════════════════════════════
 // DASHBOARD
@@ -4893,7 +4893,7 @@ function OnboardingWizard({onComplete}){
       <div style={{width:"100%",maxWidth:720,padding:window.innerWidth<768?"20px 16px":"40px 32px"}}>
         {/* Logo */}
         <div style={{textAlign:"center",marginBottom:32}}>
-          <img src={LOGO_URL} alt="NetherOps" style={{height:32,marginBottom:6,filter:C.bg==='#0F0F0F'?"invert(1) hue-rotate(180deg)":"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
+          <img src={LOGO_URL} alt="NetherOps" style={{height:36,marginBottom:6,filter:C.bg==='#0F0F0F'?'invert(1)':'none'}} onError={e=>{e.target.style.display='none'}}/>
           <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>OpptyCon</div>
         </div>
 
@@ -5066,7 +5066,7 @@ export default function App(){
         <aside style={{width:mobile?260:220,height:"100vh",background:C.bgAlt,borderRight:`1px solid ${C.borderMid}`,display:"flex",flexDirection:"column",flexShrink:0,
           ...(mobile?{position:"fixed",left:0,top:0,zIndex:150}:{})}}>
           <div style={{padding:"16px 16px 20px"}}>
-            <img src={LOGO_URL} alt="NetherOps" style={{height:28,marginBottom:6,filter:themeMode==='dark'?"invert(1) hue-rotate(180deg)":"brightness(1.1)"}} onError={e=>{e.target.style.display='none'}}/>
+            <img src={LOGO_URL} alt="NetherOps" style={{height:32,marginBottom:6,filter:themeMode==='dark'?'invert(1)':'none'}} onError={e=>{e.target.style.display='none'}}/>
             <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>OpptyCon</div>
           </div>
           <nav style={{flex:1,padding:"0 6px",overflowY:"auto"}}>
