@@ -10,7 +10,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import HouseFooter from './HouseFooter';
 
 const STORAGE_KEY = 'opptycon_alpha_access';
 const FORM_NAME = 'alpha-access';
@@ -427,10 +426,6 @@ export default function AlphaGate({ onAccessGranted }) {
         <heretics-house-map current="opptycon" style={{ marginTop: 28, display: "block" }}></heretics-house-map>
       </motion.div>
 
-      {/* Canonical Heretics House footer — lamplight raven + 5-col grid +
-          engagement bridge back to heretics.io. Loads /styles/house-footer.css
-          and sets data-property="opptycon" on <html> for accent + bridge gating. */}
-      <HouseFooter property="opptycon" />
     </div>
   );
 }
