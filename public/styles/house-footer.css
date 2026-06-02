@@ -78,7 +78,7 @@ html[data-property="arcology"] .hf-mast-raven {
   letter-spacing: -.015em;
   line-height: 1.05;
   color: #ECEAE3;
-  font-variation-settings: "opsz" 144, "wght" 425, "SOFT" 0, "WONK" 0;
+  font-variation-settings: "opsz" 144, "wght" 425, "SOFT" 70, "WONK" 1;
 }
 .hf-mast-title em {
   font-style: italic;
@@ -105,7 +105,7 @@ html[data-property="arcology"] .hf-mast-raven {
   color: #ECEAE3;
   margin: 0 0 52px;          /* generous breathing room before the grid */
   max-width: 56ch;
-  font-variation-settings: "opsz" 72, "wght" 400, "SOFT" 0, "WONK" 0;
+  font-variation-settings: "opsz" 72, "wght" 400, "SOFT" 70, "WONK" 1;
 }
 
 /* ---------- 5-COLUMN GRID: properties of the house ---------- */
@@ -135,7 +135,7 @@ html[data-property="arcology"] .hf-mast-raven {
   margin-bottom: 6px;
   text-decoration: none;
   line-height: 1.18;
-  font-variation-settings: "opsz" 36, "wght" 600, "SOFT" 0, "WONK" 0;
+  font-variation-settings: "opsz" 36, "wght" 600, "SOFT" 70, "WONK" 1;
 }
 .hf-col-name:hover { color: var(--accent-ink); }
 .hf-col-tag {
@@ -215,7 +215,7 @@ html[data-property="opptycon"]  .hf-col[data-house="operators"] .hf-col-name {
   text-decoration: none;
   margin-bottom: 5px;
   letter-spacing: -.012em;
-  font-variation-settings: "opsz" 96, "wght" 500, "SOFT" 0, "WONK" 0;
+  font-variation-settings: "opsz" 96, "wght" 500, "SOFT" 70, "WONK" 1;
 }
 .hf-engagement-text {
   font-size: 12.5px;
