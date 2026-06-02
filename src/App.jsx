@@ -2100,7 +2100,10 @@ function VCPage({model, inputs, onInfoClick, mobile}){
       </div>
     </Card>
     
-    {/* Q4 — Funding need (gap) */}
+    {/* Q4 — Funding need (gap): hidden 2026-06-01 (B5) — was shipping a "Coming soon" stub
+        in production. Restore by flipping the guard to true once the funding-need calc is built
+        (cumulative burn × starting cash × buffer; burn math already lives in CFO View Q2). */}
+    {false && (<>
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Funding need <span style={{color:C.amber,marginLeft:6}}>↘ on build queue</span></div>
     <Card style={{marginBottom:18,borderLeft:`2px solid ${C.amber}`,opacity:0.92}}>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
@@ -2109,7 +2112,8 @@ function VCPage({model, inputs, onInfoClick, mobile}){
       <h3 style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:8,lineHeight:1.3}}>What funding does the plan require, and over what runway?</h3>
       <p style={{fontSize:12,color:C.muted,lineHeight:1.6}}>The VC's last question. Cumulative burn over the planning horizon × current cash position × buffer = funding need + when. The burn math is in CFO View (Q2); pairing it with starting cash and a buffer assumption is on the build queue.</p>
     </Card>
-    
+    </>)}
+
     {/* Q5 — Mktg-led vs sales-led */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · Marketing-led or sales-led business?</div>
     <Card style={{marginBottom:18}}>
@@ -2573,7 +2577,7 @@ function PEPage({model, inputs, onInfoClick, mobile}){
 //   Q5: Are the assumptions defensible?              → Key assumptions panel
 // ════════════════════════════════════════════════════════════
 function BoardPage({model, inputs, onInfoClick, mobile}){
-  const { summary: s, quarterlyTargets } = model;
+  const { summary: s, phaseShiftedFunnel } = model;
   const att = s.attainmentRequired || 100;
   const attColor = att <= 100 ? C.green : att <= 120 ? C.amber : C.red;
   const sAndMZone = s.totalSAndMPct < 30 ? "underinvest" : s.totalSAndMPct > 60 ? "burn" : s.totalSAndMPct > 55 ? "stretch" : "growth";
@@ -2595,21 +2599,21 @@ function BoardPage({model, inputs, onInfoClick, mobile}){
     {/* Q1 — Quarterly waterfall */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Where are we vs plan — quarterly waterfall</div>
     <Card style={{marginBottom:24}}>
-      <div style={{display:"grid",gridTemplateColumns:`140px repeat(${Math.min((quarterlyTargets||[]).length,8)},1fr)`,gap:8}}>
+      <div style={{display:"grid",gridTemplateColumns:`140px repeat(${Math.min((phaseShiftedFunnel||[]).length,8)},1fr)`,gap:8}}>
         <div></div>
-        {(quarterlyTargets||[]).slice(0,8).map(q=>(
+        {(phaseShiftedFunnel||[]).slice(0,8).map(q=>(
           <div key={q.quarter} style={{fontSize:9,fontWeight:700,color:q.isCurrentYear?C.text:C.dim,textTransform:"uppercase",letterSpacing:"0.06em",textAlign:"center"}}>{q.quarter}</div>
         ))}
         <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Closing deals</div>
-        {(quarterlyTargets||[]).slice(0,8).map((q,i)=>(
+        {(phaseShiftedFunnel||[]).slice(0,8).map((q,i)=>(
           <div key={i} style={{fontSize:13,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.closingDeals||0}</div>
         ))}
         <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>SQOs needed</div>
-        {(quarterlyTargets||[]).slice(0,8).map((q,i)=>(
+        {(phaseShiftedFunnel||[]).slice(0,8).map((q,i)=>(
           <div key={i} style={{fontSize:13,fontWeight:600,color:C.blue,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.sqosNeeded||0}</div>
         ))}
         <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>MQLs needed</div>
-        {(quarterlyTargets||[]).slice(0,8).map((q,i)=>(
+        {(phaseShiftedFunnel||[]).slice(0,8).map((q,i)=>(
           <div key={i} style={{fontSize:13,fontWeight:600,color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.mqlsNeeded||0}</div>
         ))}
       </div>
@@ -4892,7 +4896,7 @@ function OnboardingWizard({onComplete}){
       <div style={{width:"100%",maxWidth:720,padding:window.innerWidth<768?"20px 16px":"40px 32px"}}>
         {/* Logo */}
         <div style={{textAlign:"center",marginBottom:32}}>
-          <img src={LOGO_URL} alt="NetherOps" style={{height:36,marginBottom:6,filter:C.bg==='#0F0F0F'?'invert(1)':'none'}} onError={e=>{e.target.style.display='none'}}/>
+          <img src={LOGO_URL} alt="NetherOps" style={{height:36,marginBottom:6,filter:C===darkTheme?'invert(1)':'none'}} onError={e=>{e.target.style.display='none'}}/>
           <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>OpptyCon</div>
         </div>
 
@@ -4957,17 +4961,26 @@ export default function App(){
   // Keep the AlphaGate component file in case gating returns with a
   // real waitlist + seat scarcity model.
   const[gated,setGated]=useState(false);
-  const[onboarded,setOnboarded]=useState(false);
+  // B6: if a saved model exists, treat the user as already onboarded (skip the wizard).
+  const[onboarded,setOnboarded]=useState(()=>{try{return!!localStorage.getItem('opptycon-model');}catch(e){return false;}});
   const[page,setPage]=useState("dashboard");
   const[drivers,setDrivers]=useState(false);
   const[infoPanel,setInfoPanel]=useState(null);
-  const[inputs,setInputs]=useState(DEFAULT_INPUTS);
+  // B6: rehydrate the saved model on mount; merge over DEFAULT_INPUTS so any
+  // driver keys added since the model was saved still get their defaults.
+  const[inputs,setInputs]=useState(()=>{try{const saved=localStorage.getItem('opptycon-model');if(saved)return{...DEFAULT_INPUTS,...JSON.parse(saved)};}catch(e){}return DEFAULT_INPUTS;});
   const[navOpen,setNavOpen]=useState(false);
   const[themeMode,setThemeMode]=useState(()=>{
     if(typeof window!=='undefined'){const saved=localStorage.getItem('opptycon-theme');if(saved)return saved;return window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}return'dark';
   });
+  // B3: select the active theme synchronously DURING render so every component
+  // reading the module-level `C` repaints on the same render themeMode changes.
+  // (The effect set C post-render, so inline C.xxx styles lagged a paint behind
+  // the data-theme/CSS-var layer — that was the toggle desync.)
+  setC(themeMode);
   useEffect(()=>{
     setC(themeMode);
+    document.documentElement.setAttribute('data-theme', themeMode);
     const ds = document.documentElement.style;
     ds.background = C.bg;
     ds.color = C.text;
@@ -4981,6 +4994,13 @@ export default function App(){
     ds.setProperty('--house-line', C.borderMid);
     ds.setProperty('--house-accent', C.accent);
   },[themeMode]);
+  // B6: persist the model once onboarded, so a reload restores it instead of
+  // dropping back to wizard Step 1. Gated on `onboarded` so a fresh visitor who
+  // hasn't completed setup never writes a model (which would skip the wizard).
+  useEffect(()=>{
+    if(!onboarded) return;
+    try{ localStorage.setItem('opptycon-model', JSON.stringify(inputs)); }catch(e){}
+  },[inputs,onboarded]);
   const toggleTheme=()=>{
     const next=themeMode==='dark'?'light':'dark';
     setThemeMode(next);
@@ -5077,7 +5097,7 @@ export default function App(){
             <button onClick={()=>{setDrivers(!drivers);if(mobile)setNavOpen(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:drivers?C.violetDim:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'TWK Everett',sans-serif"}}>
               <Settings size={13}/>Global Drivers
             </button>
-            <button onClick={()=>setOnboarded(false)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'TWK Everett',sans-serif"}}>
+            <button onClick={()=>{try{localStorage.removeItem('opptycon-model');}catch(e){}setOnboarded(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'TWK Everett',sans-serif"}}>
               Re-run Setup
             </button>
           </div>
