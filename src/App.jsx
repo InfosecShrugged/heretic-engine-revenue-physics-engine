@@ -56,14 +56,14 @@ const Metric=({label,value,sub,color=C.accent,icon:I,delay=0})=>(
   </motion.div>
 );
 
-const Input=({label,value,onChange,prefix="",suffix="",min,max,step=1,compact})=>(
+const Input=({label,value,onChange,prefix="",suffix="",min,max,step=1,compact,format})=>(
   <div style={{marginBottom:compact?8:13}}>
     <label style={{display:"block",fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{label}</label>
     <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:compact?"5px 9px":"7px 11px",gap:4}}>
       {prefix&&<span style={{color:C.dim,fontSize:13}}>{prefix}</span>}
-      <input type="number" value={value} min={min} max={max} step={step}
-        onChange={e=>onChange(parseFloat(e.target.value)||0)}
-        style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%"}}/>
+      <input type={format?"text":"number"} inputMode={format?"numeric":undefined} value={format?(value!=null&&value!==""?Number(value).toLocaleString("en-US"):""):value} min={min} max={max} step={step}
+        onChange={e=>onChange(format?(parseInt(e.target.value.replace(/[^0-9]/g,""),10)||0):(parseFloat(e.target.value)||0))}
+        style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'JetBrains Mono',monospace",width:"100%"}}/>
       {suffix&&<span style={{color:C.dim,fontSize:11}}>{suffix}</span>}
     </div>
   </div>
@@ -90,14 +90,14 @@ const QuotaBenchmarks=({C,currentQuota,onPick})=>{
     <div style={{marginTop:-4,marginBottom:8}}>
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",gap:4,background:"transparent",border:"none",padding:0,cursor:"pointer",
-          fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.06em"}}>
+          fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",textTransform:"uppercase",letterSpacing:"0.06em"}}>
         <span style={{color:C.accent,fontSize:10}}>{open?"−":"+"}</span>
         <span>Cyber benchmarks</span>
       </button>
       {open&&(
         <div style={{marginTop:6,padding:8,background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0}}>
           <div style={{display:"grid",gridTemplateColumns:"54px 1fr auto",gap:4,fontSize:9,color:C.dim,
-            fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4,paddingBottom:4,borderBottom:`1px solid ${C.borderMid}`}}>
+            fontFamily:"'JetBrains Mono',monospace",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4,paddingBottom:4,borderBottom:`1px solid ${C.borderMid}`}}>
             <span>Seg</span><span>Range</span><span>Apply</span>
           </div>
           {QUOTA_BENCHMARKS.map(b=>{
@@ -105,13 +105,13 @@ const QuotaBenchmarks=({C,currentQuota,onPick})=>{
             return (
               <div key={b.seg} title={`${b.seg} cyber AE — ACV ${b.acv}, ${b.deals}`}
                 style={{display:"grid",gridTemplateColumns:"54px 1fr auto",gap:4,alignItems:"center",padding:"3px 0",
-                  fontSize:10,fontFamily:"'Chivo Mono',monospace",color:isCurrent?C.accent:C.text}}>
+                  fontSize:10,fontFamily:"'JetBrains Mono',monospace",color:isCurrent?C.accent:C.text}}>
                 <span style={{fontWeight:600}}>{b.seg}</span>
                 <span style={{color:C.muted,fontSize:9}}>{b.range}</span>
                 <button onClick={()=>onPick(b.mid)}
                   style={{background:isCurrent?C.accent:"transparent",color:isCurrent?C.bg:C.accent,
                     border:`1px solid ${C.accent}`,borderRadius:0,padding:"1px 5px",cursor:"pointer",
-                    fontSize:9,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{fmtK(b.mid)}</button>
+                    fontSize:9,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>{fmtK(b.mid)}</button>
               </div>
             );
           })}
@@ -181,10 +181,10 @@ function DataConfidenceCallout({inputs, compact=false}) {
     <div onClick={()=>setExpanded(!expanded)} style={{cursor:"pointer",padding:"12px 14px",background:`${color}10`,border:`1px solid ${color}33`,borderLeft:`3px solid ${color}`,display:"flex",alignItems:"baseline",gap:14,flexWrap:"wrap"}}>
       <div style={{flex:"0 0 auto"}}>
         <div style={{fontSize:9,fontWeight:700,color:color,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
-        <div style={{fontSize:13,color:C.text,fontWeight:600,fontFamily:"'Chivo Mono',monospace"}}>{conf.untouchedCount}<span style={{color:C.muted,fontWeight:400}}>/{conf.totalRedInputs}</span> hard-to-measure inputs still at defaults</div>
+        <div style={{fontSize:13,color:C.text,fontWeight:600,fontFamily:"'JetBrains Mono',monospace"}}>{conf.untouchedCount}<span style={{color:C.muted,fontWeight:400}}>/{conf.totalRedInputs}</span> hard-to-measure inputs still at defaults</div>
       </div>
       <div style={{flex:1,minWidth:240,fontSize:11,color:C.muted,lineHeight:1.55}}>{subtext}</div>
-      <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.06em"}}>{expanded?"▾ HIDE LIST":"▸ SHOW LIST"}</div>
+      <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.06em"}}>{expanded?"▾ HIDE LIST":"▸ SHOW LIST"}</div>
     </div>
     {expanded && (
       <div style={{padding:"10px 14px",background:C.bg,border:`1px solid ${C.borderMid}`,borderTop:"none",fontSize:11,color:C.muted,lineHeight:1.6}}>
@@ -194,7 +194,7 @@ function DataConfidenceCallout({inputs, compact=false}) {
             <div style={{color:C.green}}>None — all hard-to-measure inputs have been overridden.</div>
           ) : (
             conf.untouched.map(k => (
-              <div key={k} style={{fontFamily:"'Chivo Mono',monospace",fontSize:10,color:C.muted}}>
+              <div key={k} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:C.muted}}>
                 <span style={{color:C.text}}>{k}</span> <span style={{color:C.dim}}>= {String(inputs[k])}</span>
               </div>
             ))
@@ -237,10 +237,10 @@ function HorizonPlannerCard({model, inputs, mobile}){
       <div>
         <div style={{fontSize:9,fontWeight:700,color:verdictColor,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Horizon Planner · {verdictLabel}</div>
         <div style={{fontSize:14,color:C.text,fontWeight:600}}>
-          <span style={{fontFamily:"'Chivo Mono',monospace"}}>{fmt(h.horizonTarget)}</span> by <span style={{fontFamily:"'Chivo Mono',monospace"}}>{h.targetDate}</span> · {h.monthsToTarget} months from plan start
+          <span style={{fontFamily:"'JetBrains Mono',monospace"}}>{fmt(h.horizonTarget)}</span> by <span style={{fontFamily:"'JetBrains Mono',monospace"}}>{h.targetDate}</span> · {h.monthsToTarget} months from plan start
         </div>
       </div>
-      <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.06em",textAlign:"right"}}>
+      <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.06em",textAlign:"right"}}>
         {h.onTrackPct.toFixed(0)}% on-track
       </div>
     </div>
@@ -248,17 +248,17 @@ function HorizonPlannerCard({model, inputs, mobile}){
     <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
       <div>
         <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Velocity Required</div>
-        <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(h.velocityRequired)}<span style={{fontSize:11,color:C.muted}}>/mo</span></div>
+        <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{fmt(h.velocityRequired)}<span style={{fontSize:11,color:C.muted}}>/mo</span></div>
         <div style={{fontSize:10,color:C.dim,marginTop:3}}>{fmt(h.newARRRequired)} new ARR over {h.monthsToTarget} months</div>
       </div>
       <div>
         <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Bench Can Produce</div>
-        <div style={{fontSize:22,fontWeight:700,color:verdictColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(h.aeMonthlyCapacity)}<span style={{fontSize:11,color:C.muted}}>/mo</span></div>
+        <div style={{fontSize:22,fontWeight:700,color:verdictColor,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{fmt(h.aeMonthlyCapacity)}<span style={{fontSize:11,color:C.muted}}>/mo</span></div>
         <div style={{fontSize:10,color:C.dim,marginTop:3}}>{inputs.aeCount} AEs × {fmt(inputs.aeQuota)} × {h.realisticAttainment.toFixed(0)}% attain.</div>
       </div>
       <div>
         <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Cumulative Gap</div>
-        <div style={{fontSize:22,fontWeight:700,color:h.cumulativeGap>0?C.red:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{h.cumulativeGap>0?fmt(h.cumulativeGap):"—"}</div>
+        <div style={{fontSize:22,fontWeight:700,color:h.cumulativeGap>0?C.red:C.green,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{h.cumulativeGap>0?fmt(h.cumulativeGap):"—"}</div>
         <div style={{fontSize:10,color:C.dim,marginTop:3}}>{h.cumulativeGap>0?`${fmt(h.monthlyGap)}/mo short`:"Bench covers target"}</div>
       </div>
     </div>
@@ -269,22 +269,22 @@ function HorizonPlannerCard({model, inputs, mobile}){
         <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:12}}>
           <div>
             <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{h.levers.ae.label}</div>
-            <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>+{h.levers.ae.gap}</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>+{h.levers.ae.gap}</div>
             <div style={{fontSize:10,color:C.dim,marginTop:4}}>From {h.levers.ae.current} to {h.levers.ae.needed} AEs</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{h.levers.dealSize.label}</div>
-            <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>+{h.levers.dealSize.liftPct.toFixed(0)}%</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>+{h.levers.dealSize.liftPct.toFixed(0)}%</div>
             <div style={{fontSize:10,color:C.dim,marginTop:4}}>{fmt(h.levers.dealSize.current)} → {fmt(h.levers.dealSize.needed)}</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{h.levers.attainment.label}</div>
-            <div style={{fontSize:18,fontWeight:700,color:h.levers.attainment.needed>110?C.red:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{h.levers.attainment.needed.toFixed(0)}%</div>
+            <div style={{fontSize:18,fontWeight:700,color:h.levers.attainment.needed>110?C.red:C.violet,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{h.levers.attainment.needed.toFixed(0)}%</div>
             <div style={{fontSize:10,color:C.dim,marginTop:4}}>From {h.levers.attainment.current.toFixed(0)}% realistic{h.levers.attainment.needed>110?" — implausible":""}</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{h.levers.inquiryVolume.label}</div>
-            <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>+{h.levers.inquiryVolume.liftPct.toFixed(0)}%</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>+{h.levers.inquiryVolume.liftPct.toFixed(0)}%</div>
             <div style={{fontSize:10,color:C.dim,marginTop:4}}>More marketing throughput</div>
           </div>
         </div>
@@ -394,10 +394,10 @@ function CRMReadinessPage({onInfoClick, mobile}){
     <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"2fr 3fr",gap:14,marginBottom:24}}>
       <Card style={{borderLeft:`3px solid ${gradeColor}`}}>
         <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:8,flexWrap:"wrap"}}>
-          <div style={{fontSize:72,fontWeight:700,color:gradeColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{grade}</div>
+          <div style={{fontSize:72,fontWeight:700,color:gradeColor,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{grade}</div>
           <div>
             <div style={{fontSize:14,fontWeight:600,color:C.text}}>{score} <span style={{color:C.muted,fontWeight:400}}>/ {maxScore}</span></div>
-            <div style={{fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{pct.toFixed(0)}% · {answered} of {totalQuestions} answered</div>
+            <div style={{fontSize:10,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>{pct.toFixed(0)}% · {answered} of {totalQuestions} answered</div>
           </div>
         </div>
         <div style={{fontSize:12,color:C.text,fontWeight:500,lineHeight:1.5}}>{verdict}</div>
@@ -413,7 +413,7 @@ function CRMReadinessPage({onInfoClick, mobile}){
             return(
               <div key={key} style={{padding:10,background:C.bg,borderLeft:`2px solid ${catColor}`}}>
                 <div style={{fontSize:10,color:C.text,fontWeight:600,marginBottom:4}}>{cat.label.split(" — ")[0]}</div>
-                <div style={{fontSize:9,color:catColor,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{catScore}/{catMax} · {catPct.toFixed(0)}%</div>
+                <div style={{fontSize:9,color:catColor,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>{catScore}/{catMax} · {catPct.toFixed(0)}%</div>
               </div>
             );
           })}
@@ -427,14 +427,14 @@ function CRMReadinessPage({onInfoClick, mobile}){
         <div style={{fontSize:10,fontWeight:700,color:C.amber,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Top fixes — what to do first</div>
         {failedQuestions.slice(0,3).map((q,i)=>(
           <div key={q.id} style={{padding:"10px 0",borderBottom:i<Math.min(2,failedQuestions.length-1)?`1px solid ${C.borderMid}`:"none"}}>
-            <div style={{fontSize:11,fontWeight:600,color:C.red,marginBottom:4,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>NO · {q.id}</div>
+            <div style={{fontSize:11,fontWeight:600,color:C.red,marginBottom:4,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>NO · {q.id}</div>
             <div style={{fontSize:12,color:C.text,marginBottom:6,lineHeight:1.5}}>{q.text}</div>
             <div style={{fontSize:11,color:C.muted,lineHeight:1.6,paddingLeft:14,borderLeft:`2px solid ${C.amber}`}}>Fix: {q.fix}</div>
           </div>
         ))}
         {failedQuestions.length === 0 && unsureQuestions.slice(0,3).map((q,i)=>(
           <div key={q.id} style={{padding:"10px 0",borderBottom:i<Math.min(2,unsureQuestions.length-1)?`1px solid ${C.borderMid}`:"none"}}>
-            <div style={{fontSize:11,fontWeight:600,color:C.amber,marginBottom:4,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>UNSURE · {q.id}</div>
+            <div style={{fontSize:11,fontWeight:600,color:C.amber,marginBottom:4,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>UNSURE · {q.id}</div>
             <div style={{fontSize:12,color:C.text,marginBottom:6,lineHeight:1.5}}>{q.text}</div>
             <div style={{fontSize:11,color:C.muted,lineHeight:1.6,paddingLeft:14,borderLeft:`2px solid ${C.amber}`}}>Find out: {q.fix}</div>
           </div>
@@ -454,7 +454,7 @@ function CRMReadinessPage({onInfoClick, mobile}){
               <div style={{fontSize:13,fontWeight:700,color:catColor,marginBottom:2}}>{cat.label}</div>
               <div style={{fontSize:11,color:C.muted}}>{cat.desc}</div>
             </div>
-            <div style={{fontSize:11,fontWeight:700,color:catColor,fontFamily:"'Chivo Mono',monospace"}}>{catScore}/{catMax}</div>
+            <div style={{fontSize:11,fontWeight:700,color:catColor,fontFamily:"'JetBrains Mono',monospace"}}>{catScore}/{catMax}</div>
           </div>
           <div style={{marginTop:10}}>
             {cat.questions.map((q,i)=>{
@@ -473,12 +473,12 @@ function CRMReadinessPage({onInfoClick, mobile}){
                   </div>
                   {ans === "no" && (
                     <div style={{marginTop:8,padding:10,background:`${C.red}08`,borderLeft:`2px solid ${C.red}`,fontSize:11,color:C.muted,lineHeight:1.6}}>
-                      <strong style={{color:C.red,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",fontSize:9,textTransform:"uppercase"}}>Fix:</strong> {q.fix}
+                      <strong style={{color:C.red,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em",fontSize:9,textTransform:"uppercase"}}>Fix:</strong> {q.fix}
                     </div>
                   )}
                   {ans === "unsure" && (
                     <div style={{marginTop:8,padding:10,background:`${C.amber}08`,borderLeft:`2px solid ${C.amber}`,fontSize:11,color:C.muted,lineHeight:1.6}}>
-                      <strong style={{color:C.amber,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",fontSize:9,textTransform:"uppercase"}}>Find out:</strong> {q.fix}
+                      <strong style={{color:C.amber,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em",fontSize:9,textTransform:"uppercase"}}>Find out:</strong> {q.fix}
                     </div>
                   )}
                 </div>
@@ -570,7 +570,7 @@ function FieldAuditPage({onInfoClick, mobile}){
       <button onClick={() => setAnswer(id, value)} style={{
         padding:"4px 8px",border:`1px solid ${active?color:C.borderMid}`,
         background:active?color:"transparent",color:active?'#fff':C.muted,
-        fontSize:9,fontWeight:600,fontFamily:"'Chivo Mono',monospace",
+        fontSize:9,fontWeight:600,fontFamily:"'JetBrains Mono',monospace",
         letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",
         borderRadius:0,transition:"all .15s",minWidth:48,
       }}>{label}</button>
@@ -583,40 +583,40 @@ function FieldAuditPage({onInfoClick, mobile}){
     {/* Score summary */}
     <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr 1fr",gap:14,marginBottom:18}}>
       <Card style={{borderLeft:`3px solid ${gradeColor(overallGrade)}`}}>
-        <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Overall</div>
+        <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Overall</div>
         <div style={{display:"flex",alignItems:"baseline",gap:12,marginBottom:8}}>
-          <div style={{fontSize:64,fontWeight:700,color:gradeColor(overallGrade),fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{overallGrade}</div>
+          <div style={{fontSize:64,fontWeight:700,color:gradeColor(overallGrade),fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{overallGrade}</div>
           <div>
             <div style={{fontSize:13,fontWeight:600,color:C.text}}>{overallScore.earned} <span style={{color:C.muted,fontWeight:400}}>/ {overallScore.total}</span></div>
-            <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{overallScore.pct.toFixed(0)}%</div>
+            <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{overallScore.pct.toFixed(0)}%</div>
           </div>
         </div>
         <div style={{fontSize:11,color:C.text,fontWeight:500,lineHeight:1.5}}>{verdict}</div>
       </Card>
       <Card style={{borderLeft:`3px solid ${gradeColor(contactGrade)}`}}>
-        <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Contact object</div>
+        <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Contact object</div>
         <div style={{display:"flex",alignItems:"baseline",gap:12,marginBottom:8}}>
-          <div style={{fontSize:48,fontWeight:700,color:gradeColor(contactGrade),fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{contactGrade}</div>
+          <div style={{fontSize:48,fontWeight:700,color:gradeColor(contactGrade),fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{contactGrade}</div>
           <div>
             <div style={{fontSize:12,fontWeight:600,color:C.text}}>{contactScore.earned}<span style={{color:C.muted,fontWeight:400}}> / {contactScore.total}</span></div>
-            <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{contactScore.pct.toFixed(0)}% · {FIELD_AUDIT.contact.fields.length} fields</div>
+            <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{contactScore.pct.toFixed(0)}% · {FIELD_AUDIT.contact.fields.length} fields</div>
           </div>
         </div>
       </Card>
       <Card style={{borderLeft:`3px solid ${gradeColor(dealGrade)}`}}>
-        <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Deal / opportunity</div>
+        <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Deal / opportunity</div>
         <div style={{display:"flex",alignItems:"baseline",gap:12,marginBottom:8}}>
-          <div style={{fontSize:48,fontWeight:700,color:gradeColor(dealGrade),fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{dealGrade}</div>
+          <div style={{fontSize:48,fontWeight:700,color:gradeColor(dealGrade),fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{dealGrade}</div>
           <div>
             <div style={{fontSize:12,fontWeight:600,color:C.text}}>{dealScore.earned}<span style={{color:C.muted,fontWeight:400}}> / {dealScore.total}</span></div>
-            <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{dealScore.pct.toFixed(0)}% · {FIELD_AUDIT.deal.fields.length} fields</div>
+            <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{dealScore.pct.toFixed(0)}% · {FIELD_AUDIT.deal.fields.length} fields</div>
           </div>
         </div>
       </Card>
     </div>
 
     {/* Coverage indicator */}
-    <div style={{marginBottom:24,padding:"10px 14px",background:C.bg,border:`1px solid ${C.borderMid}`,display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",flexWrap:"wrap",gap:10}}>
+    <div style={{marginBottom:24,padding:"10px 14px",background:C.bg,border:`1px solid ${C.borderMid}`,display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em",flexWrap:"wrap",gap:10}}>
       <span style={{color:C.muted}}>{ans.answered} of {ans.total} fields answered</span>
       <span style={{color:ans.answered === ans.total ? C.green : C.amber}}>
         {ans.answered === ans.total ? "✓ Complete audit" : `${ans.total - ans.answered} unknown — score weighted accordingly`}
@@ -631,7 +631,7 @@ function FieldAuditPage({onInfoClick, mobile}){
           {fixes.map((f,i)=>(
             <div key={f.id} style={{padding:"8px 10px",background:C.bg,borderLeft:`2px solid ${f.weight===3?C.red:f.weight===2?C.amber:C.muted}`}}>
               <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:3,lineHeight:1.3}}>{f.label}</div>
-              <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",textTransform:"uppercase",marginBottom:4}}>
+              <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em",textTransform:"uppercase",marginBottom:4}}>
                 {f.objLabel.split(' ')[0]} · weight {f.weight === 3 ? 'CRITICAL' : f.weight === 2 ? 'IMPORTANT' : 'STANDARD'}
               </div>
               <div style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{f.consequence}</div>
@@ -650,13 +650,13 @@ function FieldAuditPage({onInfoClick, mobile}){
         <Card key={objKey} style={{marginBottom:20}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,flexWrap:"wrap",gap:10}}>
             <div>
-              <h3 style={{fontSize:14,fontWeight:700,color:C.text,margin:0,marginBottom:4,letterSpacing:"-0.01em"}}>{obj.label} <span style={{fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em",fontWeight:400,marginLeft:6}}>· {obj.fields.length} FIELDS</span></h3>
+              <h3 style={{fontSize:14,fontWeight:700,color:C.text,margin:0,marginBottom:4,letterSpacing:"-0.01em"}}>{obj.label} <span style={{fontSize:10,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em",fontWeight:400,marginLeft:6}}>· {obj.fields.length} FIELDS</span></h3>
               <div style={{fontSize:11,color:C.muted,lineHeight:1.5,maxWidth:600}}>{obj.desc}</div>
             </div>
             <div style={{textAlign:"right"}}>
-              <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase",letterSpacing:"0.06em"}}>Section grade</div>
-              <div style={{fontSize:28,fontWeight:700,color:gradeColor(grade),fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{grade}</div>
-              <div style={{fontSize:9,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{score.pct.toFixed(0)}%</div>
+              <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",textTransform:"uppercase",letterSpacing:"0.06em"}}>Section grade</div>
+              <div style={{fontSize:28,fontWeight:700,color:gradeColor(grade),fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{grade}</div>
+              <div style={{fontSize:9,color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>{score.pct.toFixed(0)}%</div>
             </div>
           </div>
 
@@ -664,10 +664,10 @@ function FieldAuditPage({onInfoClick, mobile}){
             <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
               <thead>
                 <tr style={{borderBottom:`1px solid ${C.borderStrong}`}}>
-                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace",width:32}}>Wt</th>
-                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Field</th>
-                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace",width:mobile?120:160}}>Your field name</th>
-                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace",width:240}}>Exists?</th>
+                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace",width:32}}>Wt</th>
+                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace"}}>Field</th>
+                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace",width:mobile?120:160}}>Your field name</th>
+                  <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace",width:240}}>Exists?</th>
                 </tr>
               </thead>
               <tbody>
@@ -677,12 +677,12 @@ function FieldAuditPage({onInfoClick, mobile}){
                   return (
                     <tr key={f.id} style={{borderBottom:`1px solid ${C.borderMid}`}}>
                       <td style={{padding:"8px",verticalAlign:"top"}}>
-                        <span style={{fontSize:8,fontWeight:700,color:wtColor,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.06em",padding:"2px 4px",border:`1px solid ${wtColor}`,borderRadius:0}}>{wtLabel}</span>
+                        <span style={{fontSize:8,fontWeight:700,color:wtColor,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.06em",padding:"2px 4px",border:`1px solid ${wtColor}`,borderRadius:0}}>{wtLabel}</span>
                       </td>
                       <td style={{padding:"8px",verticalAlign:"top"}}>
-                        <div style={{fontSize:12,fontWeight:600,color:C.text,marginBottom:2,lineHeight:1.3}}>{f.label}{f.locked && <span style={{fontSize:9,color:C.violet,marginLeft:6,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>🔒 LOCKED</span>}</div>
+                        <div style={{fontSize:12,fontWeight:600,color:C.text,marginBottom:2,lineHeight:1.3}}>{f.label}{f.locked && <span style={{fontSize:9,color:C.violet,marginLeft:6,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>🔒 LOCKED</span>}</div>
                         <div style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{f.definition}</div>
-                        {f.example && f.example !== '—' && <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",marginTop:3,lineHeight:1.4}}>e.g. {f.example}</div>}
+                        {f.example && f.example !== '—' && <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",marginTop:3,lineHeight:1.4}}>e.g. {f.example}</div>}
                       </td>
                       <td style={{padding:"8px",verticalAlign:"top"}}>
                         <input
@@ -690,7 +690,7 @@ function FieldAuditPage({onInfoClick, mobile}){
                           value={fieldNames[f.id] || ''}
                           onChange={e => setFieldName(f.id, e.target.value)}
                           placeholder="SFDC field name"
-                          style={{width:"100%",fontSize:10,fontFamily:"'Chivo Mono',monospace",color:C.text,background:C.bg,border:`1px solid ${C.borderMid}`,padding:"5px 7px",borderRadius:0,outline:"none"}}
+                          style={{width:"100%",fontSize:10,fontFamily:"'JetBrains Mono',monospace",color:C.text,background:C.bg,border:`1px solid ${C.borderMid}`,padding:"5px 7px",borderRadius:0,outline:"none"}}
                         />
                       </td>
                       <td style={{padding:"8px",verticalAlign:"top"}}>
@@ -728,7 +728,7 @@ function FieldAuditPage({onInfoClick, mobile}){
           }
         }} style={{
           padding:"7px 12px",border:`1px solid ${C.red}`,background:"transparent",color:C.red,
-          fontSize:10,fontWeight:600,fontFamily:"'Chivo Mono',monospace",
+          fontSize:10,fontWeight:600,fontFamily:"'JetBrains Mono',monospace",
           letterSpacing:"0.06em",textTransform:"uppercase",cursor:"pointer",borderRadius:0
         }}>Reset audit</button>
       </div>
@@ -1090,7 +1090,7 @@ const TT=({active,payload,label})=>{
   return(<div style={{background:C.bgAlt,border:`1px solid ${C.border}`,borderRadius:0,padding:"10px 14px",boxShadow:"none"}}>
     <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:6}}>{label}</div>
     {payload.map((p,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.muted,marginBottom:2}}>
-      <div style={{width:7,height:7,borderRadius:"50%",background:p.color}}/>{p.name}: <span style={{color:C.text,fontWeight:600,fontFamily:"'Chivo Mono',monospace"}}>{typeof p.value==="number"&&Math.abs(p.value)>100?fmt(p.value):fN(p.value)}</span>
+      <div style={{width:7,height:7,borderRadius:"50%",background:p.color}}/>{p.name}: <span style={{color:C.text,fontWeight:600,fontFamily:"'JetBrains Mono',monospace"}}>{typeof p.value==="number"&&Math.abs(p.value)>100?fmt(p.value):fN(p.value)}</span>
     </div>))}
   </div>);
 };
@@ -1201,23 +1201,23 @@ function DashboardPage({model,inputs,onInfoClick,mobile,tablet}){
     <div style={{display:"grid",gridTemplateColumns:mobile?"repeat(2,1fr)":"repeat(5,1fr)",gap:mobile?8:10,marginBottom:18}}>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.accent}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → SQO</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.green}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Inq → Won</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.green,fontFamily:"'JetBrains Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.amber}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / SQO</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.amber,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.violet}`}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Cost / Won</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.costPerWon)}</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(s.costPerWon)}</div>
       </div>
       <div style={{padding:10,background:C.bgAlt,borderRadius:0,borderBottom:`2px solid ${C.text}`,gridColumn:mobile?"span 2":"auto"}}>
         <div style={{fontSize:8,color:C.dim,textTransform:"uppercase",fontWeight:700}}>Required Inquiries</div>
-        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
+        <div style={{fontSize:mobile?14:16,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
       </div>
     </div>
     <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:16}}>
@@ -1279,17 +1279,17 @@ function CFOPage({model, inputs, onInfoClick, mobile}){
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:18,marginBottom:isLosing?16:0}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>Operating Margin</div>
-          <div style={{fontSize:30,fontWeight:700,color:s.opMargin>=0?C.green:C.red,lineHeight:1.05,fontFamily:"'Chivo Mono',monospace"}}>{(s.opMargin*100).toFixed(1)}%</div>
+          <div style={{fontSize:30,fontWeight:700,color:s.opMargin>=0?C.green:C.red,lineHeight:1.05,fontFamily:"'JetBrains Mono',monospace"}}>{(s.opMargin*100).toFixed(1)}%</div>
           <div style={{fontSize:11,color:C.dim,marginTop:6}}>{s.opMargin>=0?`Operating income ${fmt(s.operatingIncome)}`:`Operating loss ${fmt(Math.abs(s.operatingIncome))}`}</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>Annual Burn</div>
-          <div style={{fontSize:30,fontWeight:700,color:annualBurn>0?C.red:C.green,lineHeight:1.05,fontFamily:"'Chivo Mono',monospace"}}>{annualBurn>0?fmt(annualBurn):"—"}</div>
+          <div style={{fontSize:30,fontWeight:700,color:annualBurn>0?C.red:C.green,lineHeight:1.05,fontFamily:"'JetBrains Mono',monospace"}}>{annualBurn>0?fmt(annualBurn):"—"}</div>
           <div style={{fontSize:11,color:C.dim,marginTop:6}}>{annualBurn>0?`~${fmt(monthlyBurn)}/month`:"Profitable at plan"}</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>Cumulative {inputs.planningYears||2}-Yr</div>
-          <div style={{fontSize:30,fontWeight:700,color:cumulativeBurnOverPlan>0?C.red:C.green,lineHeight:1.05,fontFamily:"'Chivo Mono',monospace"}}>{cumulativeBurnOverPlan>0?fmt(cumulativeBurnOverPlan):"—"}</div>
+          <div style={{fontSize:30,fontWeight:700,color:cumulativeBurnOverPlan>0?C.red:C.green,lineHeight:1.05,fontFamily:"'JetBrains Mono',monospace"}}>{cumulativeBurnOverPlan>0?fmt(cumulativeBurnOverPlan):"—"}</div>
           <div style={{fontSize:11,color:C.dim,marginTop:6}}>{cumulativeBurnOverPlan>0?"Cash required at flat burn":"No cumulative burn at plan"}</div>
         </div>
       </div>
@@ -1307,7 +1307,7 @@ function CFOPage({model, inputs, onInfoClick, mobile}){
     <Card style={{marginBottom:24}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:14}}>
         <div>
-          <span style={{fontSize:36,fontWeight:700,color:sAndMZoneColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{s.totalSAndMPct.toFixed(1)}%</span>
+          <span style={{fontSize:36,fontWeight:700,color:sAndMZoneColor,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{s.totalSAndMPct.toFixed(1)}%</span>
           <span style={{fontSize:13,color:C.muted,marginLeft:8}}>S&M ÷ revenue</span>
         </div>
         <Badge label={sAndMZoneLabel} status={sAndMZone==="growth"?"good":sAndMZone==="burn"?"bad":"warning"}/>
@@ -1327,7 +1327,7 @@ function CFOPage({model, inputs, onInfoClick, mobile}){
           style={{position:"absolute",top:0,bottom:0,width:3,background:C.text,boxShadow:`0 0 6px ${C.text}66`,zIndex:5}}/>
       </div>
       {/* Zone labels */}
-      <div style={{position:"relative",height:18,marginBottom:14,fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>
+      <div style={{position:"relative",height:18,marginBottom:14,fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>
         <span style={{position:"absolute",left:`${(15/bandMax)*100}%`,transform:"translateX(-50%)",color:C.amber}}>UNDERINVEST</span>
         <span style={{position:"absolute",left:`${(42.5/bandMax)*100}%`,transform:"translateX(-50%)",color:C.green}}>GROWTH 30-55%</span>
         <span style={{position:"absolute",left:`${(57.5/bandMax)*100}%`,transform:"translateX(-50%)",color:C.amber}}>STRETCH</span>
@@ -1442,7 +1442,7 @@ function CEOPage({model, inputs, onInfoClick, mobile}){
           {threat.recommendation && <p style={{fontSize:12,color:C.text,lineHeight:1.6,padding:10,background:C.bg,borderRadius:0,borderLeft:`2px solid ${threatBorder}`}}><strong style={{color:threatBorder}}>Move:</strong> {threat.recommendation}</p>}
         </div>
         {threat.linkModule && (
-          <div style={{fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.06em"}}>
+          <div style={{fontSize:10,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.06em"}}>
             ↘ {threat.linkLabel}
           </div>
         )}
@@ -1471,7 +1471,7 @@ function CEOPage({model, inputs, onInfoClick, mobile}){
           return(
             <div key={fn.key} style={{padding:14,background:C.bg,border:`1px solid ${C.borderMid}`,borderTop:`2px solid ${fn.check.color || C.dim}`}}>
               <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{fn.key}</div>
-              <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{fn.value}%</div>
+              <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{fn.value}%</div>
               <div style={{fontSize:9,color:C.dim,marginTop:3,marginBottom:8}}>{fn.sub}</div>
               {/* Band visualization */}
               <div style={{position:"relative",height:6,background:C.surface,borderRadius:0,overflow:"hidden",marginBottom:6}}>
@@ -1479,7 +1479,7 @@ function CEOPage({model, inputs, onInfoClick, mobile}){
                 <motion.div initial={{left:0}} animate={{left:`${valPct}%`}} transition={{duration:0.4,delay:i*0.05}}
                   style={{position:"absolute",top:0,bottom:0,width:2,background:fn.check.color || C.text}}/>
               </div>
-              <div style={{fontSize:9,color:fn.check.color||C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{fn.check.label} · band {b.low}-{b.high}%</div>
+              <div style={{fontSize:9,color:fn.check.color||C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>{fn.check.label} · band {b.low}-{b.high}%</div>
             </div>
           );
         })}
@@ -1551,22 +1551,22 @@ function CROPage({model, inputs, onInfoClick, mobile}){
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:14,marginBottom:18}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>New ARR Needed</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(s.newARRNeeded)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{fmt(s.newARRNeeded)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>{s.dealsNeeded} deals @ {fmt(inputs.avgDealSize)}</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Full Capacity</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(fullCapacity)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{fmt(fullCapacity)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>{inputs.aeCount} AEs × {fmt(inputs.aeQuota)}</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Ramped Capacity</div>
-          <div style={{fontSize:22,fontWeight:700,color:rampLoss>0?C.amber:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(rampedCapacity)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:rampLoss>0?C.amber:C.green,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{fmt(rampedCapacity)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>Ramp loss: {fmt(rampLoss)} · attrition loss: {fmt(s.totalAttrLoss||0)}</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Coverage</div>
-          <div style={{fontSize:22,fontWeight:700,color:capCoverage>=115?C.green:capCoverage>=85?C.amber:C.red,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{capCoverage.toFixed(0)}%</div>
+          <div style={{fontSize:22,fontWeight:700,color:capCoverage>=115?C.green:capCoverage>=85?C.amber:C.red,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{capCoverage.toFixed(0)}%</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>{capCoverage>=115?"Margin for error":capCoverage>=85?"Tight":"Gap"}</div>
         </div>
       </div>
@@ -1581,12 +1581,12 @@ function CROPage({model, inputs, onInfoClick, mobile}){
           const pct = (row.value / maxV) * 100;
           return(
             <div key={i} style={{display:"grid",gridTemplateColumns:"180px 1fr 90px",gap:10,alignItems:"center",marginBottom:6}}>
-              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{row.label}</div>
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>{row.label}</div>
               <div style={{height:14,background:C.bg,borderRadius:0,position:"relative",overflow:"hidden"}}>
                 <motion.div initial={{width:0}} animate={{width:`${pct}%`}} transition={{duration:0.5,delay:i*0.06}}
                   style={{height:"100%",background:row.color,opacity:0.85}}/>
               </div>
-              <div style={{fontSize:11,fontWeight:600,color:row.color,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(row.value)}</div>
+              <div style={{fontSize:11,fontWeight:600,color:row.color,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fmt(row.value)}</div>
             </div>
           );
         })}
@@ -1602,7 +1602,7 @@ function CROPage({model, inputs, onInfoClick, mobile}){
             {qRows.slice(0, mobile?4:8).map((q,i)=>(
               <div key={i} style={{padding:12,background:C.bg,borderRadius:0,borderTop:`2px solid ${q.isCurrentYear?C.accent:C.dim}`}}>
                 <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{q.quarter}</div>
-                <div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{q.sqosNeeded||0}</div>
+                <div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{q.sqosNeeded||0}</div>
                 <div style={{fontSize:9,color:C.dim,marginTop:3}}>SQOs · {q.closingDeals||0} closing</div>
                 <div style={{fontSize:9,color:C.dim,marginTop:2}}>{q.mqlsNeeded||0} MQLs</div>
               </div>
@@ -1619,7 +1619,7 @@ function CROPage({model, inputs, onInfoClick, mobile}){
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · How many AEs am I short, and when?</div>
     <Card style={{marginBottom:24,borderLeft:`3px solid ${aeGap>0?C.red:C.green}`}}>
       <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:12,flexWrap:"wrap"}}>
-        <div style={{fontSize:48,fontWeight:700,color:aeGap>0?C.red:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{aeGap>0?`+${aeGap}`:aeSurplus>0?`+${aeSurplus}`:"0"}</div>
+        <div style={{fontSize:48,fontWeight:700,color:aeGap>0?C.red:C.green,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{aeGap>0?`+${aeGap}`:aeSurplus>0?`+${aeSurplus}`:"0"}</div>
         <div style={{flex:1,minWidth:200}}>
           <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>{aeGap>0?`AEs short of plan`:aeSurplus>0?`AE surplus at plan`:`AE count matches plan`}</div>
           <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
@@ -1645,13 +1645,13 @@ function CROPage({model, inputs, onInfoClick, mobile}){
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>SDR : AE Ratio</div>
-          <div style={{fontSize:30,fontWeight:700,color:sdrRatioColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{sdrRatio}:1</div>
+          <div style={{fontSize:30,fontWeight:700,color:sdrRatioColor,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{sdrRatio}:1</div>
           <div style={{fontSize:11,color:sdrRatioColor,marginTop:4,fontWeight:600}}>{sdrRatioLabel}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:6,lineHeight:1.5}}>{Math.ceil(inputs.aeCount*sdrRatio)} SDRs supporting {inputs.aeCount} AEs</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Mktg-Sourced Split</div>
-          <div style={{fontSize:30,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{inputs.mktgSourcedPct}%</div>
+          <div style={{fontSize:30,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{inputs.mktgSourcedPct}%</div>
           <div style={{fontSize:11,color:C.muted,marginTop:4,fontWeight:500}}>Marketing → AE Self-source</div>
           <div style={{fontSize:10,color:C.dim,marginTop:6,lineHeight:1.5}}>{aeSelfPct}% of pipeline depends on AE/SDR outbound</div>
         </div>
@@ -1671,7 +1671,7 @@ function CROPage({model, inputs, onInfoClick, mobile}){
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · Attainment realism per AE</div>
     <Card style={{marginBottom:18,borderLeft:`3px solid ${attColor}`}}>
       <div style={{display:"flex",alignItems:"baseline",gap:18,marginBottom:14,flexWrap:"wrap"}}>
-        <div style={{fontSize:48,fontWeight:700,color:attColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{att.toFixed(0)}%</div>
+        <div style={{fontSize:48,fontWeight:700,color:attColor,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{att.toFixed(0)}%</div>
         <div style={{flex:1,minWidth:200}}>
           <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>Required attainment per AE — <span style={{color:attColor}}>{attBand}</span></div>
           <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
@@ -1688,7 +1688,7 @@ function CROPage({model, inputs, onInfoClick, mobile}){
         <motion.div initial={{left:0}} animate={{left:`${Math.min(98,(att/150)*100)}%`}} transition={{duration:0.5}}
           style={{position:"absolute",top:0,bottom:0,width:3,background:C.text,boxShadow:`0 0 6px ${C.text}66`,zIndex:5}}/>
       </div>
-      <div style={{position:"relative",height:14,fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>
+      <div style={{position:"relative",height:14,fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>
         <span style={{position:"absolute",left:`${(42.5/150)*100}%`,transform:"translateX(-50%)",color:C.green}}>REALISTIC ≤85%</span>
         <span style={{position:"absolute",left:`${(92/150)*100}%`,transform:"translateX(-50%)",color:C.amber}}>STRETCH</span>
         <span style={{position:"absolute",left:`${(110/150)*100}%`,transform:"translateX(-50%)",color:C.red}}>AGGRESSIVE</span>
@@ -1794,7 +1794,7 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
         ].map(v=>(
           <div key={v.label} style={{padding:10,background:C.bg,borderTop:`2px solid ${v.color}`}}>
             <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{v.label}</div>
-            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{v.days}<span style={{fontSize:10,color:C.muted}}>d</span></div>
+            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{v.days}<span style={{fontSize:10,color:C.muted}}>d</span></div>
           </div>
         ))}
       </div>
@@ -1809,17 +1809,17 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Stage 2 Pipeline Required</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(s.stage2Pipeline)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{fmt(s.stage2Pipeline)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>{fN(s.sqosNeeded)} SQOs × {fmt(inputs.avgDealSize)} avg deal</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Pipeline Coverage</div>
-          <div style={{fontSize:22,fontWeight:700,color:s.coverageHealth==="good"?C.green:s.coverageHealth==="warning"?C.amber:C.red,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{inputs.pipelineCoverage}%</div>
+          <div style={{fontSize:22,fontWeight:700,color:s.coverageHealth==="good"?C.green:s.coverageHealth==="warning"?C.amber:C.red,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{inputs.pipelineCoverage}%</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>{s.coverageHealth==="good"?"Healthy (≥350%)":s.coverageHealth==="warning"?"At threshold":"Below floor"}</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Mktg-Sourced Share</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{inputs.mktgSourcedPct}%</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{inputs.mktgSourcedPct}%</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>{fN(s.mktgSQOs)} of {fN(s.sqosNeeded)} SQOs come from marketing</div>
         </div>
       </div>
@@ -1847,12 +1847,12 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
             return(
               <div key={i} style={{display:"grid",gridTemplateColumns:mobile?"1.5fr repeat(3,1fr)":"1.4fr repeat(6,1fr)",gap:8,padding:"9px 0",borderBottom:i<channels.length-1?`1px solid ${C.borderMid}`:"none",fontSize:11,alignItems:"baseline"}}>
                 <div style={{color:C.text,fontWeight:500}}>{ch.name}</div>
-                <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{fN(ch.channelInquiries)}</div>
-                <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.blue}}>{fN(ch.sqos)}</div>
-                <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.green}}>{fN(ch.deals)}</div>
-                {!mobile && <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:winPct!=="—"&&parseFloat(winPct)>=25?C.green:C.amber}}>{winPct}%</div>}
-                {!mobile && <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{fmt(ch.cac)}</div>}
-                {!mobile && <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:ch.roi>=2?C.green:ch.roi>=1?C.amber:C.red,fontWeight:600}}>{ch.roi?ch.roi.toFixed(1):"0"}x</div>}
+                <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.text}}>{fN(ch.channelInquiries)}</div>
+                <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.blue}}>{fN(ch.sqos)}</div>
+                <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.green}}>{fN(ch.deals)}</div>
+                {!mobile && <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:winPct!=="—"&&parseFloat(winPct)>=25?C.green:C.amber}}>{winPct}%</div>}
+                {!mobile && <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.text}}>{fmt(ch.cac)}</div>}
+                {!mobile && <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:ch.roi>=2?C.green:ch.roi>=1?C.amber:C.red,fontWeight:600}}>{ch.roi?ch.roi.toFixed(1):"0"}x</div>}
               </div>
             );
           })}
@@ -1868,16 +1868,16 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
             <div style={{display:"grid",gridTemplateColumns:`120px repeat(${Math.min(model.qbrData.length,8)},1fr)`,gap:8}}>
               <div></div>
               {model.qbrData.slice(0,8).map((q,i)=>(
-                <div key={i} style={{fontSize:9,fontWeight:700,color:i<4?C.text:C.dim,textAlign:"center",fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{q.quarter?q.quarter.split(" ")[0]:`Q${i+1}`}</div>
+                <div key={i} style={{fontSize:9,fontWeight:700,color:i<4?C.text:C.dim,textAlign:"center",fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>{q.quarter?q.quarter.split(" ")[0]:`Q${i+1}`}</div>
               ))}
-              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Inquiries</div>
-              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{fN(q.inquiries)}</div>))}
-              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Meetings</div>
-              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.blue,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{fN(q.meetings)}</div>))}
-              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>SQOs</div>
-              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{fN(q.sqos)}</div>))}
-              <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Deals</div>
-              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.green,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{fN(q.deals)}</div>))}
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>Inquiries</div>
+              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'JetBrains Mono',monospace",textAlign:"center"}}>{fN(q.inquiries)}</div>))}
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>Meetings</div>
+              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.blue,fontFamily:"'JetBrains Mono',monospace",textAlign:"center"}}>{fN(q.meetings)}</div>))}
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>SQOs</div>
+              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.violet,fontFamily:"'JetBrains Mono',monospace",textAlign:"center"}}>{fN(q.sqos)}</div>))}
+              <div style={{fontSize:10,color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>Deals</div>
+              {model.qbrData.slice(0,8).map((q,i)=>(<div key={i} style={{fontSize:11,fontWeight:600,color:C.green,fontFamily:"'JetBrains Mono',monospace",textAlign:"center"}}>{fN(q.deals)}</div>))}
             </div>
             <div style={{marginTop:12,fontSize:11,color:C.muted,lineHeight:1.6}}>
               Same global conversion rates applied to each quarter's seasonal weight (NORAM B2B pattern by default). Volumes shift across quarters; conversion stays constant in the model. Real cohort drift (e.g. Q1 leads converting worse than Q4) requires CRM-actuals overlay — on build queue.
@@ -1897,8 +1897,8 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
           return(
             <div key={c.label} style={{padding:12,background:C.bg,borderRadius:0,borderTop:`2px solid ${color}`}}>
               <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{c.label}</div>
-              <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{fmt(c.value)}</div>
-              <div style={{fontSize:10,color:color,marginTop:4,fontWeight:600,fontFamily:"'Chivo Mono',monospace"}}>{payback.toFixed(1)}mo payback</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{fmt(c.value)}</div>
+              <div style={{fontSize:10,color:color,marginTop:4,fontWeight:600,fontFamily:"'JetBrains Mono',monospace"}}>{payback.toFixed(1)}mo payback</div>
               <div style={{fontSize:9,color:C.dim,marginTop:6,lineHeight:1.4}}>{c.desc}</div>
             </div>
           );
@@ -1915,7 +1915,7 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
         <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q6 · Channel concentration risk</div>
         <Card style={{marginBottom:24,borderLeft:`3px solid ${concentrationRisk?C.amber:C.green}`}}>
           <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:14,flexWrap:"wrap"}}>
-            <div style={{fontSize:32,fontWeight:700,color:concentrationRisk?C.amber:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{topChannel.pct}%</div>
+            <div style={{fontSize:32,fontWeight:700,color:concentrationRisk?C.amber:C.green,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{topChannel.pct}%</div>
             <div style={{flex:1,minWidth:240}}>
               <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:4}}>{topChannel.name} is the largest CREATE channel</div>
               <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
@@ -1927,12 +1927,12 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
           <div style={{marginTop:8}}>
             {sortedChannels.map((ch,i)=>(
               <div key={i} style={{display:"grid",gridTemplateColumns:"140px 1fr 70px",gap:10,alignItems:"center",marginBottom:5}}>
-                <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{ch.name}</div>
+                <div style={{fontSize:10,color:C.muted,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>{ch.name}</div>
                 <div style={{height:10,background:C.bg,borderRadius:0,overflow:"hidden"}}>
                   <motion.div initial={{width:0}} animate={{width:`${ch.pct*1.5}%`}} transition={{duration:0.4,delay:i*0.04}}
                     style={{height:"100%",background:ch.pct>=40?C.amber:C.green,opacity:0.7}}/>
                 </div>
-                <div style={{fontSize:10,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{ch.pct}% · {fmt(ch.spend)}</div>
+                <div style={{fontSize:10,fontWeight:600,color:C.text,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{ch.pct}% · {fmt(ch.spend)}</div>
               </div>
             ))}
           </div>
@@ -1946,17 +1946,17 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Total Marketing</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(totalMktg)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{fmt(totalMktg)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>{((totalMktg/s.totalRevenue)*100).toFixed(1)}% of revenue</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Fixed (Infrastructure)</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(fixed)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{fmt(fixed)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>{fixedPct.toFixed(0)}% · Exec, PMM, MarTech, ops, brand</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Variable (Demand)</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{fmt(variable)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.green,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{fmt(variable)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:4}}>{variablePct.toFixed(0)}% · Motion-allocated channels</div>
         </div>
       </div>
@@ -1982,18 +1982,18 @@ function CMOPage({model, inputs, onInfoClick, mobile}){
           return(
             <div key={m.key} style={{padding:14,background:C.bg,borderRadius:0,borderTop:`2px solid ${m.color}`}}>
               <div style={{fontSize:9,fontWeight:700,color:m.color,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{m.key}</div>
-              <div style={{fontSize:28,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1.05}}>{m.value}%</div>
+              <div style={{fontSize:28,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1.05}}>{m.value}%</div>
               <div style={{fontSize:10,color:C.dim,marginTop:4}}>{m.desc}</div>
               <div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.borderMid}`}}>
-                <div style={{fontSize:10,color:C.muted,marginBottom:2}}>Spend: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(m.totals?.spend||0)}</span></div>
+                <div style={{fontSize:10,color:C.muted,marginBottom:2}}>Spend: <span style={{color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(m.totals?.spend||0)}</span></div>
                 {m.key === "CREATE" && m.totals?.deals !== undefined && (
-                  <div style={{fontSize:10,color:C.muted}}>Deals: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.totals.deals}</span> · ROI: <span style={{color:roi&&roi>=2?C.green:roi&&roi>=1?C.amber:C.red,fontFamily:"'Chivo Mono',monospace"}}>{roi?roi.toFixed(1):"0"}x</span></div>
+                  <div style={{fontSize:10,color:C.muted}}>Deals: <span style={{color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{m.totals.deals}</span> · ROI: <span style={{color:roi&&roi>=2?C.green:roi&&roi>=1?C.amber:C.red,fontFamily:"'JetBrains Mono',monospace"}}>{roi?roi.toFixed(1):"0"}x</span></div>
                 )}
                 {m.key === "CONVERT" && m.totals?.sqosCreated !== undefined && (
-                  <div style={{fontSize:10,color:C.muted}}>SQOs created: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.totals.sqosCreated}</span> · cost/SQO: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(m.totals.costPerSqo||0)}</span></div>
+                  <div style={{fontSize:10,color:C.muted}}>SQOs created: <span style={{color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{m.totals.sqosCreated}</span> · cost/SQO: <span style={{color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(m.totals.costPerSqo||0)}</span></div>
                 )}
                 {m.key === "ACCELERATE" && m.totals?.oppsInfluenced !== undefined && (
-                  <div style={{fontSize:10,color:C.muted}}>Opps touched: <span style={{color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.totals.oppsInfluenced}</span> · +{m.totals.winRateLift||5}pp win rate</div>
+                  <div style={{fontSize:10,color:C.muted}}>Opps touched: <span style={{color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{m.totals.oppsInfluenced}</span> · +{m.totals.winRateLift||5}pp win rate</div>
                 )}
               </div>
             </div>
@@ -2057,12 +2057,12 @@ function VCPage({model, inputs, onInfoClick, mobile}){
         <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
           <div>
             <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Y1 Target</div>
-            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.targetARR)}</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(s.targetARR)}</div>
             <div style={{fontSize:10,color:C.dim,marginTop:3}}>{(s.growthRate||0).toFixed(0)}% growth</div>
           </div>
           <div>
             <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Y2 Target</div>
-            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(y2.targetARR)}</div>
+            <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(y2.targetARR)}</div>
             <div style={{fontSize:10,color:y2GrowthRate>100?C.amber:C.dim,marginTop:3}}>{y2GrowthRate.toFixed(0)}% over Y1 exit</div>
           </div>
           <div>
@@ -2090,7 +2090,7 @@ function VCPage({model, inputs, onInfoClick, mobile}){
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q3 · CAC payback — investable?</div>
     <Card style={{marginBottom:24,borderLeft:`3px solid ${investable?C.green:C.amber}`}}>
       <div style={{display:"flex",alignItems:"baseline",gap:18,marginBottom:14,flexWrap:"wrap"}}>
-        <div style={{fontSize:42,fontWeight:700,color:investable?C.green:C.amber,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{allInPayback.toFixed(1)}<span style={{fontSize:18,color:C.muted}}>mo</span></div>
+        <div style={{fontSize:42,fontWeight:700,color:investable?C.green:C.amber,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{allInPayback.toFixed(1)}<span style={{fontSize:18,color:C.muted}}>mo</span></div>
         <div style={{flex:1,minWidth:240}}>
           <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>All-in CAC payback — the honest number</div>
           <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
@@ -2118,7 +2118,7 @@ function VCPage({model, inputs, onInfoClick, mobile}){
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · Marketing-led or sales-led business?</div>
     <Card style={{marginBottom:18}}>
       <div style={{display:"flex",alignItems:"baseline",gap:18,marginBottom:10,flexWrap:"wrap"}}>
-        <div style={{fontSize:36,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{inputs.mktgSourcedPct}<span style={{fontSize:16,color:C.muted}}>%</span></div>
+        <div style={{fontSize:36,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{inputs.mktgSourcedPct}<span style={{fontSize:16,color:C.muted}}>%</span></div>
         <div style={{flex:1,minWidth:240}}>
           <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>Marketing-sourced pipeline</div>
           <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>
@@ -2132,7 +2132,7 @@ function VCPage({model, inputs, onInfoClick, mobile}){
         <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${inputs.mktgSourcedPct}%`,background:C.accent,opacity:0.85}}/>
         <div style={{position:"absolute",left:`${inputs.mktgSourcedPct}%`,top:0,bottom:0,right:0,background:C.violet,opacity:0.85}}/>
       </div>
-      <div style={{display:"flex",justifyContent:"space-between",marginTop:5,fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:5,fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>
         <span>MARKETING-SOURCED {inputs.mktgSourcedPct}%</span>
         <span>AE/SDR-SOURCED {100-inputs.mktgSourcedPct}%</span>
       </div>
@@ -2171,22 +2171,22 @@ function MarketingPlanPage({model, inputs, onInfoClick, mobile}){
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr 1fr":"repeat(4,1fr)",gap:mobile?10:14,marginBottom:18}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Revenue target</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(ipInputs.targetARR)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(ipInputs.targetARR)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:3}}>by end of plan · {ipInputs.numYears}yr horizon</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>New ARR needed</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(ipInputs.newARRNeeded)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(ipInputs.newARRNeeded)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:3}}>after retained: {fmt(ipInputs.retainedARR)}</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Wins needed</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{fN(headlineWins)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.green,fontFamily:"'JetBrains Mono',monospace"}}>{fN(headlineWins)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:3}}>@ {fmt(ipInputs.avgDealSize)} ASP</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Required inquiries</div>
-          <div style={{fontSize:22,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fN(headlineInquiries)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:C.amber,fontFamily:"'JetBrains Mono',monospace"}}>{fN(headlineInquiries)}</div>
           <div style={{fontSize:10,color:C.dim,marginTop:3}}>top of funnel · all sources</div>
         </div>
       </div>
@@ -2208,19 +2208,19 @@ function MarketingPlanPage({model, inputs, onInfoClick, mobile}){
             <div key={stage.key} style={{display:"grid",gridTemplateColumns:mobile?"110px 1fr":"160px 1fr 100px",gap:14,alignItems:"center",padding:"14px 0",borderBottom:isBottom?"none":`1px solid ${C.borderSubtle}`}}>
               <div>
                 <div style={{fontSize:13,fontWeight:700,color:C.text}}>{stage.label}</div>
-                <div style={{fontSize:9,color:C.dim,marginTop:2,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>{stage.owner.toUpperCase()}</div>
+                <div style={{fontSize:9,color:C.dim,marginTop:2,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>{stage.owner.toUpperCase()}</div>
               </div>
               <div>
                 <div style={{height:24,background:C.bg,borderRadius:0,position:"relative",overflow:"hidden"}}>
                   <motion.div initial={{width:0}} animate={{width:`${widthPct}%`}} transition={{duration:0.6,delay:i*0.08}} style={{height:"100%",background:stageColor,opacity:0.85,display:"flex",alignItems:"center",paddingLeft:10}}>
-                    <span style={{fontSize:13,fontWeight:700,color:C.bg,fontFamily:"'Chivo Mono',monospace"}}>{fN(stage.count)}</span>
+                    <span style={{fontSize:13,fontWeight:700,color:C.bg,fontFamily:"'JetBrains Mono',monospace"}}>{fN(stage.count)}</span>
                   </motion.div>
                 </div>
                 {!mobile && <div style={{fontSize:10,color:C.muted,marginTop:6,lineHeight:1.5}}>{stage.description}</div>}
               </div>
               {!mobile && stage.conversion !== null && (
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:11,fontWeight:700,color:stageColor,fontFamily:"'Chivo Mono',monospace"}}>{stage.conversion}%</div>
+                  <div style={{fontSize:11,fontWeight:700,color:stageColor,fontFamily:"'JetBrains Mono',monospace"}}>{stage.conversion}%</div>
                   <div style={{fontSize:9,color:C.dim,marginTop:2}}>{stage.conversionLabel}</div>
                 </div>
               )}
@@ -2259,12 +2259,12 @@ function MarketingPlanPage({model, inputs, onInfoClick, mobile}){
               return (
                 <tr key={sens.stage} style={{borderBottom:i<sensitivities.length-1?`1px solid ${C.borderSubtle}`:"none"}}>
                   <td style={{padding:"12px 12px",color:C.text,fontWeight:600}}>{sens.stage}</td>
-                  <td style={{textAlign:"right",padding:"12px 12px",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{sens.baseRate}%</td>
-                  <td style={{textAlign:"right",padding:"12px 12px",color:m5color,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>
+                  <td style={{textAlign:"right",padding:"12px 12px",color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>{sens.baseRate}%</td>
+                  <td style={{textAlign:"right",padding:"12px 12px",color:m5color,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>
                     {sens.impactMinus5pp > 0 ? "+" : ""}{fN(sens.impactMinus5pp)}
                     <div style={{fontSize:9,color:C.dim,fontWeight:400,marginTop:2}}>{fN(sens.minus5Inquiries)} total inquiries</div>
                   </td>
-                  <td style={{textAlign:"right",padding:"12px 12px",color:p5color,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>
+                  <td style={{textAlign:"right",padding:"12px 12px",color:p5color,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>
                     {sens.impactPlus5pp > 0 ? "+" : ""}{fN(sens.impactPlus5pp)}
                     <div style={{fontSize:9,color:C.dim,fontWeight:400,marginTop:2}}>{fN(sens.plus5Inquiries)} total inquiries</div>
                   </td>
@@ -2300,13 +2300,13 @@ function MarketingPlanPage({model, inputs, onInfoClick, mobile}){
             {quarterly.map((q, i) => (
               <tr key={q.globalQi} style={{borderBottom:i<quarterly.length-1?`1px solid ${C.borderSubtle}`:"none",background:q.isCurrentYear?"transparent":C.bgAlt}}>
                 <td style={{padding:"10px 12px",color:C.text,fontWeight:q.isCurrentYear?600:400}}>{q.quarter}</td>
-                <td style={{textAlign:"right",padding:"10px 12px",color:C.amber,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fN(q.inquiries)}</td>
-                <td style={{textAlign:"right",padding:"10px 12px",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{fN(q.mqls)}</td>
-                <td style={{textAlign:"right",padding:"10px 12px",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{fN(q.sqls)}</td>
-                <td style={{textAlign:"right",padding:"10px 12px",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{fN(q.meetings)}</td>
-                <td style={{textAlign:"right",padding:"10px 12px",color:C.accent,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fN(q.sqos)}</td>
-                <td style={{textAlign:"right",padding:"10px 12px",color:C.green,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fN(q.wins)}</td>
-                <td style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{q.seasonalPct}%</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.amber,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fN(q.inquiries)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>{fN(q.mqls)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>{fN(q.sqls)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>{fN(q.meetings)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.accent,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fN(q.sqos)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.green,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fN(q.wins)}</td>
+                <td style={{textAlign:"right",padding:"10px 12px",color:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{q.seasonalPct}%</td>
               </tr>
             ))}
           </tbody>
@@ -2361,8 +2361,8 @@ function AeHiringPlanPage({model, inputs, setInputs, onInfoClick, mobile}){
           <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Productive AE supply vs demand month by month. Deficit months = plan won't hit unless you front-load hiring or accelerate ramp.</div>
         </div>
         <div style={{textAlign:"right"}}>
-          <div style={{fontSize:9,color:C.dim,fontFamily:"'Chivo Mono',monospace",textTransform:"uppercase"}}>Months in deficit</div>
-          <div style={{fontSize:24,fontWeight:300,color:summary.monthsInDeficit > 6 ? C.red : summary.monthsInDeficit > 2 ? C.amber : C.green,fontFamily:"'Chivo Mono',monospace"}}>{summary.monthsInDeficit} <span style={{fontSize:11,color:C.dim}}>/ {plan.length}</span></div>
+          <div style={{fontSize:9,color:C.dim,fontFamily:"'JetBrains Mono',monospace",textTransform:"uppercase"}}>Months in deficit</div>
+          <div style={{fontSize:24,fontWeight:300,color:summary.monthsInDeficit > 6 ? C.red : summary.monthsInDeficit > 2 ? C.amber : C.green,fontFamily:"'JetBrains Mono',monospace"}}>{summary.monthsInDeficit} <span style={{fontSize:11,color:C.dim}}>/ {plan.length}</span></div>
         </div>
       </div>
       <div style={{padding:12,background:summary.monthsInDeficit > 6 ? C.redDim : summary.monthsInDeficit > 2 ? C.amberDim : C.greenDim,border:`1px solid ${summary.monthsInDeficit > 6 ? C.red : summary.monthsInDeficit > 2 ? C.amber : C.green}`,borderRadius:0,fontSize:12,color:C.text,lineHeight:1.6}}>
@@ -2402,37 +2402,37 @@ function AeHiringPlanPage({model, inputs, setInputs, onInfoClick, mobile}){
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
           <thead>
             <tr style={{borderBottom:`1px solid ${C.borderStrong}`}}>
-              <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Month</th>
-              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Hires</th>
-              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Nameplate</th>
-              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Productive</th>
-              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Required</th>
-              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Gap</th>
-              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'Chivo Mono',monospace"}}>Monthly Comp</th>
+              <th style={{textAlign:"left",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace"}}>Month</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace"}}>Hires</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace"}}>Nameplate</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace"}}>Productive</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace"}}>Required</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace"}}>Gap</th>
+              <th style={{textAlign:"right",padding:"6px 8px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:"'JetBrains Mono',monospace"}}>Monthly Comp</th>
             </tr>
           </thead>
           <tbody>
             {plan.map((m, i) => (
               <tr key={i} style={{borderBottom:`1px solid ${C.borderMid}`,background: i % 2 === 0 ? C.bg : 'transparent'}}>
-                <td style={{padding:"6px 8px",color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.monthLong}</td>
-                <td style={{padding:"6px 8px",textAlign:"right",color:m.hiresThisMonth > 0 ? C.accent : C.dim,fontFamily:"'Chivo Mono',monospace",fontWeight:m.hiresThisMonth > 0 ? 700 : 400}}>{m.hiresThisMonth > 0 ? `+${m.hiresThisMonth}` : '—'}</td>
-                <td style={{padding:"6px 8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.nameplate}</td>
-                <td style={{padding:"6px 8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.productive}</td>
-                <td style={{padding:"6px 8px",textAlign:"right",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{m.requiredProductive}</td>
-                <td style={{padding:"6px 8px",textAlign:"right",color:gapColor(m.gap),fontFamily:"'Chivo Mono',monospace",fontWeight:600}}>{m.gap >= 0 ? `+${m.gap}` : m.gap}</td>
-                <td style={{padding:"6px 8px",textAlign:"right",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>{fmt(m.monthlyAeComp)}</td>
+                <td style={{padding:"6px 8px",color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{m.monthLong}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:m.hiresThisMonth > 0 ? C.accent : C.dim,fontFamily:"'JetBrains Mono',monospace",fontWeight:m.hiresThisMonth > 0 ? 700 : 400}}>{m.hiresThisMonth > 0 ? `+${m.hiresThisMonth}` : '—'}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{m.nameplate}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{m.productive}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>{m.requiredProductive}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:gapColor(m.gap),fontFamily:"'JetBrains Mono',monospace",fontWeight:600}}>{m.gap >= 0 ? `+${m.gap}` : m.gap}</td>
+                <td style={{padding:"6px 8px",textAlign:"right",color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(m.monthlyAeComp)}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr style={{borderTop:`2px solid ${C.borderStrong}`,background:C.bg}}>
-              <td style={{padding:"8px",color:C.dim,fontFamily:"'Chivo Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em"}}>Plan total</td>
-              <td style={{padding:"8px",textAlign:"right",color:C.accent,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>+{summary.hiresNeeded}</td>
-              <td style={{padding:"8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{summary.finalNameplate}</td>
-              <td style={{padding:"8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmtAe(summary.finalProductive)}</td>
-              <td style={{padding:"8px",textAlign:"right",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>—</td>
-              <td style={{padding:"8px",textAlign:"right",color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>—</td>
-              <td style={{padding:"8px",textAlign:"right",color:C.text,fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(summary.totalComp)}</td>
+              <td style={{padding:"8px",color:C.dim,fontFamily:"'JetBrains Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.06em"}}>Plan total</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.accent,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>+{summary.hiresNeeded}</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.text,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{summary.finalNameplate}</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.text,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fmtAe(summary.finalProductive)}</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>—</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>—</td>
+              <td style={{padding:"8px",textAlign:"right",color:C.text,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fmt(summary.totalComp)}</td>
             </tr>
           </tfoot>
         </table>
@@ -2513,17 +2513,17 @@ function PEPage({model, inputs, onInfoClick, mobile}){
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"repeat(3,1fr)",gap:14,marginBottom:14}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Entry mult. (typical)</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{targetEntryMult}x ARR</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{targetEntryMult}x ARR</div>
           <div style={{fontSize:10,color:C.dim,marginTop:3}}>Mid-market SaaS PE comparable</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Exit mult. range</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{exitMultLow}–{exitMultHigh}x ARR</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{exitMultLow}–{exitMultHigh}x ARR</div>
           <div style={{fontSize:10,color:C.dim,marginTop:3}}>Based on Rule of {s.rule40.toFixed(0)} at exit</div>
         </div>
         <div>
           <div style={{fontSize:9,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>Multiple expansion</div>
-          <div style={{fontSize:18,fontWeight:700,color:multipleExpansion>=50?C.green:multipleExpansion>=0?C.amber:C.red,fontFamily:"'Chivo Mono',monospace"}}>{multipleExpansion>0?'+':''}{multipleExpansion.toFixed(0)}%</div>
+          <div style={{fontSize:18,fontWeight:700,color:multipleExpansion>=50?C.green:multipleExpansion>=0?C.amber:C.red,fontFamily:"'JetBrains Mono',monospace"}}>{multipleExpansion>0?'+':''}{multipleExpansion.toFixed(0)}%</div>
           <div style={{fontSize:10,color:C.dim,marginTop:3}}>{multipleExpansion>=50?"Strong expansion thesis":multipleExpansion>=0?"Flat — operate-up-only":"Multiple compression risk"}</div>
         </div>
       </div>
@@ -2604,17 +2604,17 @@ function BoardPage({model, inputs, onInfoClick, mobile}){
         {(phaseShiftedFunnel||[]).slice(0,8).map(q=>(
           <div key={q.quarter} style={{fontSize:9,fontWeight:700,color:q.isCurrentYear?C.text:C.dim,textTransform:"uppercase",letterSpacing:"0.06em",textAlign:"center"}}>{q.quarter}</div>
         ))}
-        <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Closing deals</div>
+        <div style={{fontSize:10,color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>Closing deals</div>
         {(phaseShiftedFunnel||[]).slice(0,8).map((q,i)=>(
-          <div key={i} style={{fontSize:13,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.closingDeals||0}</div>
+          <div key={i} style={{fontSize:13,fontWeight:600,color:C.text,fontFamily:"'JetBrains Mono',monospace",textAlign:"center"}}>{q.closingDeals||0}</div>
         ))}
-        <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>SQOs needed</div>
+        <div style={{fontSize:10,color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>SQOs needed</div>
         {(phaseShiftedFunnel||[]).slice(0,8).map((q,i)=>(
-          <div key={i} style={{fontSize:13,fontWeight:600,color:C.blue,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.sqosNeeded||0}</div>
+          <div key={i} style={{fontSize:13,fontWeight:600,color:C.blue,fontFamily:"'JetBrains Mono',monospace",textAlign:"center"}}>{q.sqosNeeded||0}</div>
         ))}
-        <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>MQLs needed</div>
+        <div style={{fontSize:10,color:C.muted,fontFamily:"'JetBrains Mono',monospace"}}>MQLs needed</div>
         {(phaseShiftedFunnel||[]).slice(0,8).map((q,i)=>(
-          <div key={i} style={{fontSize:13,fontWeight:600,color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.mqlsNeeded||0}</div>
+          <div key={i} style={{fontSize:13,fontWeight:600,color:C.violet,fontFamily:"'JetBrains Mono',monospace",textAlign:"center"}}>{q.mqlsNeeded||0}</div>
         ))}
       </div>
       <div style={{marginTop:14,fontSize:11,color:C.muted,lineHeight:1.6}}>
@@ -2632,7 +2632,7 @@ function BoardPage({model, inputs, onInfoClick, mobile}){
             {issue ? "Surfaces the single highest-priority signal from the Governance Spine. For the full prioritized verdict list across all six domains (P&L, Stage, ICP, Coverage, Attribution, Forecast), open the Spine module." : "All governance domains are within thresholds at current inputs. Standard quarterly review applies."}
           </div>
         </div>
-        <div style={{fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace",letterSpacing:"0.04em"}}>↘ Open Governance Spine</div>
+        <div style={{fontSize:10,color:C.dim,fontFamily:"'JetBrains Mono',monospace",letterSpacing:"0.04em"}}>↘ Open Governance Spine</div>
       </div>
     </Card>
     
@@ -2648,7 +2648,7 @@ function BoardPage({model, inputs, onInfoClick, mobile}){
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Underinvesting in growth or burning toward death?</div>
     <Card style={{marginBottom:24,borderLeft:`3px solid ${sAndMZoneColor}`}}>
       <div style={{display:"flex",alignItems:"baseline",gap:18,marginBottom:8,flexWrap:"wrap"}}>
-        <div style={{fontSize:36,fontWeight:700,color:sAndMZoneColor,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>{s.totalSAndMPct.toFixed(1)}%</div>
+        <div style={{fontSize:36,fontWeight:700,color:sAndMZoneColor,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>{s.totalSAndMPct.toFixed(1)}%</div>
         <div style={{flex:1,minWidth:200}}>
           <div style={{fontSize:14,fontWeight:600,color:C.text,marginBottom:4}}>S&M ÷ revenue · <span style={{color:sAndMZoneColor}}>{sAndMVerdict}</span></div>
           <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Growth-stage benchmark: 30-55%. Above 60% is burn territory; below 30% is underinvestment relative to growth target.</div>
@@ -2671,7 +2671,7 @@ function BoardPage({model, inputs, onInfoClick, mobile}){
           <div key={i} style={{padding:10,background:C.bg,borderRadius:0,borderLeft:`2px solid ${C.borderMid}`}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}>
               <span style={{fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.04em"}}>{row.label}</span>
-              <span style={{fontSize:13,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{row.value}</span>
+              <span style={{fontSize:13,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{row.value}</span>
             </div>
             <div style={{fontSize:10,color:C.dim,lineHeight:1.5}}>{row.source}</div>
           </div>
@@ -2749,10 +2749,10 @@ function RevOpsPage({model, inputs, onInfoClick, mobile}){
       {channelsSorted.map((ch,i)=>(
         <div key={i} style={{display:"grid",gridTemplateColumns:"1.5fr repeat(4,1fr)",gap:8,padding:"9px 0",borderBottom:i<channelsSorted.length-1?`1px solid ${C.borderMid}`:"none",fontSize:11,alignItems:"baseline"}}>
           <div style={{color:C.text,fontWeight:500}}>{ch.name}</div>
-          <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{fmt(ch.spend)}</div>
-          <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:ch.costPerSqo>(inputs.cpSqoBenchmark||12000)?C.amber:C.green}}>{fmt(ch.costPerSqo)}</div>
-          <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{fmt(ch.cac)}</div>
-          <div style={{textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:ch.roi>=2?C.green:ch.roi>=1?C.amber:C.red,fontWeight:600}}>{ch.roi?ch.roi.toFixed(1):"0"}x</div>
+          <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.text}}>{fmt(ch.spend)}</div>
+          <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:ch.costPerSqo>(inputs.cpSqoBenchmark||12000)?C.amber:C.green}}>{fmt(ch.costPerSqo)}</div>
+          <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.text}}>{fmt(ch.cac)}</div>
+          <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:ch.roi>=2?C.green:ch.roi>=1?C.amber:C.red,fontWeight:600}}>{ch.roi?ch.roi.toFixed(1):"0"}x</div>
         </div>
       ))}
     </Card>
@@ -2773,7 +2773,7 @@ function RevOpsPage({model, inputs, onInfoClick, mobile}){
             <motion.div initial={{width:0}} animate={{width:`${Math.min(100,(Math.abs(row.value)/Math.max(fullCap,s.newARRNeeded))*100)}%`}} transition={{duration:0.5,delay:i*0.05}}
               style={{height:"100%",background:row.color,opacity:row.dashed?0:0.85,border:row.dashed?`1px dashed ${row.color}`:"none"}}/>
           </div>
-          <div style={{fontSize:12,fontWeight:600,color:row.color,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{row.negative?"−":""}{fmt(row.value)}</div>
+          <div style={{fontSize:12,fontWeight:600,color:row.color,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{row.negative?"−":""}{fmt(row.value)}</div>
         </div>
       ))}
     </Card>
@@ -2802,7 +2802,7 @@ function RevOpsPage({model, inputs, onInfoClick, mobile}){
         <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · Next 5pp of conversion improvement</div>
         <Card style={{marginBottom:18,borderLeft:`3px solid ${C.accent}`}}>
           <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:10,flexWrap:"wrap"}}>
-            <div style={{fontSize:32,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace",lineHeight:1}}>+{leverage.gap}pp</div>
+            <div style={{fontSize:32,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace",lineHeight:1}}>+{leverage.gap}pp</div>
             <div style={{flex:1,minWidth:240}}>
               <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>{leverage.stage} · {leverage.current}% → {leverage.target}%</div>
               <div style={{fontSize:11,color:C.muted,lineHeight:1.6}}>Largest absolute gap to "great" benchmark. Fixing this stage compounds through every downstream conversion — highest dollar leverage in the funnel.</div>
@@ -2840,27 +2840,27 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10}}>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Inquiry → SQO</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{s.inquiryToSqoRate.toFixed(2)}%</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>1 SQO per {Math.round(100/s.inquiryToSqoRate)} inquiries</div>
         </div>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Inquiry → Won</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'JetBrains Mono',monospace"}}>{s.inquiryToWonRate.toFixed(2)}%</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>1 deal per {Math.round(100/s.inquiryToWonRate)} inquiries</div>
         </div>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Cost / SQO</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.amber,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(s.costPerSqo)}</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>Programmatic spend ÷ SQOs</div>
         </div>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Cost / Won</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.costPerWon)}</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(s.costPerWon)}</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>Programmatic spend ÷ deals</div>
         </div>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Required Inquiries</div>
-          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
+          <div style={{fontSize:18,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fN(s.requiredInquiries)}</div>
           <div style={{fontSize:8,color:C.muted,marginTop:2}}>To hit {fmt(s.targetARR)} new ARR</div>
         </div>
       </div>
@@ -2880,7 +2880,7 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
                 <Badge label={f.status} status={f.status}/>
                 {f.def && <span title={f.def} style={{fontSize:10,color:C.dim,cursor:"help"}}>ⓘ</span>}
               </div>
-              <span style={{fontSize:14,fontWeight:700,color:f.status==="great"?C.green:f.status==="good"?C.accent:C.red,fontFamily:"'Chivo Mono',monospace"}}>{f.rate}%</span>
+              <span style={{fontSize:14,fontWeight:700,color:f.status==="great"?C.green:f.status==="good"?C.accent:C.red,fontFamily:"'JetBrains Mono',monospace"}}>{f.rate}%</span>
             </div>
             <div style={{position:"relative",height:20,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <div style={{position:"absolute",left:`${f.bench.good/f.bench.great*100}%`,top:0,bottom:0,width:1,background:C.amber,zIndex:2}}/>
@@ -2900,7 +2900,7 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
               <span style={{fontSize:10,fontWeight:600,color:C.muted}}>Meeting Show Rate</span>
               <span title="SQL→Meeting tracks held meetings. Show rate converts set→held internally." style={{fontSize:10,color:C.dim,cursor:"help",marginLeft:4}}>ⓘ</span>
             </div>
-            <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{s.meetingShowRate}%</span>
+            <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{s.meetingShowRate}%</span>
           </div>
           <div style={{fontSize:8,color:C.dim,marginTop:2}}>
             {fN(s.meetingsSetNeeded)} meetings set → {fN(s.meetingsNeeded)} held ({100-s.meetingShowRate}% no-show/cancel)
@@ -2929,12 +2929,12 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
               <div style={{display:"flex",alignItems:"center",gap:3,background:C.bg,borderRadius:0,padding:"3px 6px"}}>
                 <span style={{fontSize:8,color:C.amber}}>G</span>
                 <input type="number" value={inputs.funnelBenchmarks[key].good} onChange={e=>setInputs(p=>({...p,funnelBenchmarks:{...p.funnelBenchmarks,[key]:{...p.funnelBenchmarks[key],good:parseInt(e.target.value)||0}}}))}
-                  style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'Chivo Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
+                  style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'JetBrains Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
               </div>
               <div style={{display:"flex",alignItems:"center",gap:3,background:C.bg,borderRadius:0,padding:"3px 6px"}}>
                 <span style={{fontSize:8,color:C.green}}>★</span>
                 <input type="number" value={inputs.funnelBenchmarks[key].great} onChange={e=>setInputs(p=>({...p,funnelBenchmarks:{...p.funnelBenchmarks,[key]:{...p.funnelBenchmarks[key],great:parseInt(e.target.value)||0}}}))}
-                  style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'Chivo Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
+                  style={{width:35,background:"transparent",border:"none",color:C.text,fontSize:11,fontFamily:"'JetBrains Mono',monospace",outline:"none"}}/><span style={{fontSize:8,color:C.dim}}>%</span>
               </div>
             </div>
           ))}
@@ -2971,7 +2971,7 @@ function CACBreakdownPage({model,inputs,onInfoClick}){
         {Object.entries(cacBreakdown).map(([k,v],i)=>(
           <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:`1px solid ${C.borderMid}`}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:8,height:8,borderRadius:"50%",background:C.chart[i]}}/><span style={{fontSize:11,color:C.text}}>{v.label}</span></div>
-            <div style={{textAlign:"right"}}><div style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(v.spend)}</div><div style={{fontSize:9,color:C.dim}}>{v.pctOfTotal.toFixed(0)}% • {fmt(v.perDeal)}/deal</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(v.spend)}</div><div style={{fontSize:9,color:C.dim}}>{v.pctOfTotal.toFixed(0)}% • {fmt(v.perDeal)}/deal</div></div>
           </div>
         ))}
       </Card>
@@ -2981,14 +2981,14 @@ function CACBreakdownPage({model,inputs,onInfoClick}){
           <thead><tr>{["Channel","Spend","Deals","CAC","$/MQL","$/SQL","$/SQO","Payback","LTV:CAC"].map(h=><th key={h} style={{textAlign:"right",padding:"7px",color:C.dim,fontWeight:600,fontSize:9,textTransform:"uppercase",borderBottom:`1px solid ${C.borderMid}`}}>{h}</th>)}</tr></thead>
           <tbody>{channels.map((c,i)=><tr key={c.name}>
             <td style={{padding:"7px",textAlign:"right"}}><div style={{display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}><div style={{width:5,height:5,borderRadius:"50%",background:C.chart[i]}}/><span style={{color:C.text,fontWeight:600}}>{c.name}</span></div></td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.spend)}</td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fN(c.deals)}</td>
-            <td style={{padding:"7px",color:c.cac<s.blendedCAC?C.green:C.red,fontWeight:700,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.cac)}</td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.costPerMql)}</td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.costPerSql)}</td>
-            <td style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(c.costPerSqo)}</td>
-            <td style={{padding:"7px",color:c.cacPayback<18?C.green:C.red,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{c.cacPayback.toFixed(1)}mo</td>
-            <td style={{padding:"7px",color:c.ltvCac>3?C.green:C.amber,fontWeight:700,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{c.ltvCac.toFixed(1)}x</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fmt(c.spend)}</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fN(c.deals)}</td>
+            <td style={{padding:"7px",color:c.cac<s.blendedCAC?C.green:C.red,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fmt(c.cac)}</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fmt(c.costPerMql)}</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fmt(c.costPerSql)}</td>
+            <td style={{padding:"7px",color:C.muted,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fmt(c.costPerSqo)}</td>
+            <td style={{padding:"7px",color:c.cacPayback<18?C.green:C.red,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{c.cacPayback.toFixed(1)}mo</td>
+            <td style={{padding:"7px",color:c.ltvCac>3?C.green:C.amber,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{c.ltvCac.toFixed(1)}x</td>
           </tr>)}</tbody>
         </table></div>
       </Card>
@@ -3034,7 +3034,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
     <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px",borderRadius:0,marginBottom:20,
       background:`${healthColor}08`,border:`1px solid ${healthColor}20`}}>
       <div style={{padding:"6px 14px",borderRadius:0,background:healthColor,color:"#fff",fontSize:11,fontWeight:700}}>{healthLabel}</div>
-      <div style={{fontSize:13,color:C.text}}>Total S&M: <strong style={{fontFamily:"'Chivo Mono',monospace"}}>{fmt(totalSandM)}</strong> = <strong>{sandMPctRev.toFixed(1)}%</strong> of revenue</div>
+      <div style={{fontSize:13,color:C.text}}>Total S&M: <strong style={{fontFamily:"'JetBrains Mono',monospace"}}>{fmt(totalSandM)}</strong> = <strong>{sandMPctRev.toFixed(1)}%</strong> of revenue</div>
       <div style={{marginLeft:"auto",fontSize:10,color:C.dim}}>Benchmark: 35-55% growth stage • &gt;60% = burn risk</div>
     </div>
 
@@ -3064,7 +3064,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
                 {si.isFloorBound && <span style={{fontSize:8,color:C.amber,fontWeight:700}}>▲ FLOOR</span>}
                 {si.headcount && <span style={{fontSize:9,color:C.dim}}>({si.headcount} × {fmt(si.perHead)})</span>}
               </div>
-              <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(si.amount)}</span>
+              <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(si.amount)}</span>
             </div>
             <div style={{height:16,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <div style={{height:"100%",width:`${barW}%`,background:si.isFloorBound?`linear-gradient(90deg,${C.accent},${C.amber})`:C.accent,borderRadius:0,opacity:0.7}}/>
@@ -3075,7 +3075,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
         <div style={{height:1,background:C.borderMid,margin:"10px 0"}}/>
         <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}>
           <span style={{fontSize:11,fontWeight:600,color:C.text}}>Total Sales</span>
-          <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(totalSales)}</span>
+          <span style={{fontSize:13,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(totalSales)}</span>
         </div>
         <div style={{fontSize:9,color:C.dim}}>Formula ({inputs.salesOpexPct}% of rev): {fmt(p.salesOpex)} • Actual: {fmt(totalSales)}{p.salesIsFloorBound?" — headcount exceeds formula":""}</div>
       </Card>
@@ -3099,7 +3099,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
                 <span style={{fontSize:11,fontWeight:600,color:C.text}}>{item.name}</span>
                 {item.isFloor && <span style={{fontSize:8,color:C.amber,fontWeight:700}}>▲ FLOOR</span>}
               </div>
-              <span style={{fontSize:12,fontWeight:600,color:item.color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(item.amount)}</span>
+              <span style={{fontSize:12,fontWeight:600,color:item.color,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(item.amount)}</span>
             </div>
             <div style={{height:12,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:0,opacity:0.6}}/>
@@ -3109,7 +3109,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
         <div style={{height:1,background:C.borderMid,margin:"10px 0"}}/>
         <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}>
           <span style={{fontSize:11,fontWeight:600,color:C.text}}>Total Marketing</span>
-          <span style={{fontSize:13,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(totalMktg)}</span>
+          <span style={{fontSize:13,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(totalMktg)}</span>
         </div>
       </Card>
     </div>
@@ -3131,7 +3131,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           const maxVal = p.totalRevenue;
           const h = maxVal > 0 ? Math.abs(bar.value) / maxVal * 160 : 0;
           return(<div key={bar.label} style={{flex:1,textAlign:"center"}}>
-            <div style={{fontSize:10,fontWeight:700,color:bar.color,fontFamily:"'Chivo Mono',monospace",marginBottom:4}}>{fmt(bar.value)}</div>
+            <div style={{fontSize:10,fontWeight:700,color:bar.color,fontFamily:"'JetBrains Mono',monospace",marginBottom:4}}>{fmt(bar.value)}</div>
             <div style={{height:h,background:bar.neg?`${bar.color}40`:bar.color,borderRadius:0,marginBottom:2,opacity:bar.full?1:0.7}}/>
             <div style={{fontSize:8,color:C.dim,marginTop:4,lineHeight:1.2}}>{bar.label}</div>
           </div>);
@@ -3147,7 +3147,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           <div style={{fontSize:10,color:C.muted}}>Step function — driven by funding stage, not revenue. Board-mandated comp bands.</div>
         </div>
         <div style={{padding:"6px 12px",borderRadius:0,background:`${C.red}12`,border:`1px solid ${C.red}30`}}>
-          <div style={{fontSize:14,fontWeight:700,color:C.red,fontFamily:"'Chivo Mono',monospace"}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</div>
+          <div style={{fontSize:14,fontWeight:700,color:C.red,fontFamily:"'JetBrains Mono',monospace"}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</div>
           <div style={{fontSize:8,color:C.dim}}>of revenue</div>
         </div>
       </div>
@@ -3177,10 +3177,10 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
             const sitsColor = l.sitsIn==="Sales"?C.accent:l.sitsIn==="Marketing"?C.violet:l.sitsIn==="R&D"?C.blue:C.dim;
             return(<tr key={l.role} style={{opacity:l.enabled?1:0.35}}>
               <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:l.enabled?C.text:C.dim}}>{l.role}</td>
-              <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(l.ote)}</td>
-              <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:l.enabled?C.text:C.dim}}>{fmt(l.loaded)}</td>
+              <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(l.ote)}</td>
+              <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:l.enabled?C.text:C.dim}}>{fmt(l.loaded)}</td>
               <td style={{padding:"10px",textAlign:"right"}}><span style={{padding:"2px 8px",borderRadius:0,background:`${sitsColor}15`,color:sitsColor,fontSize:9,fontWeight:600}}>{l.sitsIn}</span></td>
-              <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:pctRev>5?C.red:C.text}}>{l.enabled?pctRev.toFixed(1)+"%":"—"}</td>
+              <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:pctRev>5?C.red:C.text}}>{l.enabled?pctRev.toFixed(1)+"%":"—"}</td>
               <td style={{padding:"10px",textAlign:"right"}}>
                 <button onClick={()=>setInputs(prev=>{
                   const roles = {...(prev.leadershipRoles||{vpSales:true,vpMarketing:true,vpCS:true,vpOps:false,vpProduct:false})};
@@ -3198,9 +3198,9 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           <tr style={{borderTop:`2px solid ${C.borderMid}`}}>
             <td style={{padding:"10px",textAlign:"right",fontWeight:700,color:C.text}}>Total Leadership</td>
             <td style={{padding:"10px"}}/>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:C.red}}>{fmt(p.totalLeadershipCost)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:C.red}}>{fmt(p.totalLeadershipCost)}</td>
             <td style={{padding:"10px"}}/>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:(p.leadershipPctOfRev||0)>15?C.red:C.text}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:(p.leadershipPctOfRev||0)>15?C.red:C.text}}>{(p.leadershipPctOfRev||0).toFixed(1)}%</td>
             <td style={{padding:"10px"}}/>
           </tr>
         </tbody>
@@ -3213,7 +3213,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           {label:"In R&D", value:p.leadershipInRD, color:C.blue},
         ].map(b=>(<div key={b.label} style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}>
           <div style={{fontSize:9,color:C.dim}}>{b.label}</div>
-          <div style={{fontSize:14,fontWeight:700,color:b.color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(b.value)}</div>
+          <div style={{fontSize:14,fontWeight:700,color:b.color,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(b.value)}</div>
         </div>))}
       </div>
     </Card>
@@ -3228,39 +3228,39 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
         <tbody>
           <tr>
             <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:C.accent}}>AEs</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{p.aeCount}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.aeFullyLoaded)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(p.aeCompFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(p.aeCompFloor * (1 - inputs.salesVariablePct/100))}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.amber}}>{fmt(p.aeCompFloor * (inputs.salesVariablePct/100))}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:p.aeCompFloor/p.totalRevenue>0.3?C.red:C.text}}>{(p.aeCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{p.aeCount}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(p.aeFullyLoaded)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fmt(p.aeCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fmt(p.aeCompFloor * (1 - inputs.salesVariablePct/100))}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.amber}}>{fmt(p.aeCompFloor * (inputs.salesVariablePct/100))}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:p.aeCompFloor/p.totalRevenue>0.3?C.red:C.text}}>{(p.aeCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
           </tr>
           <tr>
             <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:C.blue}}>SDRs/BDRs</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{p.sdrCount}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.sdrFullyLoaded)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(p.sdrCompFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(p.sdrCompFloor * 0.7)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.amber}}>{fmt(p.sdrCompFloor * 0.3)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{(p.sdrCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{p.sdrCount}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(p.sdrFullyLoaded)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fmt(p.sdrCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fmt(p.sdrCompFloor * 0.7)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.amber}}>{fmt(p.sdrCompFloor * 0.3)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{(p.sdrCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
           </tr>
           <tr>
             <td style={{padding:"10px",textAlign:"right",fontWeight:600,color:C.green}}>SEs</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{p.seCount}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.seFullyLoaded)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(p.seCompFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(p.seCompFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.dim}}>—</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{(p.seCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{p.seCount}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(p.seFullyLoaded)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fmt(p.seCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fmt(p.seCompFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.dim}}>—</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{(p.seCompFloor/p.totalRevenue*100).toFixed(1)}%</td>
           </tr>
           <tr style={{borderTop:`2px solid ${C.borderMid}`}}>
             <td style={{padding:"10px",textAlign:"right",fontWeight:700,color:C.text}}>Total GTM</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{salesHeads}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{salesHeads}</td>
             <td style={{padding:"10px"}}/>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:C.accent}}>{fmt(p.salesHeadcountFloor)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700}}>{fmt(p.totalSalesFixedComp)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:C.amber}}>{fmt(p.totalSalesVariableComp)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:p.salesHeadcountFloor/p.totalRevenue>0.4?C.red:C.text}}>{(p.salesHeadcountFloor/p.totalRevenue*100).toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:C.accent}}>{fmt(p.salesHeadcountFloor)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}>{fmt(p.totalSalesFixedComp)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:C.amber}}>{fmt(p.totalSalesVariableComp)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:p.salesHeadcountFloor/p.totalRevenue>0.4?C.red:C.text}}>{(p.salesHeadcountFloor/p.totalRevenue*100).toFixed(1)}%</td>
           </tr>
         </tbody>
       </table></div>
@@ -3306,7 +3306,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           return(<div key={item.label} style={{marginBottom:8}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
               <span style={{fontSize:10,color:C.text}}>{item.label}</span>
-              <span style={{fontSize:11,fontWeight:600,color:item.color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(item.value)}</span>
+              <span style={{fontSize:11,fontWeight:600,color:item.color,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(item.value)}</span>
             </div>
             <div style={{height:10,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <div style={{height:"100%",width:`${barW}%`,background:item.color,borderRadius:0,opacity:0.6}}/>
@@ -3407,7 +3407,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             }}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
               <span style={{fontSize:13,fontWeight:700,color:isActive?mode.color:C.muted}}>{mode.label}</span>
-              <span style={{fontSize:18,fontWeight:700,color:mode.color,fontFamily:"'Chivo Mono',monospace"}}>{mode.fixedPct}%</span>
+              <span style={{fontSize:18,fontWeight:700,color:mode.color,fontFamily:"'JetBrains Mono',monospace"}}>{mode.fixedPct}%</span>
             </div>
             <div style={{fontSize:10,color:C.muted,lineHeight:1.5}}>{mode.desc}</div>
           </div>);
@@ -3438,7 +3438,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               <span style={{fontSize:indent?11:12,fontWeight:indent?400:600,color:indent?C.muted:C.text}}>{item.name.trim()}</span>
             </div>
             <div style={{textAlign:"right"}}>
-              <span style={{fontSize:12,fontWeight:600,color:item.fill,fontFamily:"'Chivo Mono',monospace"}}>{fmt(item.value)}</span>
+              <span style={{fontSize:12,fontWeight:600,color:item.fill,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(item.value)}</span>
               <span style={{fontSize:9,color:C.dim,marginLeft:8}}>{pctOfTotal.toFixed(0)}%</span>
             </div>
           </div>);
@@ -3462,7 +3462,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           return(<div key={cac.label} style={{marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
               <span style={{fontSize:12,fontWeight:600,color:C.text}}>{cac.label}</span>
-              <span style={{fontSize:14,fontWeight:700,color:cac.color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(cac.value)}</span>
+              <span style={{fontSize:14,fontWeight:700,color:cac.color,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(cac.value)}</span>
             </div>
             <div style={{height:20,background:C.bg,borderRadius:0,overflow:"hidden",position:"relative"}}>
               <div style={{height:"100%",width:`${barW}%`,background:cac.color,borderRadius:0,opacity:0.7}}/>
@@ -3474,11 +3474,11 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
             <span style={{fontSize:10,color:C.dim}}>CAC Payback (Programmatic)</span>
-            <span style={{fontSize:12,fontWeight:700,color:s.cacPayback<18?C.green:C.red,fontFamily:"'Chivo Mono',monospace"}}>{s.cacPayback.toFixed(1)} mo</span>
+            <span style={{fontSize:12,fontWeight:700,color:s.cacPayback<18?C.green:C.red,fontFamily:"'JetBrains Mono',monospace"}}>{s.cacPayback.toFixed(1)} mo</span>
           </div>
           <div style={{display:"flex",justifyContent:"space-between"}}>
             <span style={{fontSize:10,color:C.dim}}>CAC Payback (Fully Burdened)</span>
-            <span style={{fontSize:12,fontWeight:700,color:adjustedPayback<24?C.green:C.red,fontFamily:"'Chivo Mono',monospace"}}>{adjustedPayback.toFixed(1)} mo</span>
+            <span style={{fontSize:12,fontWeight:700,color:adjustedPayback<24?C.green:C.red,fontFamily:"'JetBrains Mono',monospace"}}>{adjustedPayback.toFixed(1)} mo</span>
           </div>
         </div>
       </Card>
@@ -3494,7 +3494,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             manual workarounds, undocumented tribal knowledge. Applied as a surcharge on fixed overhead.
           </div>
         </div>
-        <div style={{fontSize:28,fontWeight:700,color:debtTax>0?C.red:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{debtTax}%</div>
+        <div style={{fontSize:28,fontWeight:700,color:debtTax>0?C.red:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{debtTax}%</div>
       </div>
       <div style={{marginBottom:14}}>
         <input type="range" min={0} max={20} step={2} value={debtTax} onChange={e=>setDebtTax(Number(e.target.value))}
@@ -3509,15 +3509,15 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
           <div style={{padding:10,background:`${C.red}08`,borderRadius:0}}>
             <div style={{fontSize:9,color:C.dim}}>Debt Tax Cost</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.red,fontFamily:"'Chivo Mono',monospace"}}>{fmt(debtTaxAmount)}</div>
+            <div style={{fontSize:16,fontWeight:700,color:C.red,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(debtTaxAmount)}</div>
           </div>
           <div style={{padding:10,background:`${C.red}08`,borderRadius:0}}>
             <div style={{fontSize:9,color:C.dim}}>Burdened CAC Impact</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.red,fontFamily:"'Chivo Mono',monospace"}}>+{fmt(adjustedBurdenedCAC - p.fullyBurdenedCAC)}</div>
+            <div style={{fontSize:16,fontWeight:700,color:C.red,fontFamily:"'JetBrains Mono',monospace"}}>+{fmt(adjustedBurdenedCAC - p.fullyBurdenedCAC)}</div>
           </div>
           <div style={{padding:10,background:`${C.red}08`,borderRadius:0}}>
             <div style={{fontSize:9,color:C.dim}}>Payback Impact</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.red,fontFamily:"'Chivo Mono',monospace"}}>+{(adjustedPayback - (p.fullyBurdenedCAC/(inputs.avgDealSize/12))).toFixed(1)} mo</div>
+            <div style={{fontSize:16,fontWeight:700,color:C.red,fontFamily:"'JetBrains Mono',monospace"}}>+{(adjustedPayback - (p.fullyBurdenedCAC/(inputs.avgDealSize/12))).toFixed(1)} mo</div>
           </div>
         </div>
       )}
@@ -3539,12 +3539,12 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           const statusColor = !marginOk ? C.red : !sandMOk ? C.red : !paybackOk ? C.amber : C.green;
           return(<tr key={row.id} style={{background:row.isActive?`${row.color}08`:"transparent"}}>
             <td style={{padding:"10px",textAlign:"right"}}><span style={{fontWeight:700,color:row.color}}>{row.label}</span>{row.isActive&&<span style={{fontSize:8,color:C.dim,marginLeft:4}}>●</span>}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.text}}>{row.fixedPct}%</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:600,color:C.text}}>{fmt(row.totalMktg)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",fontWeight:700,color:row.cac<p.programmaticCAC*2?C.text:C.red}}>{fmt(row.cac)}</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:paybackOk?C.green:C.red}}>{row.payback.toFixed(1)} mo</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:marginOk?C.green:C.red}}>{row.opMargin.toFixed(1)}%</td>
-            <td style={{padding:"10px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:sandMOk?C.text:C.red}}>{row.sandMPct.toFixed(0)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.text}}>{row.fixedPct}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:600,color:C.text}}>{fmt(row.totalMktg)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:row.cac<p.programmaticCAC*2?C.text:C.red}}>{fmt(row.cac)}</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:paybackOk?C.green:C.red}}>{row.payback.toFixed(1)} mo</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:marginOk?C.green:C.red}}>{row.opMargin.toFixed(1)}%</td>
+            <td style={{padding:"10px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:sandMOk?C.text:C.red}}>{row.sandMPct.toFixed(0)}%</td>
             <td style={{padding:"10px",textAlign:"right",fontSize:10,color:statusColor,fontWeight:600}}>{status}</td>
           </tr>);
         })}</tbody>
@@ -3588,7 +3588,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           <div style={{marginBottom:8}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
               <span style={{fontSize:9,color:C.dim,fontWeight:600}}>Revenue-Driven Budget (formula at {inputs.fixedMktgPct}%)</span>
-              <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(formulaBudget)}</span>
+              <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(formulaBudget)}</span>
             </div>
             <div style={{position:"relative",height:22,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <motion.div initial={{width:0}} animate={{width:`${formulaW}%`}} transition={{duration:0.6}}
@@ -3598,7 +3598,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
           <div style={{marginBottom:8}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
               <span style={{fontSize:9,color:C.dim,fontWeight:600}}>Structural Minimum (commitments)</span>
-              <span style={{fontSize:10,fontWeight:700,color:overflow?C.amber:C.green,fontFamily:"'Chivo Mono',monospace"}}>{fmt(structBudget)}</span>
+              <span style={{fontSize:10,fontWeight:700,color:overflow?C.amber:C.green,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(structBudget)}</span>
             </div>
             <div style={{position:"relative",height:22,background:C.bg,borderRadius:0,overflow:"hidden"}}>
               <motion.div initial={{width:0}} animate={{width:`${Math.min(formulaW,structW)}%`}} transition={{duration:0.6}}
@@ -3643,7 +3643,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
                   border:`1px solid ${isA?C.violet:C.borderMid}`,background:isA?`${C.violet}12`:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?C.violet:C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:9,fontWeight:700,color:isA?C.violet:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?C.violet:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
               </button>);
             })}
@@ -3659,7 +3659,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
                   border:`1px solid ${isA?C.blue:C.borderMid}`,background:isA?`${C.blue}12`:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?C.blue:C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:9,fontWeight:700,color:isA?C.blue:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?C.blue:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
               </button>);
             })}
@@ -3676,7 +3676,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
                   border:`1px solid ${isA?C.dim:C.borderMid}`,background:isA?`${C.dim}12`:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?C.dim:C.muted}}>{tier.label}</span>
-                  <span style={{fontSize:9,fontWeight:700,color:isA?C.dim:C.dim,fontFamily:"'Chivo Mono',monospace"}}>{fmt(tier.cost)}</span>
+                  <span style={{fontSize:9,fontWeight:700,color:isA?C.dim:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(tier.cost)}</span>
                 </div>
               </button>);
             })}
@@ -3700,7 +3700,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               return(<div key={item.key} style={{marginBottom:8}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
                   <span style={{fontSize:9,fontWeight:600,color:item.color}}>{item.label}</span>
-                  <span style={{fontSize:9,color:item.color,fontFamily:"'Chivo Mono',monospace"}}>{emb[item.key]||0}%</span>
+                  <span style={{fontSize:9,color:item.color,fontFamily:"'JetBrains Mono',monospace"}}>{emb[item.key]||0}%</span>
                 </div>
                 <input type="range" min={5} max={70} value={emb[item.key]||0}
                   onChange={e=>setInputs(pr=>({...pr,elasticMktgBreakdown:{...(pr.elasticMktgBreakdown||emb),[item.key]:parseInt(e.target.value)}}))}
@@ -3720,7 +3720,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
                   <span style={{fontSize:10,fontWeight:700,color:colors[i]}}>{fi.name}</span>
                   <span style={{fontSize:7,padding:"1px 5px",borderRadius:0,background:`${hc}15`,color:hc,fontWeight:600}}>{hs==="at-risk"?"At Risk":hs==="thin"?"Thin":"Stable"}</span>
                 </div>
-                <div style={{fontSize:15,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(fi.amount)}</div>
+                <div style={{fontSize:15,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(fi.amount)}</div>
                 <div style={{fontSize:8,color:C.dim,marginTop:2}}>{fi.pctOfRev?.toFixed(1)}% of rev</div>
                 {ghosts.length>0 && <div style={{marginTop:4}}>{ghosts.map(g=>(<div key={g} style={{fontSize:7,color:`${C.muted}60`,fontStyle:"italic"}}>○ {g}</div>))}<div style={{fontSize:7,color:C.dim,marginTop:1}}>Capability gaps at current funding</div></div>}
               </div>);
@@ -3733,7 +3733,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
       <div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
           <span style={{fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase"}}>Gravity Simulator</span>
-          <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>${simArr}M ARR</span>
+          <span style={{fontSize:10,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>${simArr}M ARR</span>
         </div>
         <input type="range" min={2} max={50} value={simArr} onChange={e=>setSimArr(parseInt(e.target.value))}
           style={{width:"100%",accentColor:C.accent,marginBottom:8}}/>
@@ -3744,7 +3744,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
             const isYou = Math.abs(s.targetARR / 1000000 - pt) < 1;
             return(<div key={pt} style={{padding:6,background:isYou?`${C.accent}12`:C.bg,borderRadius:0,textAlign:"center",border:isYou?`1px solid ${C.accent}30`:"1px solid transparent"}}>
               <div style={{fontSize:8,color:isYou?C.accent:C.dim,fontWeight:isYou?700:400}}>{isYou?"▸ ":""}${pt}M</div>
-              <div style={{fontSize:14,fontWeight:700,color:pct>15?C.red:pct>8?C.amber:C.green,fontFamily:"'Chivo Mono',monospace"}}>{pct.toFixed(1)}%</div>
+              <div style={{fontSize:14,fontWeight:700,color:pct>15?C.red:pct>8?C.amber:C.green,fontFamily:"'JetBrains Mono',monospace"}}>{pct.toFixed(1)}%</div>
               <div style={{fontSize:7,color:C.dim}}>{pct>12?"heavy":pct>6?"moderate":"lift wins"}</div>
             </div>);
           })}
@@ -3773,8 +3773,8 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
   return(<div>
     <Header title="Target Tracker" sub="ARR targets + pipeline targets by source and stage" icon={Target} moduleId="targets" onInfoClick={onInfoClick}/>
     {isSplit&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:20}}>
-      <Card style={{borderLeft:`3px solid ${C.accent}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>New Logo</div><div style={{fontSize:22,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.newLogoARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.dealsNeeded)} deals × {fmt(inputs.avgDealSize)}</div></Card>
-      <Card style={{borderLeft:`3px solid ${C.violet}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>Expansion</div><div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(s.expansionARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.expansionDeals)} deals × {fmt(inputs.expansionAvgDeal)} • {inputs.expansionSqoToWon}% close</div></Card>
+      <Card style={{borderLeft:`3px solid ${C.accent}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>New Logo</div><div style={{fontSize:22,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(s.newLogoARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.dealsNeeded)} deals × {fmt(inputs.avgDealSize)}</div></Card>
+      <Card style={{borderLeft:`3px solid ${C.violet}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>Expansion</div><div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(s.expansionARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.expansionDeals)} deals × {fmt(inputs.expansionAvgDeal)} • {inputs.expansionSqoToWon}% close</div></Card>
     </div>}
     <div style={{display:"flex",gap:8,marginBottom:24}}>
       {["quarterly","pipeline","annual"].map(v=>(<button key={v} onClick={()=>setView(v)} style={{padding:"8px 18px",borderRadius:0,border:`1px solid ${view===v?C.accent:C.borderMid}`,background:view===v?C.accentDim:"transparent",color:view===v?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600,textTransform:"capitalize",fontFamily:"'TWK Everett',sans-serif"}}>{v}</button>))}
@@ -3797,15 +3797,15 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
           <tbody>{quarterlyTargets.map((q,i)=>(
             <tr key={q.quarter}>
               <td style={{padding:"10px",fontWeight:700,color:C.chart[i],fontSize:13,textAlign:"right"}}>{q.quarter}</td>
-              <td style={{padding:"10px",color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"right",fontWeight:600}}>{fN(q.dealsTarget)}</td>
-              <td style={{padding:"10px",color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"right",fontWeight:600}}>{fN(q.sqoTarget)}</td>
-              <td style={{padding:"10px",color:C.green,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fN(q.mktgSqoTarget)}</td>
-              <td style={{padding:"10px",color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fN(q.aeSqoTarget)}</td>
-              <td style={{padding:"10px",color:C.green,fontFamily:"'Chivo Mono',monospace",textAlign:"right",fontWeight:600}}>{fmt(q.stage2Target)}</td>
-              <td style={{padding:"10px",color:C.amber,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(q.stage1Target)}</td>
-              <td style={{padding:"10px",color:C.accent,fontFamily:"'Chivo Mono',monospace",textAlign:"right",fontWeight:700}}>{fmt(q.pipeTarget)}</td>
-              <td style={{padding:"10px",color:C.green,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(q.mktgPipeTarget)}</td>
-              <td style={{padding:"10px",color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{fmt(q.aePipeTarget)}</td>
+              <td style={{padding:"10px",color:C.text,fontFamily:"'JetBrains Mono',monospace",textAlign:"right",fontWeight:600}}>{fN(q.dealsTarget)}</td>
+              <td style={{padding:"10px",color:C.text,fontFamily:"'JetBrains Mono',monospace",textAlign:"right",fontWeight:600}}>{fN(q.sqoTarget)}</td>
+              <td style={{padding:"10px",color:C.green,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fN(q.mktgSqoTarget)}</td>
+              <td style={{padding:"10px",color:C.violet,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fN(q.aeSqoTarget)}</td>
+              <td style={{padding:"10px",color:C.green,fontFamily:"'JetBrains Mono',monospace",textAlign:"right",fontWeight:600}}>{fmt(q.stage2Target)}</td>
+              <td style={{padding:"10px",color:C.amber,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fmt(q.stage1Target)}</td>
+              <td style={{padding:"10px",color:C.accent,fontFamily:"'JetBrains Mono',monospace",textAlign:"right",fontWeight:700}}>{fmt(q.pipeTarget)}</td>
+              <td style={{padding:"10px",color:C.green,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fmt(q.mktgPipeTarget)}</td>
+              <td style={{padding:"10px",color:C.violet,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{fmt(q.aePipeTarget)}</td>
               <td style={{padding:"10px",textAlign:"right"}}><span style={{padding:"3px 8px",borderRadius:0,fontSize:10,fontWeight:700,background:q.coverageActual>=inputs.coverageGreen?C.greenDim:q.coverageActual>=inputs.coverageYellow?C.amberDim:C.redDim,color:q.coverageActual>=inputs.coverageGreen?C.green:q.coverageActual>=inputs.coverageYellow?C.amber:C.red}}>{q.coverageActual.toFixed(0)}%</span></td>
             </tr>
           ))}</tbody>
@@ -3860,7 +3860,7 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
     {/* ── QUARTERLY VIEW ── */}
     {view==="quarterly"&&(<div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>
-        {quarterlyTargets.map((q,i)=>(<Card key={q.quarter} style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:700,color:C.chart[i],marginBottom:4}}>{q.quarter}</div><div style={{fontSize:9,color:C.dim,marginBottom:6}}>{q.seasonalPct}% of annual</div><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Target</div><div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{fmt(q.target)}</div><div style={{height:1,background:C.borderMid,margin:"10px 0"}}/><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Projected</div><div style={{fontSize:16,fontWeight:700,color:q.actual>=q.target?C.green:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(q.actual)}</div><div style={{marginTop:8,padding:"4px 12px",borderRadius:0,display:"inline-block",fontSize:10,fontWeight:700,background:q.gap>=0?C.greenDim:C.redDim,color:q.gap>=0?C.green:C.red}}>{q.pctOfTarget.toFixed(0)}%</div></Card>))}
+        {quarterlyTargets.map((q,i)=>(<Card key={q.quarter} style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:700,color:C.chart[i],marginBottom:4}}>{q.quarter}</div><div style={{fontSize:9,color:C.dim,marginBottom:6}}>{q.seasonalPct}% of annual</div><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Target</div><div style={{fontSize:16,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(q.target)}</div><div style={{height:1,background:C.borderMid,margin:"10px 0"}}/><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",marginBottom:4}}>Projected</div><div style={{fontSize:16,fontWeight:700,color:q.actual>=q.target?C.green:C.amber,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(q.actual)}</div><div style={{marginTop:8,padding:"4px 12px",borderRadius:0,display:"inline-block",fontSize:10,fontWeight:700,background:q.gap>=0?C.greenDim:C.redDim,color:q.gap>=0?C.green:C.red}}>{q.pctOfTarget.toFixed(0)}%</div></Card>))}
       </div>
       <Card><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>Quarterly: Target vs Projected</h3>
         <ResponsiveContainer width="100%" height={280}><BarChart data={quarterlyTargets}><CartesianGrid strokeDasharray="3 3" stroke={C.borderMid}/><XAxis dataKey="quarter" stroke={C.dim} fontSize={11} tickLine={false}/><YAxis stroke={C.dim} fontSize={11} tickFormatter={v=>fmt(v)} tickLine={false} axisLine={false}/><Tooltip content={<TT/>}/>
@@ -3953,11 +3953,11 @@ function FunnelPage({model,inputs,setInputs,onInfoClick}){
               <tbody>{phaseShiftedFunnel.map((q,i)=>(
                 <tr key={q.quarter} style={{background:q.isCurrentYear?"transparent":C.bg}}>
                   <td style={{padding:"8px",fontWeight:700,color:q.isCurrentYear?C.accent:C.dim,textAlign:"right"}}>{q.quarter}</td>
-                  <td style={{padding:"8px",color:q.closingDeals>0?C.green:C.dim,fontWeight:700,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.closingDeals>0?fN(q.closingDeals):"-"}</td>
-                  <td style={{padding:"8px",color:q.sqosNeeded>0?C.amber:C.dim,fontWeight:600,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.sqosNeeded>0?fN(q.sqosNeeded):"-"}</td>
-                  <td style={{padding:"8px",color:q.mktgSqos>0?C.accent:C.dim,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.mktgSqos>0?fN(q.mktgSqos):"-"}</td>
-                  <td style={{padding:"8px",color:q.aeSqos>0?C.violet:C.dim,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.aeSqos>0?fN(q.aeSqos):"-"}</td>
-                  <td style={{padding:"8px",color:q.mqlsNeeded>0?C.red:C.dim,fontWeight:600,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{q.mqlsNeeded>0?fN(q.mqlsNeeded):"-"}</td>
+                  <td style={{padding:"8px",color:q.closingDeals>0?C.green:C.dim,fontWeight:700,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{q.closingDeals>0?fN(q.closingDeals):"-"}</td>
+                  <td style={{padding:"8px",color:q.sqosNeeded>0?C.amber:C.dim,fontWeight:600,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{q.sqosNeeded>0?fN(q.sqosNeeded):"-"}</td>
+                  <td style={{padding:"8px",color:q.mktgSqos>0?C.accent:C.dim,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{q.mktgSqos>0?fN(q.mktgSqos):"-"}</td>
+                  <td style={{padding:"8px",color:q.aeSqos>0?C.violet:C.dim,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{q.aeSqos>0?fN(q.aeSqos):"-"}</td>
+                  <td style={{padding:"8px",color:q.mqlsNeeded>0?C.red:C.dim,fontWeight:600,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{q.mqlsNeeded>0?fN(q.mqlsNeeded):"-"}</td>
                 </tr>
               ))}</tbody>
             </table></div>
@@ -4011,7 +4011,7 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
               <div style={{fontSize:10,color:C.muted,marginTop:2}}>{m.desc}</div>
             </div>
             <div style={{textAlign:"right"}}>
-              <div style={{fontSize:16,fontWeight:700,color,fontFamily:"'Chivo Mono',monospace"}}>{fmt(m.budget)}</div>
+              <div style={{fontSize:16,fontWeight:700,color,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(m.budget)}</div>
               <div style={{fontSize:9,color:C.dim}}>{totalBudget>0?(m.budget/totalBudget*100).toFixed(0):0}%</div>
             </div>
           </div>
@@ -4029,7 +4029,7 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
             return(<div key={key} style={{marginBottom:10}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
                 <span style={{fontSize:11,fontWeight:600,color:MOTION_COLORS[key]}}>{key==="create"?"Creation":key==="convert"?"Conversion":"Acceleration"}</span>
-                <span style={{fontSize:11,color:MOTION_COLORS[key],fontFamily:"'Chivo Mono',monospace"}}>{val}%</span>
+                <span style={{fontSize:11,color:MOTION_COLORS[key],fontFamily:"'JetBrains Mono',monospace"}}>{val}%</span>
               </div>
               <input type="range" min={5} max={70} value={val} onChange={e=>uMA(key,parseInt(e.target.value))} style={{width:"100%",accentColor:MOTION_COLORS[key]}}/>
             </div>);
@@ -4050,19 +4050,19 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
               <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:3}}>
                 <span style={{fontSize:9,color:C.dim}}>Mix %</span>
                 <input type="range" min={0} max={60} value={ch.pct} onChange={e=>uMC(activeMotion,i,"pct",parseInt(e.target.value))} style={{flex:1,accentColor:MOTION_COLORS[activeMotion]}}/>
-                <span style={{fontSize:10,color:C.accent,fontFamily:"'Chivo Mono',monospace",width:30,textAlign:"right"}}>{ch.pct}%</span>
+                <span style={{fontSize:10,color:C.accent,fontFamily:"'JetBrains Mono',monospace",width:30,textAlign:"right"}}>{ch.pct}%</span>
               </div>
               {activeMotion==="create" && <div style={{display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:9,color:C.dim}}>CPL $</span>
-                <input type="number" value={ch.cpl} onChange={e=>uMC(activeMotion,i,"cpl",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Chivo Mono',monospace"}}/>
+                <input type="number" value={ch.cpl} onChange={e=>uMC(activeMotion,i,"cpl",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'JetBrains Mono',monospace"}}/>
               </div>}
               {activeMotion==="convert" && <div style={{display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:9,color:C.dim}}>$/SQL</span>
-                <input type="number" value={ch.costPerSql} onChange={e=>uMC(activeMotion,i,"costPerSql",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Chivo Mono',monospace"}}/>
+                <input type="number" value={ch.costPerSql} onChange={e=>uMC(activeMotion,i,"costPerSql",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'JetBrains Mono',monospace"}}/>
               </div>}
               {activeMotion==="accelerate" && <div style={{display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:9,color:C.dim}}>$/Acct</span>
-                <input type="number" value={ch.costPerAccount} onChange={e=>uMC(activeMotion,i,"costPerAccount",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'Chivo Mono',monospace"}}/>
+                <input type="number" value={ch.costPerAccount} onChange={e=>uMC(activeMotion,i,"costPerAccount",parseInt(e.target.value)||1)} style={{width:55,background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"2px 5px",color:C.text,fontSize:10,fontFamily:"'JetBrains Mono',monospace"}}/>
               </div>}
             </div>
           ))}
@@ -4081,17 +4081,17 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
               {mot.create.channels.map((c,i)=><tr key={c.name}>
                 <td style={{padding:"7px",textAlign:"right",fontWeight:600,color:C.text}}>{c.name}</td>
                 {[fmt(c.spend),fN(c.inquiries),fmt(c.cpl),fN(c.mqls),fmt(c.sqos*inputs.avgDealSize),fmt(c.cac)].map((v,j)=>
-                  <td key={j} style={{padding:"7px",color:C.muted,fontFamily:"'Chivo Mono',monospace",textAlign:"right"}}>{v}</td>)}
-                <td style={{padding:"7px",fontWeight:700,fontFamily:"'Chivo Mono',monospace",textAlign:"right",color:c.roi>5?C.green:c.roi>2?C.amber:C.red}}>{c.roi.toFixed(1)}x</td>
+                  <td key={j} style={{padding:"7px",color:C.muted,fontFamily:"'JetBrains Mono',monospace",textAlign:"right"}}>{v}</td>)}
+                <td style={{padding:"7px",fontWeight:700,fontFamily:"'JetBrains Mono',monospace",textAlign:"right",color:c.roi>5?C.green:c.roi>2?C.amber:C.red}}>{c.roi.toFixed(1)}x</td>
               </tr>)}
               <tr style={{borderTop:`2px solid ${C.borderMid}`,fontWeight:700}}>
                 <td style={{padding:"7px",textAlign:"right",color:MOTION_COLORS.create}}>Total</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.create.totals.spend)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.create.totals.inquiries)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.create.totals.blendedCPL)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.create.totals.mqls)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.create.totals.pipeline)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.create.totals.cacCreation)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(mot.create.totals.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fN(mot.create.totals.inquiries)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(mot.create.totals.blendedCPL)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fN(mot.create.totals.mqls)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(mot.create.totals.pipeline)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(mot.create.totals.cacCreation)}</td>
                 <td style={{padding:"7px"}}/>
               </tr>
             </tbody>
@@ -4107,18 +4107,18 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
             <tbody>
               {mot.convert.channels.map((c,i)=><tr key={c.name}>
                 <td style={{padding:"7px",textAlign:"right",fontWeight:600,color:C.text}}>{c.name}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fN(c.sqlsProcessed)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fN(c.sqosCreated)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(c.costPerSqo)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:c.capacityUtil>80?C.green:c.capacityUtil>50?C.amber:C.red}}>{c.capacityUtil.toFixed(0)}%</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fN(c.sqlsProcessed)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fN(c.sqosCreated)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fmt(c.costPerSqo)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:c.capacityUtil>80?C.green:c.capacityUtil>50?C.amber:C.red}}>{c.capacityUtil.toFixed(0)}%</td>
               </tr>)}
               <tr style={{borderTop:`2px solid ${C.borderMid}`,fontWeight:700}}>
                 <td style={{padding:"7px",textAlign:"right",color:MOTION_COLORS.convert}}>Total</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.convert.totals.spend)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.convert.totals.sqlsProcessed)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.convert.totals.sqosCreated)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.convert.totals.costPerSqo)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(mot.convert.totals.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fN(mot.convert.totals.sqlsProcessed)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fN(mot.convert.totals.sqosCreated)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(mot.convert.totals.costPerSqo)}</td>
                 <td style={{padding:"7px"}}/>
               </tr>
             </tbody>
@@ -4132,19 +4132,19 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:14}}>
             <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Accounts Touched</div>
-              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.accelerate.totals.accountsTouched)}</div>
+              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'JetBrains Mono',monospace"}}>{fN(mot.accelerate.totals.accountsTouched)}</div>
             </div>
             <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Opps Influenced</div>
-              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'Chivo Mono',monospace"}}>{fN(mot.accelerate.totals.oppsInfluenced)}</div>
+              <div style={{fontSize:18,fontWeight:700,color:MOTION_COLORS.accelerate,fontFamily:"'JetBrains Mono',monospace"}}>{fN(mot.accelerate.totals.oppsInfluenced)}</div>
             </div>
             <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Avg Days Reduced</div>
-              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{mot.accelerate.totals.daysReduced}</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'JetBrains Mono',monospace"}}>{mot.accelerate.totals.daysReduced}</div>
             </div>
             <div style={{padding:10,background:C.bg,borderRadius:0,textAlign:"center"}}>
               <div style={{fontSize:9,color:C.dim}}>Rev Pulled Forward</div>
-              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'Chivo Mono',monospace"}}>{fmt(mot.accelerate.totals.revenuePulledForward)}</div>
+              <div style={{fontSize:18,fontWeight:700,color:C.green,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(mot.accelerate.totals.revenuePulledForward)}</div>
             </div>
           </div>
           <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:10}}>
@@ -4152,11 +4152,11 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
             <tbody>
               {mot.accelerate.channels.map((c,i)=><tr key={c.name}>
                 <td style={{padding:"7px",textAlign:"right",fontWeight:600,color:C.text}}>{c.name}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fN(c.accountsTouched)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.muted}}>{fN(c.oppsInfluenced)}</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.green}}>{c.avgDaysReduced}d</td>
-                <td style={{padding:"7px",textAlign:"right",fontFamily:"'Chivo Mono',monospace",color:C.green}}>+{c.winRateDelta}%</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fmt(c.spend)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fN(c.accountsTouched)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.muted}}>{fN(c.oppsInfluenced)}</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.green}}>{c.avgDaysReduced}d</td>
+                <td style={{padding:"7px",textAlign:"right",fontFamily:"'JetBrains Mono',monospace",color:C.green}}>+{c.winRateDelta}%</td>
                 <td style={{padding:"7px",textAlign:"right",fontSize:9,color:C.dim}}>{c.intent}</td>
               </tr>)}
             </tbody>
@@ -4212,7 +4212,7 @@ function PipelinePage({model,inputs,onInfoClick}){
             <div style={{flex:1,padding:12,background:`${step.color}08`,borderRadius:0,border:`1px solid ${step.color}20`,textAlign:"center",position:"relative"}}>
               {step.negative && <div style={{position:"absolute",top:4,right:8,fontSize:9,color:C.red,fontWeight:700}}>−</div>}
               <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",fontWeight:700}}>{step.label}</div>
-              <div style={{fontSize:16,fontWeight:700,color:step.color,fontFamily:"'Chivo Mono',monospace",marginTop:4}}>{fmt(step.value)}</div>
+              <div style={{fontSize:16,fontWeight:700,color:step.color,fontFamily:"'JetBrains Mono',monospace",marginTop:4}}>{fmt(step.value)}</div>
               <div style={{fontSize:9,color:C.muted,marginTop:2}}>{step.sub}</div>
             </div>
             {i<arr.length-1 && <div style={{padding:"0 4px",color:C.dim,fontSize:14}}>→</div>}
@@ -4242,7 +4242,7 @@ function PipelinePage({model,inputs,onInfoClick}){
               <span style={{fontSize:9,color:C.dim,marginLeft:8}}>{st.question} • {st.owner}</span>
             </div>
             <div style={{textAlign:"right"}}>
-              <span style={{fontSize:14,fontWeight:700,color:C.chart[i],fontFamily:"'Chivo Mono',monospace"}}>{fN(st.count)}</span>
+              <span style={{fontSize:14,fontWeight:700,color:C.chart[i],fontFamily:"'JetBrains Mono',monospace"}}>{fN(st.count)}</span>
               <span style={{fontSize:10,color:C.muted,marginLeft:10}}>{fmt(st.costPer)}/ea</span>
             </div>
           </div>
@@ -4253,7 +4253,7 @@ function PipelinePage({model,inputs,onInfoClick}){
                 <span style={{fontSize:9,fontWeight:700,color:"#fff"}}>{w.toFixed(0)}%</span>
               </motion.div>
             </div>
-            <div style={{width:80,textAlign:"right",fontSize:10,color:C.dim,fontFamily:"'Chivo Mono',monospace"}}>
+            <div style={{width:80,textAlign:"right",fontSize:10,color:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>
               {i===0 ? fmt(totalChannelSpend) : ""}
             </div>
           </div>
@@ -4275,7 +4275,7 @@ function PipelinePage({model,inputs,onInfoClick}){
         ].map(r=>(
           <div key={r.label} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.borderMid}`}}>
             <div><span style={{fontSize:11,color:C.text}}>{r.label}</span><span style={{fontSize:8,color:C.dim,marginLeft:6}}>{r.bench}</span></div>
-            <span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(r.value)}</span>
+            <span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(r.value)}</span>
           </div>
         ))}
       </Card>
@@ -4290,7 +4290,7 @@ function PipelinePage({model,inputs,onInfoClick}){
         ].map(r=>(
           <div key={r.label} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.borderMid}`}}>
             <span style={{fontSize:11,color:C.text}}>{r.label}</span>
-            <div style={{textAlign:"right"}}><span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{r.value}</span><span style={{fontSize:9,color:C.dim,marginLeft:6}}>{r.desc}</span></div>
+            <div style={{textAlign:"right"}}><span style={{fontSize:12,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{r.value}</span><span style={{fontSize:9,color:C.dim,marginLeft:6}}>{r.desc}</span></div>
           </div>
         ))}
       </Card>
@@ -4305,7 +4305,7 @@ function PipelinePage({model,inputs,onInfoClick}){
         ].map(r=>(
           <div key={r.label} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${C.borderMid}`}}>
             <span style={{fontSize:11,color:C.text}}>{r.label}</span>
-            <span style={{fontSize:12,fontWeight:700,color:r.color,fontFamily:"'Chivo Mono',monospace"}}>{r.value}</span>
+            <span style={{fontSize:12,fontWeight:700,color:r.color,fontFamily:"'JetBrains Mono',monospace"}}>{r.value}</span>
           </div>
         ))}
       </Card>
@@ -4344,8 +4344,8 @@ function VelocityPage({model,inputs,setInputs,onInfoClick}){
 function RampPage({model,inputs,setInputs,onInfoClick}){return(<div><Header title="Seller Ramp" sub="AE productivity curve with attrition" icon={TrendingUp} moduleId="sellerRamp" onInfoClick={onInfoClick}/><div style={{display:"grid",gridTemplateColumns:"240px 1fr",gap:24}}><Card><Input label="AEs" value={inputs.aeCount} onChange={v=>setInputs(p=>({...p,aeCount:v}))} min={1}/><Input label="Quota" value={inputs.aeQuota} onChange={v=>setInputs(p=>({...p,aeQuota:v}))} prefix="$" step={25000}/><Input label="Ramp" value={inputs.aeRampMonths} onChange={v=>setInputs(p=>({...p,aeRampMonths:v}))} suffix="mo" min={1} max={12}/><Input label="Attrition" value={inputs.aeAttritionRate} onChange={v=>setInputs(p=>({...p,aeAttritionRate:v}))} suffix="% yr" step={5}/>
     <div style={{height:1,background:C.borderMid,margin:"10px 0"}}/>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Ramp Loss</div><div style={{fontSize:13,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(model.summary.totalRampLoss)}</div></div>
-      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Attrition Loss</div><div style={{fontSize:13,fontWeight:700,color:C.red,fontFamily:"'Chivo Mono',monospace"}}>{fmt(model.summary.totalAttrLoss)}</div></div>
+      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Ramp Loss</div><div style={{fontSize:13,fontWeight:700,color:C.amber,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(model.summary.totalRampLoss)}</div></div>
+      <div style={{padding:8,background:C.bg,borderRadius:0,textAlign:"center"}}><div style={{fontSize:8,color:C.dim}}>Attrition Loss</div><div style={{fontSize:13,fontWeight:700,color:C.red,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(model.summary.totalAttrLoss)}</div></div>
     </div>
     {inputs.aeAttritionRate > 0 && <div style={{marginTop:8,fontSize:9,color:C.muted}}>Eff. AEs by Dec: {model.sellerRamp[11]?.effectiveAEs}</div>}
   </Card>
@@ -4428,7 +4428,7 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
             <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.04em"}}>Functional View</h3>
             {funcItems.map((it,i)=>{if(it.l?.startsWith("---"))return<div key={i} style={{height:1,background:C.borderMid,margin:"3px 0"}}/>;return(<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 10px",borderRadius:0,background:it.b?C.bg:"transparent"}}>
               <div style={{display:"flex",gap:6,alignItems:"center"}}>{it.i&&<div style={{width:14}}/>}<span style={{fontSize:12,fontWeight:it.b?700:400,color:it.b?C.text:C.muted}}>{it.l}</span>{it.pct!=null&&<span style={{fontSize:9,color:C.dim}}>({it.pct}%)</span>}</div>
-              <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'Chivo Mono',monospace"}}>{it.v<0?`(${fmt(Math.abs(it.v))})`:fmt(it.v)}</span>
+              <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'JetBrains Mono',monospace"}}>{it.v<0?`(${fmt(Math.abs(it.v))})`:fmt(it.v)}</span>
             </div>);})}
           </Card>
 
@@ -4437,7 +4437,7 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
             <h3 style={{fontSize:11,fontWeight:700,color:C.violet,margin:0,marginBottom:10,textTransform:"uppercase",letterSpacing:"0.04em"}}>Behavioral View (Fixed / Variable)</h3>
             {behavItems.map((it,i)=>{if(it.l?.startsWith("---"))return<div key={i} style={{height:1,background:C.borderMid,margin:"3px 0"}}/>;return(<div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 10px",borderRadius:0,background:it.b?C.bg:"transparent"}}>
               <span style={{fontSize:12,fontWeight:it.b?700:400,color:it.b?C.text:C.muted}}>{it.l}</span>
-              <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'Chivo Mono',monospace"}}>{fmt(it.v)}</span>
+              <span style={{fontSize:13,fontWeight:it.b?700:500,color:it.c,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(it.v)}</span>
             </div>);})}
             <div style={{marginTop:12}}>
               <ResponsiveContainer width="100%" height={140}>
@@ -4446,8 +4446,8 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
                 </Pie><Tooltip formatter={v=>fmt(v)}/></PieChart>
               </ResponsiveContainer>
               <div style={{display:"flex",justifyContent:"center",gap:20}}>
-                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.dim}}>Fixed</div><div style={{fontSize:14,fontWeight:700,color:C.violet,fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.totalFixedCosts)}</div></div>
-                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.dim}}>Variable</div><div style={{fontSize:14,fontWeight:700,color:C.amber,fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.totalVariableCosts)}</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.dim}}>Fixed</div><div style={{fontSize:14,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(p.totalFixedCosts)}</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.dim}}>Variable</div><div style={{fontSize:14,fontWeight:700,color:C.amber,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(p.totalVariableCosts)}</div></div>
               </div>
             </div>
           </Card>
@@ -4464,9 +4464,9 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                 <span style={{fontSize:11,fontWeight:600,color:C.text}}>{b.label}</span>
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  <span style={{fontSize:12,fontWeight:700,color:barColor,fontFamily:"'Chivo Mono',monospace"}}>{b.actual.toFixed(1)}%</span>
+                  <span style={{fontSize:12,fontWeight:700,color:barColor,fontFamily:"'JetBrains Mono',monospace"}}>{b.actual.toFixed(1)}%</span>
                   <span style={{fontSize:9,color:C.dim}}>vs {b.benchMid}% mid</span>
-                  <span style={{fontSize:10,fontWeight:600,color:b.delta>0?C.amber:C.blue,fontFamily:"'Chivo Mono',monospace"}}>{b.deltaLabel}</span>
+                  <span style={{fontSize:10,fontWeight:600,color:b.delta>0?C.amber:C.blue,fontFamily:"'JetBrains Mono',monospace"}}>{b.deltaLabel}</span>
                 </div>
               </div>
               <div style={{position:"relative",height:16,background:C.bg,borderRadius:0,overflow:"hidden"}}>
@@ -4486,7 +4486,7 @@ function PnLPage({model,inputs,setInputs,onInfoClick}){
           {/* CP-SQO benchmark */}
           <div style={{marginTop:8,padding:10,background:C.bg,borderRadius:0,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div><div style={{fontSize:9,color:C.dim,textTransform:"uppercase"}}>CP-SQO Actual vs Benchmark</div>
-              <div style={{fontSize:16,fontWeight:700,color:p.cpSqoRatio<=1?C.green:p.cpSqoRatio<=1.5?C.amber:C.red,fontFamily:"'Chivo Mono',monospace"}}>{fmt(p.actualCpSqo)}</div></div>
+              <div style={{fontSize:16,fontWeight:700,color:p.cpSqoRatio<=1?C.green:p.cpSqoRatio<=1.5?C.amber:C.red,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(p.actualCpSqo)}</div></div>
             <div style={{textAlign:"right"}}><div style={{fontSize:9,color:C.dim}}>Benchmark: {fmt(inputs.cpSqoBenchmark)}</div>
               <div style={{fontSize:13,fontWeight:700,color:p.cpSqoRatio<=1?C.green:p.cpSqoRatio<=1.5?C.amber:C.red}}>{p.cpSqoRatio.toFixed(1)}×</div></div>
           </div>
@@ -4523,7 +4523,7 @@ function GlideslopePage({model,inputs,setInputs,onInfoClick}){
             {[{l:"Start ARR",v:fmt(yt.startARR)},{l:"Target ARR",v:fmt(yt.targetARR)},{l:"New ARR Needed",v:fmt(yt.newARRNeeded)},{l:"Growth",v:`${yt.growthRate.toFixed(0)}%`},{l:"Deals",v:fN(yt.dealsNeeded)},{l:"SQOs",v:fN(yt.sqosNeeded)}].map(r=>(
               <div key={r.l} style={{display:"flex",justifyContent:"space-between",padding:"3px 0",borderBottom:`1px solid ${C.borderMid}`}}>
                 <span style={{fontSize:10,color:C.muted}}>{r.l}</span>
-                <span style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{r.v}</span>
+                <span style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{r.v}</span>
               </div>
             ))}
           </div>
@@ -4539,7 +4539,7 @@ function GlideslopePage({model,inputs,setInputs,onInfoClick}){
     <Card style={{marginBottom:18}}><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:6}}>Monthly Seasonal Weights</h3>
       <div style={{display:"flex",gap:4,alignItems:"flex-end",height:60,marginBottom:14}}>
         {model.monthWeights.map((w,i)=>(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-          <span style={{fontSize:8,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{(w*100).toFixed(0)}%</span>
+          <span style={{fontSize:8,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{(w*100).toFixed(0)}%</span>
           <div style={{width:"100%",background:C.accentDim,borderRadius:0,height:`${Math.max(w*100*8,4)}px`,border:`1px solid ${C.accent}44`}}/>
           <span style={{fontSize:8,color:C.dim}}>{MONTHS[i]}</span>
         </div>))}
@@ -4560,7 +4560,7 @@ function QBRPage({model,inputs,onInfoClick}){const isSplit=inputs.revenueMode===
     {ny>1&&<div style={{display:"flex",gap:8,marginBottom:16}}>
       {Array.from({length:ny},(_,i)=>(<button key={i} onClick={()=>setYr(i)} style={{padding:"6px 16px",borderRadius:0,border:`1px solid ${yr===i?C.accent:C.borderMid}`,background:yr===i?C.accentDim:"transparent",color:yr===i?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600}}>{`Y${i+1}`}</button>))}
     </div>}
-    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>{qbr.map((q,i)=><Card key={q.quarter}><div style={{fontSize:16,fontWeight:700,color:C.chart[i],marginBottom:10}}>{q.quarter}</div>{[{l:"Revenue",v:fmt(q.revenue)},{l:"New ARR",v:fmt(q.newARR)},isSplit&&{l:"New Logo",v:fmt(q.newLogoARR)},isSplit&&{l:"Expansion",v:fmt(q.expansionARR)},{l:"Won",v:fN(q.deals)},{l:"Inquiries",v:fN(q.inquiries)},{l:"MQLs",v:fN(q.mqls)},{l:"SQLs",v:fN(q.sqls)},{l:"Meetings",v:fN(q.meetings)},{l:"SQOs",v:fN(q.sqos)},{l:"Pipeline",v:fmt(q.pipeline)},{l:"Stage 2",v:fmt(q.stage2Pipe)}].filter(Boolean).map(m=><div key={m.l} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${C.borderMid}`}}><span style={{fontSize:10,color:C.muted}}>{m.l}</span><span style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{m.v}</span></div>)}</Card>)}</div></div>);}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>{qbr.map((q,i)=><Card key={q.quarter}><div style={{fontSize:16,fontWeight:700,color:C.chart[i],marginBottom:10}}>{q.quarter}</div>{[{l:"Revenue",v:fmt(q.revenue)},{l:"New ARR",v:fmt(q.newARR)},isSplit&&{l:"New Logo",v:fmt(q.newLogoARR)},isSplit&&{l:"Expansion",v:fmt(q.expansionARR)},{l:"Won",v:fN(q.deals)},{l:"Inquiries",v:fN(q.inquiries)},{l:"MQLs",v:fN(q.mqls)},{l:"SQLs",v:fN(q.sqls)},{l:"Meetings",v:fN(q.meetings)},{l:"SQOs",v:fN(q.sqos)},{l:"Pipeline",v:fmt(q.pipeline)},{l:"Stage 2",v:fmt(q.stage2Pipe)}].filter(Boolean).map(m=><div key={m.l} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${C.borderMid}`}}><span style={{fontSize:10,color:C.muted}}>{m.l}</span><span style={{fontSize:11,fontWeight:600,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{m.v}</span></div>)}</Card>)}</div></div>);}
 
 function WeeklyPage({model,onInfoClick}){const w=model.weeklySimplified;return(<div><Header title="Weekly Tracker" sub="Weekly lifecycle targets" icon={Calendar} moduleId="weekly" onInfoClick={onInfoClick}/><div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:20}}><Metric label="Inquiries/wk" value={fN(w[0]?.inquiries)} color={C.chart[0]}/><Metric label="MQLs/wk" value={fN(w[0]?.mqls)} color={C.chart[1]}/><Metric label="SQLs/wk" value={fN(w[0]?.sqls)} color={C.chart[2]}/><Metric label="Meetings/wk" value={fN(w[0]?.meetings)} color={C.chart[3]}/><Metric label="SQOs/wk" value={fN(w[0]?.sqos)} color={C.chart[4]}/></div>
   <Card><h3 style={{fontSize:13,fontWeight:600,color:C.muted,margin:0,marginBottom:14}}>Cumulative: Inquiries → SQLs → SQOs</h3><ResponsiveContainer width="100%" height={280}><AreaChart data={w}><defs><linearGradient id="wI" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.blue} stopOpacity={0.25}/><stop offset="95%" stopColor={C.blue} stopOpacity={0}/></linearGradient><linearGradient id="wQ" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.violet} stopOpacity={0.25}/><stop offset="95%" stopColor={C.violet} stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke={C.borderMid}/><XAxis dataKey="weekLabel" stroke={C.dim} fontSize={10} interval={3} tickLine={false}/><YAxis stroke={C.dim} fontSize={11} tickLine={false} axisLine={false}/><Tooltip content={<TT/>}/><Area type="monotone" dataKey="cumulativeInquiries" stroke={C.blue} fill="url(#wI)" strokeWidth={2} name="Inquiries"/><Area type="monotone" dataKey="cumulativeSQOs" stroke={C.violet} fill="url(#wQ)" strokeWidth={2} name="SQOs"/></AreaChart></ResponsiveContainer></Card></div>);}
@@ -4716,14 +4716,14 @@ function OnboardingWizard({onComplete}){
     </div>
   );
 
-  const NumberInput=({label,value,onChange,prefix,suffix,step:s=1,desc})=>(
+  const NumberInput=({label,value,onChange,prefix,suffix,step:s=1,desc,format})=>(
     <div style={{marginBottom:14}}>
       <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{label}</div>
       {desc&&<div style={{fontSize:10,color:C.dim,marginBottom:6}}>{desc}</div>}
       <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 12px",background:C.bg,borderRadius:0,border:`1px solid ${C.borderMid}`}}>
         {prefix&&<span style={{color:C.dim,fontSize:13}}>{prefix}</span>}
-        <input type="number" value={value} step={s} onChange={e=>onChange(parseFloat(e.target.value)||0)}
-          style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:14,fontFamily:"'Chivo Mono',monospace"}}/>
+        <input type={format?"text":"number"} inputMode={format?"numeric":undefined} value={format?(value!=null&&value!==""?Number(value).toLocaleString("en-US"):""):value} step={s} onChange={e=>onChange(format?(parseInt(e.target.value.replace(/[^0-9]/g,""),10)||0):(parseFloat(e.target.value)||0))}
+          style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:14,fontFamily:"'JetBrains Mono',monospace"}}/>
         {suffix&&<span style={{color:C.dim,fontSize:11}}>{suffix}</span>}
       </div>
     </div>
@@ -4788,8 +4788,8 @@ function OnboardingWizard({onComplete}){
       </div>);
       case "scale": return(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
         <div>
-          <NumberInput label="Starting ARR" value={answers.startingARR} onChange={v=>u("startingARR",v)} prefix="$" step={500000} desc="Current annual recurring revenue"/>
-          <NumberInput label="Target ARR" value={answers.targetARR} onChange={v=>u("targetARR",v)} prefix="$" step={500000} desc="Where you need to be at year-end"/>
+          <NumberInput label="Starting ARR" value={answers.startingARR} onChange={v=>u("startingARR",v)} prefix="$" step={500000} desc="Current annual recurring revenue" format/>
+          <NumberInput label="Target ARR" value={answers.targetARR} onChange={v=>u("targetARR",v)} prefix="$" step={500000} desc="Where you need to be at year-end" format/>
         </div>
         <div>
           <div style={{marginBottom:20}}>
@@ -4804,7 +4804,7 @@ function OnboardingWizard({onComplete}){
           </div>
           <div style={{padding:12,background:`${C.accent}08`,borderRadius:0,border:`1px solid ${C.accent}15`}}>
             <div style={{fontSize:10,color:C.dim,marginBottom:4}}>Implied Growth Rate</div>
-            <div style={{fontSize:20,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>
+            <div style={{fontSize:20,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>
               {answers.startingARR>0?((answers.targetARR-answers.startingARR)/answers.startingARR*100).toFixed(0):0}%
             </div>
           </div>
@@ -4876,7 +4876,7 @@ function OnboardingWizard({onComplete}){
               {label:"Mktg Sourced",value:`${overrides.mktgSourcedPct||50}%`},
             ].map(b=>(<div key={b.label} style={{display:"flex",justifyContent:"space-between",padding:"8px 12px",background:C.bg,borderRadius:0}}>
               <span style={{fontSize:11,color:C.muted}}>{b.label}</span>
-              <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'Chivo Mono',monospace"}}>{b.value}</span>
+              <span style={{fontSize:12,fontWeight:700,color:C.text,fontFamily:"'JetBrains Mono',monospace"}}>{b.value}</span>
             </div>))}
           </div>
           <div style={{padding:12,background:`${C.green}08`,borderRadius:0,border:`1px solid ${C.green}20`}}>
@@ -5039,7 +5039,7 @@ export default function App(){
       flexShrink:0
     }}>
       <a href="https://netherops.com" style={{
-        fontFamily:"'Chivo Mono',monospace",
+        fontFamily:"'JetBrains Mono',monospace",
         fontSize:10, fontWeight:500,
         letterSpacing:"0.04em",
         color: C.muted,
@@ -5050,7 +5050,7 @@ export default function App(){
       </a>
       <span style={{
         marginLeft:"auto",
-        fontFamily:"'Chivo Mono',monospace",
+        fontFamily:"'JetBrains Mono',monospace",
         fontSize:9, fontWeight:600,
         letterSpacing:"0.08em",
         textTransform:"uppercase",
@@ -5058,7 +5058,7 @@ export default function App(){
       }}>
         opptycon
       </span>
-      <button onClick={toggleTheme} style={{marginLeft:8,background:'transparent',border:`1px solid ${C.borderMid}`,borderRadius:4,padding:'2px 8px',cursor:'pointer',fontFamily:"'Chivo Mono',monospace",fontSize:9,letterSpacing:'0.08em',textTransform:'uppercase',color:C.dim,display:'flex',alignItems:'center',gap:4}}>
+      <button onClick={toggleTheme} style={{marginLeft:8,background:'transparent',border:`1px solid ${C.borderMid}`,borderRadius:4,padding:'2px 8px',cursor:'pointer',fontFamily:"'JetBrains Mono',monospace",fontSize:9,letterSpacing:'0.08em',textTransform:'uppercase',color:C.dim,display:'flex',alignItems:'center',gap:4}}>
         {themeMode==='dark'?<Sun size={10}/>:<Moon size={10}/>}{themeMode==='dark'?'Light':'Dark'}
       </button>
     </div>
@@ -5137,23 +5137,23 @@ export default function App(){
             <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Plan Start Date</div>
             <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"7px 11px",marginBottom:6,gap:6}}>
               <input type="date" value={inputs.planStartDate||""} onChange={e=>setInputs(p=>({...p,planStartDate:e.target.value}))}
-                style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%",colorScheme:themeMode==="dark"?"dark":"light"}}/>
+                style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'JetBrains Mono',monospace",width:"100%",colorScheme:themeMode==="dark"?"dark":"light"}}/>
             </div>
-            <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Target Date (when targetARR must land)</div>
+            <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Target Date (when target ARR must land)</div>
             <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"7px 11px",marginBottom:13,gap:6}}>
               <input type="date" value={inputs.targetDate||""} onChange={e=>setInputs(p=>({...p,targetDate:e.target.value}))}
-                style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%",colorScheme:themeMode==="dark"?"dark":"light"}}/>
+                style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'JetBrains Mono',monospace",width:"100%",colorScheme:themeMode==="dark"?"dark":"light"}}/>
             </div>
             <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Target Mode</div>
             <SegmentToggle options={[{value:"absolute",label:"$ ARR"},{value:"growthRate",label:"% Growth"}]} value={inputs.targetMode} onChange={v=>setInputs(p=>({...p,targetMode:v}))}/>
             <div style={{marginTop:8}}/>
             {inputs.targetMode==="absolute"?(
-              <Input compact label="Target ARR" value={inputs.targetARR} onChange={v=>setInputs(p=>({...p,targetARR:v}))} prefix="$" step={100000}/>
+              <Input compact label="Target ARR" value={inputs.targetARR} onChange={v=>setInputs(p=>({...p,targetARR:v}))} prefix="$" step={100000} format/>
             ):(
               <Input compact label="Growth Rate" value={inputs.targetGrowthRate} onChange={v=>setInputs(p=>({...p,targetGrowthRate:v}))} suffix="%" step={5}/>
             )}
-            <Input compact label="Starting ARR" value={inputs.startingARR} onChange={v=>setInputs(p=>({...p,startingARR:v}))} prefix="$" step={100000}/>
-            {inputs.targetMode==="growthRate"&&<div style={{padding:8,background:C.bg,borderRadius:0,marginBottom:8}}><div style={{fontSize:9,color:C.dim}}>Implied Target</div><div style={{fontSize:14,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(model.summary.targetARR)}</div></div>}
+            <Input compact label="Starting ARR" value={inputs.startingARR} onChange={v=>setInputs(p=>({...p,startingARR:v}))} prefix="$" step={100000} format/>
+            {inputs.targetMode==="growthRate"&&<div style={{padding:8,background:C.bg,borderRadius:0,marginBottom:8}}><div style={{fontSize:9,color:C.dim}}>Implied Target</div><div style={{fontSize:14,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(model.summary.targetARR)}</div></div>}
             <Input compact label="Avg Deal" value={inputs.avgDealSize} onChange={v=>setInputs(p=>({...p,avgDealSize:v}))} prefix="$" step={5000}/>
             <div style={{height:1,background:C.borderMid,margin:"8px 0"}}/>
             <div style={{fontSize:9,fontWeight:700,color:C.violet,textTransform:"uppercase",marginBottom:6}}>Planning Horizon</div>
@@ -5217,7 +5217,7 @@ export default function App(){
                     <div style={{fontSize:8,color:C.dim}}>{m}</div>
                     <input type="number" value={inputs.seasonalWeights[i]} min={1} max={20} step={1}
                       onChange={e=>{const nw=[...inputs.seasonalWeights];nw[i]=parseInt(e.target.value)||1;setInputs(p=>({...p,seasonalWeights:nw}));}}
-                      style={{width:"100%",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"3px 2px",color:C.text,fontSize:10,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}/>
+                      style={{width:"100%",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"3px 2px",color:C.text,fontSize:10,fontFamily:"'JetBrains Mono',monospace",textAlign:"center"}}/>
                   </div>
                 ))}
               </div>
@@ -5227,7 +5227,7 @@ export default function App(){
                 {QUARTERS.map((q,qi)=>{const qw=model.monthWeights.slice(qi*3,qi*3+3).reduce((s,w)=>s+w,0);return(
                   <div key={q} style={{textAlign:"center",padding:"4px 0",background:C.bg,borderRadius:0}}>
                     <div style={{fontSize:8,color:C.dim}}>{q}</div>
-                    <div style={{fontSize:11,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{(qw*100).toFixed(0)}%</div>
+                    <div style={{fontSize:11,fontWeight:700,color:C.accent,fontFamily:"'JetBrains Mono',monospace"}}>{(qw*100).toFixed(0)}%</div>
                   </div>
                 );})}
               </div>

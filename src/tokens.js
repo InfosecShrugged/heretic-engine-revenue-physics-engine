@@ -132,7 +132,7 @@ export function C() {
 export const fonts = {
   display: "'TWK Everett', 'Helvetica Neue', sans-serif",
   body:    "'TWK Everett', 'Helvetica Neue', sans-serif",
-  mono:    "'Chivo Mono', 'Space Mono', monospace",
+  mono:    "'JetBrains Mono', 'Space Mono', monospace",
 };
 
 export const radii = { sm: 6, md: 10, lg: 14, xl: 20, full: 9999 };

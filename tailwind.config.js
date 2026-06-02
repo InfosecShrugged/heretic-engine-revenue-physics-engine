@@ -6,7 +6,7 @@ export default {
       fontFamily: {
         sans: ['TWK Everett', 'Helvetica Neue', 'system-ui', 'sans-serif'],
         display: ['TWK Everett', 'Helvetica Neue', 'system-ui', 'sans-serif'],
-        mono: ['Chivo Mono', 'Space Mono', 'monospace'],
+        mono: ['JetBrains Mono', 'Space Mono', 'monospace'],
       },
       colors: {
         nether: {
