@@ -467,7 +467,7 @@ function CRMReadinessPage({onInfoClick, mobile}){
                       <button key={opt.v} onClick={()=>setAnswer(q.id, opt.v === ans ? null : opt.v)}
                         style={{padding:"6px 14px",borderRadius:0,border:`1.5px solid ${ans===opt.v?opt.c:C.borderMid}`,
                           background:ans===opt.v?`${opt.c}20`:"transparent",color:ans===opt.v?opt.c:C.muted,
-                          cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"'TWK Everett',sans-serif",
+                          cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"'Space Grotesk',sans-serif",
                           textTransform:"uppercase",letterSpacing:"0.06em",transition:"all 0.15s"}}>{opt.l}</button>
                     ))}
                   </div>
@@ -500,7 +500,7 @@ function CRMReadinessPage({onInfoClick, mobile}){
             setAnswers({});
             try { localStorage.removeItem('opptycon-phase0-answers'); } catch(e) {}
           }
-        }} style={{padding:"8px 14px",borderRadius:0,border:`1px solid ${C.borderMid}`,background:"transparent",color:C.muted,cursor:"pointer",fontSize:10,fontWeight:600,fontFamily:"'TWK Everett',sans-serif",textTransform:"uppercase",letterSpacing:"0.04em"}}>Reset answers</button>
+        }} style={{padding:"8px 14px",borderRadius:0,border:`1px solid ${C.borderMid}`,background:"transparent",color:C.muted,cursor:"pointer",fontSize:10,fontWeight:600,fontFamily:"'Space Grotesk',sans-serif",textTransform:"uppercase",letterSpacing:"0.04em"}}>Reset answers</button>
       </div>
     </Card>
 
@@ -1104,7 +1104,7 @@ const Badge=({label,status="neutral"})=>{
 const SegmentToggle=({options,value,onChange})=>(
   <div style={{display:"flex",gap:2,padding:3,background:C.bg,borderRadius:0,border:`1px solid ${C.borderMid}`}}>
     {options.map(o=>(
-      <button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"6px 14px",borderRadius:0,border:"none",background:value===o.value?C.accentDim:"transparent",color:value===o.value?C.accent:C.dim,cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"'TWK Everett',sans-serif",textTransform:"uppercase",letterSpacing:"0.04em",transition:"all 0.15s"}}>{o.label}</button>
+      <button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"6px 14px",borderRadius:0,border:"none",background:value===o.value?C.accentDim:"transparent",color:value===o.value?C.accent:C.dim,cursor:"pointer",fontSize:10,fontWeight:700,fontFamily:"'Space Grotesk',sans-serif",textTransform:"uppercase",letterSpacing:"0.04em",transition:"all 0.15s"}}>{o.label}</button>
     ))}
   </div>
 );
@@ -3160,7 +3160,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
           return(<button key={fs} onClick={()=>setInputs(prev=>({...prev,fundingStage:fs}))}
             style={{padding:"6px 14px",borderRadius:0,border:`1px solid ${isActive?C.accent:C.borderMid}`,
               background:isActive?C.accentDim:"transparent",color:isActive?C.accent:C.muted,
-              cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'TWK Everett',sans-serif"}}>
+              cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Space Grotesk',sans-serif"}}>
             {labels[fs]}
           </button>);
         })}
@@ -3189,7 +3189,7 @@ function SandMBudgetPage({model,inputs,setInputs,onInfoClick}){
                   return {...prev, leadershipRoles: roles};
                 })} style={{padding:"3px 10px",borderRadius:0,border:`1px solid ${l.enabled?C.green:C.borderMid}`,
                   background:l.enabled?`${C.green}15`:"transparent",color:l.enabled?C.green:C.dim,
-                  cursor:"pointer",fontSize:9,fontWeight:600,fontFamily:"'TWK Everett',sans-serif"}}>
+                  cursor:"pointer",fontSize:9,fontWeight:600,fontFamily:"'Space Grotesk',sans-serif"}}>
                   {l.enabled?"Active":"Add"}
                 </button>
               </td>
@@ -3562,7 +3562,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
           {p.fixedMktgIsFloorBound ? (
-            <button onClick={()=>setDebtTax(dt=>dt===0?1:0)} style={{padding:"5px 10px",borderRadius:0,border:`1px solid ${debtTax>0?C.green:C.amber}`,background:debtTax>0?`${C.green}12`:`${C.amber}12`,color:debtTax>0?C.green:C.amber,cursor:"pointer",fontSize:9,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
+            <button onClick={()=>setDebtTax(dt=>dt===0?1:0)} style={{padding:"5px 10px",borderRadius:0,border:`1px solid ${debtTax>0?C.green:C.amber}`,background:debtTax>0?`${C.green}12`:`${C.amber}12`,color:debtTax>0?C.green:C.amber,cursor:"pointer",fontSize:9,fontWeight:700,fontFamily:"'Space Grotesk',sans-serif"}}>
               {debtTax>0?"Strategic Overbuild":"Compression Active"}
             </button>
           ) : (
@@ -3640,7 +3640,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               const isA=(inputs.executiveTier||"fullVP")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,executiveTier:key}))}
                 style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
-                  border:`1px solid ${isA?C.violet:C.borderMid}`,background:isA?`${C.violet}12`:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
+                  border:`1px solid ${isA?C.violet:C.borderMid}`,background:isA?`${C.violet}12`:"transparent",cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?C.violet:C.muted}}>{tier.label}</span>
                   <span style={{fontSize:9,fontWeight:700,color:isA?C.violet:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(tier.cost)}</span>
@@ -3656,7 +3656,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               const isA=(inputs.pmmTier||"full")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,pmmTier:key}))}
                 style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
-                  border:`1px solid ${isA?C.blue:C.borderMid}`,background:isA?`${C.blue}12`:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
+                  border:`1px solid ${isA?C.blue:C.borderMid}`,background:isA?`${C.blue}12`:"transparent",cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?C.blue:C.muted}}>{tier.label}</span>
                   <span style={{fontSize:9,fontWeight:700,color:isA?C.blue:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(tier.cost)}</span>
@@ -3673,7 +3673,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
               const isA=(inputs.coreMarTechTier||"standard")===key;
               return(<button key={key} onClick={()=>setInputs(pr=>({...pr,coreMarTechTier:key}))}
                 style={{display:"block",width:"100%",padding:"5px 8px",marginBottom:3,borderRadius:0,textAlign:"left",
-                  border:`1px solid ${isA?C.dim:C.borderMid}`,background:isA?`${C.dim}12`:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
+                  border:`1px solid ${isA?C.dim:C.borderMid}`,background:isA?`${C.dim}12`:"transparent",cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>
                 <div style={{display:"flex",justifyContent:"space-between"}}>
                   <span style={{fontSize:9,fontWeight:isA?700:500,color:isA?C.dim:C.muted}}>{tier.label}</span>
                   <span style={{fontSize:9,fontWeight:700,color:isA?C.dim:C.dim,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(tier.cost)}</span>
@@ -3777,7 +3777,7 @@ function TargetTrackerPage({model,inputs,onInfoClick}){
       <Card style={{borderLeft:`3px solid ${C.violet}`}}><div style={{fontSize:10,color:C.dim,textTransform:"uppercase",fontWeight:700,marginBottom:6}}>Expansion</div><div style={{fontSize:22,fontWeight:700,color:C.violet,fontFamily:"'JetBrains Mono',monospace"}}>{fmt(s.expansionARR)}</div><div style={{fontSize:10,color:C.muted,marginTop:4}}>{fN(s.expansionDeals)} deals × {fmt(inputs.expansionAvgDeal)} • {inputs.expansionSqoToWon}% close</div></Card>
     </div>}
     <div style={{display:"flex",gap:8,marginBottom:24}}>
-      {["quarterly","pipeline","annual"].map(v=>(<button key={v} onClick={()=>setView(v)} style={{padding:"8px 18px",borderRadius:0,border:`1px solid ${view===v?C.accent:C.borderMid}`,background:view===v?C.accentDim:"transparent",color:view===v?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600,textTransform:"capitalize",fontFamily:"'TWK Everett',sans-serif"}}>{v}</button>))}
+      {["quarterly","pipeline","annual"].map(v=>(<button key={v} onClick={()=>setView(v)} style={{padding:"8px 18px",borderRadius:0,border:`1px solid ${view===v?C.accent:C.borderMid}`,background:view===v?C.accentDim:"transparent",color:view===v?C.accent:C.muted,cursor:"pointer",fontSize:12,fontWeight:600,textTransform:"capitalize",fontFamily:"'Space Grotesk',sans-serif"}}>{v}</button>))}
     </div>
 
     {/* ── PIPELINE VIEW ── */}
@@ -4004,7 +4004,7 @@ function ChannelsPage({model,inputs,setInputs,onInfoClick}){
         const isActive=activeMotion===m.key;
         const color=MOTION_COLORS[m.key];
         return(<button key={m.key} onClick={()=>setActiveMotion(m.key)} style={{flex:1,padding:"14px 16px",borderRadius:0,
-          border:`2px solid ${isActive?color:C.borderMid}`,background:isActive?`${color}10`:"transparent",cursor:"pointer",textAlign:"left",fontFamily:"'TWK Everett',sans-serif"}}>
+          border:`2px solid ${isActive?color:C.borderMid}`,background:isActive?`${color}10`:"transparent",cursor:"pointer",textAlign:"left",fontFamily:"'Space Grotesk',sans-serif"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
               <div style={{fontSize:13,fontWeight:700,color:isActive?color:C.text}}>{m.icon} {m.label}</div>
@@ -4582,7 +4582,7 @@ function NavSection({section,items,page,setPage}){
   return(<div style={{marginBottom:section?4:0}}>
     {section && (
       <button onClick={()=>setOpen(!open)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",
-        padding:"6px 10px",marginTop:8,border:"none",background:"transparent",cursor:"pointer",fontFamily:"'TWK Everett',sans-serif"}}>
+        padding:"6px 10px",marginTop:8,border:"none",background:"transparent",cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>
         <span style={{fontSize:9,fontWeight:700,color:hasActive?C.accent:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>{section}</span>
         <span style={{fontSize:10,color:C.dim,transform:open?"rotate(0deg)":"rotate(-90deg)",transition:"transform 0.15s"}}>▾</span>
       </button>
@@ -4593,7 +4593,7 @@ function NavSection({section,items,page,setPage}){
         <button key={n.id} onClick={()=>setPage(n.id)} style={{display:"flex",alignItems:"center",gap:9,width:"100%",
           padding:section?"7px 10px 7px 18px":"8px 10px",marginBottom:1,border:"none",borderRadius:0,
           background:a?C.accentDim:"transparent",color:a?C.accent:C.muted,cursor:"pointer",fontSize:12,
-          fontWeight:a?600:400,textAlign:"left",transition:"all 0.15s",fontFamily:"'TWK Everett',sans-serif"}}
+          fontWeight:a?600:400,textAlign:"left",transition:"all 0.15s",fontFamily:"'Space Grotesk',sans-serif"}}
           onMouseEnter={e=>{if(!a){e.currentTarget.style.background=C.surface;e.currentTarget.style.color=C.text}}}
           onMouseLeave={e=>{if(!a){e.currentTarget.style.background="transparent";e.currentTarget.style.color=C.muted}}}>
           <I size={13}/>{n.label}
@@ -4708,7 +4708,7 @@ function OnboardingWizard({onComplete}){
         const isActive=value===o.value;
         return(<button key={o.value} onClick={()=>onChange(o.value)} style={{padding:"16px 14px",borderRadius:0,
           border:`2px solid ${isActive?C.accent:C.borderMid}`,background:isActive?C.accentDim:"transparent",
-          cursor:"pointer",textAlign:"left",fontFamily:"'TWK Everett',sans-serif",transition:"all 0.15s"}}>
+          cursor:"pointer",textAlign:"left",fontFamily:"'Space Grotesk',sans-serif",transition:"all 0.15s"}}>
           <div style={{fontSize:13,fontWeight:700,color:isActive?C.accent:C.text}}>{o.label}</div>
           {o.desc&&<div style={{fontSize:10,color:C.muted,marginTop:4,lineHeight:1.4}}>{o.desc}</div>}
         </button>);
@@ -4890,7 +4890,7 @@ function OnboardingWizard({onComplete}){
   };
 
   return(
-    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'TWK Everett',sans-serif",color:C.text,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Space Grotesk',sans-serif",color:C.text,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
       
       <div style={{width:"100%",maxWidth:720,padding:window.innerWidth<768?"20px 16px":"40px 32px"}}>
@@ -4927,17 +4927,17 @@ function OnboardingWizard({onComplete}){
         <div style={{display:"flex",justifyContent:"space-between",marginTop:32}}>
           <button onClick={()=>canBack&&setStep(step-1)} style={{padding:"10px 20px",borderRadius:0,border:`1px solid ${C.borderMid}`,
             background:"transparent",color:canBack?C.text:C.dim,cursor:canBack?"pointer":"default",fontSize:12,fontWeight:600,
-            fontFamily:"'TWK Everett',sans-serif",opacity:canBack?1:0.3}}>
+            fontFamily:"'Space Grotesk',sans-serif",opacity:canBack?1:0.3}}>
             Back
           </button>
           {step===ONBOARDING_STEPS.length-1 ? (
             <button onClick={()=>onComplete(buildOverrides())} style={{padding:"10px 28px",borderRadius:0,border:"none",
-              background:C.accent,color:"#111",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
+              background:C.accent,color:"#111",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"'Space Grotesk',sans-serif"}}>
               Launch Engine →
             </button>
           ) : (
             <button onClick={()=>setStep(step+1)} style={{padding:"10px 24px",borderRadius:0,border:"none",
-              background:C.accentDim,color:C.accent,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"'TWK Everett',sans-serif"}}>
+              background:C.accentDim,color:C.accent,cursor:"pointer",fontSize:12,fontWeight:700,fontFamily:"'Space Grotesk',sans-serif"}}>
               Continue →
             </button>
           )}
@@ -4945,7 +4945,7 @@ function OnboardingWizard({onComplete}){
 
         {/* Skip link */}
         {step===0&&<div style={{textAlign:"center",marginTop:16}}>
-          <button onClick={()=>onComplete({})} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:11,fontFamily:"'TWK Everett',sans-serif",textDecoration:"underline"}}>
+          <button onClick={()=>onComplete({})} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:11,fontFamily:"'Space Grotesk',sans-serif",textDecoration:"underline"}}>
             Skip — use default inputs
           </button>
         </div>}
@@ -5026,8 +5026,8 @@ export default function App(){
   if(gated) return <AlphaGate onAccessGranted={()=>setGated(false)}/>;
   if(!onboarded) return <OnboardingWizard onComplete={handleOnboardComplete}/>;
 
-  return(<div style={{display:"flex",flexDirection:"column",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'TWK Everett',sans-serif",color:C.text}}>
-    <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
+  return(<div style={{display:"flex",flexDirection:"column",height:"100vh",overflow:"hidden",background:C.bg,fontFamily:"'Space Grotesk',sans-serif",color:C.text}}>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,100..900,0..100,0..1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 
     {/* Site back link */}
     <div style={{
@@ -5094,17 +5094,17 @@ export default function App(){
             ))}
           </nav>
           <div style={{padding:"8px 6px",borderTop:`1px solid ${C.borderMid}`}}>
-            <button onClick={()=>{setDrivers(!drivers);if(mobile)setNavOpen(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:drivers?C.violetDim:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'TWK Everett',sans-serif"}}>
+            <button onClick={()=>{setDrivers(!drivers);if(mobile)setNavOpen(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:drivers?C.violetDim:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'Space Grotesk',sans-serif"}}>
               <Settings size={13}/>Global Drivers
             </button>
-            <button onClick={()=>{try{localStorage.removeItem('opptycon-model');}catch(e){}setOnboarded(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'TWK Everett',sans-serif"}}>
+            <button onClick={()=>{try{localStorage.removeItem('opptycon-model');}catch(e){}setOnboarded(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'Space Grotesk',sans-serif"}}>
               Re-run Setup
             </button>
           </div>
           <div style={{padding:"6px 12px 10px",borderTop:`1px solid ${C.borderMid}`}}>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
               {[{id:"legal:privacy",label:"Privacy"},{id:"legal:terms",label:"Terms"},{id:"legal:security",label:"Security"},{id:"legal:disclaimer",label:"Disclaimer"}].map(l=>(
-                <button key={l.id} onClick={()=>navTo(l.id)} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:8,fontFamily:"'TWK Everett',sans-serif",padding:0,textDecoration:"underline"}}>{l.label}</button>
+                <button key={l.id} onClick={()=>navTo(l.id)} style={{background:"transparent",border:"none",color:C.dim,cursor:"pointer",fontSize:8,fontFamily:"'Space Grotesk',sans-serif",padding:0,textDecoration:"underline"}}>{l.label}</button>
               ))}
             </div>
             <div style={{textAlign:"center",fontSize:7,color:C.dim,marginTop:4}}>© 2026 NetherOps. All rights reserved.</div>

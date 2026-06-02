@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['TWK Everett', 'Helvetica Neue', 'system-ui', 'sans-serif'],
-        display: ['TWK Everett', 'Helvetica Neue', 'system-ui', 'sans-serif'],
+        sans: ['Space Grotesk', 'Archivo', 'Helvetica Neue', 'system-ui', 'sans-serif'],
+        display: ['Fraunces', 'Georgia', 'serif'],
         mono: ['JetBrains Mono', 'Space Mono', 'monospace'],
       },
       colors: {

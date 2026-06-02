@@ -130,8 +130,8 @@ export function C() {
 }
 
 export const fonts = {
-  display: "'TWK Everett', 'Helvetica Neue', sans-serif",
-  body:    "'TWK Everett', 'Helvetica Neue', sans-serif",
+  display: "'Fraunces', Georgia, serif",
+  body:    "'Space Grotesk', 'Archivo', 'Helvetica Neue', sans-serif",
   mono:    "'JetBrains Mono', 'Space Mono', monospace",
 };
 
