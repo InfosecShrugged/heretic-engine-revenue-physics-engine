@@ -4961,11 +4961,14 @@ export default function App(){
   // Keep the AlphaGate component file in case gating returns with a
   // real waitlist + seat scarcity model.
   const[gated,setGated]=useState(false);
-  const[onboarded,setOnboarded]=useState(false);
+  // B6: if a saved model exists, treat the user as already onboarded (skip the wizard).
+  const[onboarded,setOnboarded]=useState(()=>{try{return!!localStorage.getItem('opptycon-model');}catch(e){return false;}});
   const[page,setPage]=useState("dashboard");
   const[drivers,setDrivers]=useState(false);
   const[infoPanel,setInfoPanel]=useState(null);
-  const[inputs,setInputs]=useState(DEFAULT_INPUTS);
+  // B6: rehydrate the saved model on mount; merge over DEFAULT_INPUTS so any
+  // driver keys added since the model was saved still get their defaults.
+  const[inputs,setInputs]=useState(()=>{try{const saved=localStorage.getItem('opptycon-model');if(saved)return{...DEFAULT_INPUTS,...JSON.parse(saved)};}catch(e){}return DEFAULT_INPUTS;});
   const[navOpen,setNavOpen]=useState(false);
   const[themeMode,setThemeMode]=useState(()=>{
     if(typeof window!=='undefined'){const saved=localStorage.getItem('opptycon-theme');if(saved)return saved;return window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}return'dark';
@@ -4985,6 +4988,13 @@ export default function App(){
     ds.setProperty('--house-line', C.borderMid);
     ds.setProperty('--house-accent', C.accent);
   },[themeMode]);
+  // B6: persist the model once onboarded, so a reload restores it instead of
+  // dropping back to wizard Step 1. Gated on `onboarded` so a fresh visitor who
+  // hasn't completed setup never writes a model (which would skip the wizard).
+  useEffect(()=>{
+    if(!onboarded) return;
+    try{ localStorage.setItem('opptycon-model', JSON.stringify(inputs)); }catch(e){}
+  },[inputs,onboarded]);
   const toggleTheme=()=>{
     const next=themeMode==='dark'?'light':'dark';
     setThemeMode(next);
@@ -5081,7 +5091,7 @@ export default function App(){
             <button onClick={()=>{setDrivers(!drivers);if(mobile)setNavOpen(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:drivers?C.violetDim:"transparent",color:drivers?C.violet:C.muted,cursor:"pointer",fontSize:11,fontWeight:600,fontFamily:"'TWK Everett',sans-serif"}}>
               <Settings size={13}/>Global Drivers
             </button>
-            <button onClick={()=>setOnboarded(false)} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'TWK Everett',sans-serif"}}>
+            <button onClick={()=>{try{localStorage.removeItem('opptycon-model');}catch(e){}setOnboarded(false);}} style={{display:"flex",alignItems:"center",gap:7,width:"100%",padding:"8px 10px",border:"none",borderRadius:0,background:"transparent",color:C.dim,cursor:"pointer",fontSize:10,fontWeight:500,fontFamily:"'TWK Everett',sans-serif"}}>
               Re-run Setup
             </button>
           </div>
