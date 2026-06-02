@@ -1,6 +1,6 @@
 // ─── NetherOps OpptyCon Design System — Three-Mode Dual Accent ───
-// Violet #7C5CFF = primary action/brand mark per DS §8
-// Lime #C8FF6E = fills/badges/dots/buttons on light + everything on dark
+// Violet = primary action/brand mark (house NetherOps accent): #8C73FF dark · #5B3DF0 light
+// Lime #C8FF6E = semantic "governed state" fills/badges/dots — NOT the primary accent
 // Lime NEVER as text on light surfaces
 
 export const lightTheme = {
@@ -21,11 +21,11 @@ export const lightTheme = {
   dim:          '#909090',
   ghost:        '#C4C4C4',
 
-  // Primary accent — VIOLET (primary action/brand mark per DS §8)
-  accent:       '#7C5CFF',
+  // Primary accent — VIOLET, deepened to #5B3DF0 per DS §8 / Albers (paper-safe contrast)
+  accent:       '#5B3DF0',
   accentHover:  '#5A3FCF',
-  accentDim:    'rgba(124,92,255,0.08)',
-  accentGlow:   'rgba(124,92,255,0.15)',
+  accentDim:    'rgba(91,61,240,0.08)',
+  accentGlow:   'rgba(91,61,240,0.15)',
 
   // Secondary accent — LIME (fills, badges, dots, buttons on light)
   lime:         '#C8FF6E',
@@ -46,7 +46,7 @@ export const lightTheme = {
   violetDim:    'rgba(124,77,219,0.08)',
 
   // Chart palette (violet leads on light per DS §8)
-  chart: ['#7C5CFF','#2563EB','#1A8A4A','#7C4DDB','#C07800','#0891B2'],
+  chart: ['#5B3DF0','#2563EB','#1A8A4A','#7C4DDB','#C07800','#0891B2'],
 
   // Inverse (for dark inset panels on light pages)
   inv:          '#F5F5F3',
@@ -71,12 +71,12 @@ export const darkTheme = {
   dim:          '#666666',
   ghost:        '#444444',
 
-  // Primary accent — VIOLET (per DS §8 — primary action/active/selected on dark too;
-  // lime moved to semantic "governed state" role, see lime: below)
-  accent:       '#7C5CFF',
-  accentHover:  '#9981FF',
-  accentDim:    'rgba(124,92,255,0.10)',
-  accentGlow:   'rgba(124,92,255,0.20)',
+  // Primary accent — house NetherOps violet #8C73FF per DS §8 / reskin guide (primary
+  // action/active/selected on dark; lime demoted to semantic "governed state" role, see lime:)
+  accent:       '#8C73FF',
+  accentHover:  '#A78BFF',
+  accentDim:    'rgba(140,115,255,0.10)',
+  accentGlow:   'rgba(140,115,255,0.20)',
 
   // Breach — governance constraints / alerts only on dark (key kept for back-compat;
   // per DS §8 this is #FF6157, replacing the old rose-as-governance-alert)
@@ -102,7 +102,7 @@ export const darkTheme = {
   violetDim:    'rgba(139,92,246,0.10)',
 
   // Chart palette (violet leads on dark per DS §8; lime moved to semantic governed state)
-  chart: ['#7C5CFF','#4A90D9','#2ECC71','#C8FF6E','#F0A030','#FF6157'],
+  chart: ['#8C73FF','#4A90D9','#2ECC71','#8B5CF6','#F0A030','#D64074'],
 
   // Inverse
   inv:          '#111111',
