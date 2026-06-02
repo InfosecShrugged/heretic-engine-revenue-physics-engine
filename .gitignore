@@ -18,3 +18,7 @@ heretics-site/
 # Editor
 .vscode/
 *.swp
+
+# Font binaries — never track (licensing; see font-migration-plan)
+*.otf
+*.ttf
