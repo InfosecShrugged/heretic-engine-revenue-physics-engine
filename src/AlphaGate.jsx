@@ -111,11 +111,11 @@ export default function AlphaGate({ onAccessGranted }) {
 
   return (
     <div style={{
-      minHeight: "100vh", background: C.bg, fontFamily: "'TWK Everett', sans-serif",
+      minHeight: "100vh", background: C.bg, fontFamily: "'Space Grotesk', sans-serif",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       padding: "24px 16px",
     }}>
-      <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
+      <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,100..900,0..100,0..1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -302,7 +302,7 @@ export default function AlphaGate({ onAccessGranted }) {
                         style={{
                           width: "100%", padding: "10px 14px",
                           background: C.bg, border: `1px solid ${C.border}`,
-                          fontSize: 12, fontFamily: "'TWK Everett', sans-serif",
+                          fontSize: 12, fontFamily: "'Space Grotesk', sans-serif",
                           color: C.text, outline: "none",
                         }}
                         onFocus={e => e.target.style.borderColor = C.accent}
@@ -323,7 +323,7 @@ export default function AlphaGate({ onAccessGranted }) {
                         style={{
                           width: "100%", padding: "10px 14px",
                           background: C.bg, border: `1px solid ${C.border}`,
-                          fontSize: 12, fontFamily: "'TWK Everett', sans-serif",
+                          fontSize: 12, fontFamily: "'Space Grotesk', sans-serif",
                           color: C.text, outline: "none",
                         }}
                         onFocus={e => e.target.style.borderColor = C.accent}
@@ -344,7 +344,7 @@ export default function AlphaGate({ onAccessGranted }) {
                       width: "100%", padding: "13px 24px", marginTop: 6,
                       background: submitting ? C.dim : C.accent,
                       border: "none", color: "#fff", cursor: submitting ? "wait" : "pointer",
-                      fontSize: 14, fontWeight: 700, fontFamily: "'TWK Everett', sans-serif",
+                      fontSize: 14, fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif",
                       letterSpacing: "0.02em",
                       transition: "background 0.2s",
                     }}

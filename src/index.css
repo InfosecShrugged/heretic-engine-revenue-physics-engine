@@ -13,18 +13,18 @@ html, body, #root {
   width: 100%;
   background: #EBEBEB;
   color: #111111;
-  font-family: 'TWK Everett', 'Helvetica Neue', system-ui, sans-serif;
+  font-family: 'Space Grotesk', 'Archivo', 'Helvetica Neue', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* T7: override the editorial Fraunces inherited from /styles/tokens.css.
-   The marketing site uses Fraunces for display, but the product surface
-   needs TWK Everett's readability for dense numerical UI (form fields,
-   sliders, tables, charts). Reserve Fraunces for marketing surfaces. */
+/* T7 (System A 2026-06-02): the product surface needs a readable grotesque for
+   dense numerical UI (form fields, sliders, tables, charts), not editorial serif.
+   TWK Everett retired → Space Grotesk here. Fraunces stays on marketing surfaces
+   + the OpptyCon shell title. */
 #root h1, #root h2, #root h3, #root h4, #root h5, #root h6,
 #root .display {
-  font-family: 'TWK Everett', 'Helvetica Neue', system-ui, sans-serif;
+  font-family: 'Space Grotesk', 'Archivo', 'Helvetica Neue', system-ui, sans-serif;
   font-variation-settings: normal;
 }
 

@@ -90,7 +90,7 @@ export default function SpinePage({ model, inputs, onInfoClick, mobile }) {
               { label: "Total", count: spine.counts.total, color: C.muted },
             ].map(s => (
               <div key={s.label} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Chivo Mono', monospace", color: s.color }}>{s.count}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", color: s.color }}>{s.count}</div>
                 <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: C.dim }}>{s.label}</div>
               </div>
             ))}
@@ -119,7 +119,7 @@ export default function SpinePage({ model, inputs, onInfoClick, mobile }) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontSize: 16 }}>{meta.icon}</span>
                 <span style={{ 
-                  fontSize: 9, fontWeight: 700, fontFamily: "'Chivo Mono', monospace",
+                  fontSize: 9, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
                   color: sc.text, textTransform: "uppercase", letterSpacing: "0.04em",
                   padding: "2px 6px", background: sc.bg, borderRadius: 2,
                 }}>{health}</span>
@@ -127,7 +127,7 @@ export default function SpinePage({ model, inputs, onInfoClick, mobile }) {
               <div style={{ fontSize: 11, fontWeight: 700, color: C.text, marginBottom: 2 }}>{meta.label}</div>
               <div style={{ fontSize: 9, color: C.muted }}>{meta.desc}</div>
               {domainVerdicts.length > 0 && (
-                <div style={{ fontSize: 9, fontFamily: "'Chivo Mono', monospace", color: C.dim, marginTop: 6 }}>
+                <div style={{ fontSize: 9, fontFamily: "'JetBrains Mono', monospace", color: C.dim, marginTop: 6 }}>
                   {domainVerdicts.length} verdict{domainVerdicts.length !== 1 ? "s" : ""}
                 </div>
               )}
@@ -205,11 +205,11 @@ export default function SpinePage({ model, inputs, onInfoClick, mobile }) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                       <span style={{
-                        fontSize: 9, fontWeight: 700, fontFamily: "'Chivo Mono', monospace",
+                        fontSize: 9, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
                         color: sc.text, textTransform: "uppercase", letterSpacing: "0.04em",
                         padding: "1px 5px", background: sc.bg,
                       }}>{v.severity}</span>
-                      <span style={{ fontSize: 9, color: C.dim, fontFamily: "'Chivo Mono', monospace" }}>
+                      <span style={{ fontSize: 9, color: C.dim, fontFamily: "'JetBrains Mono', monospace" }}>
                         {meta?.icon} {meta?.label}
                       </span>
                     </div>
@@ -219,7 +219,7 @@ export default function SpinePage({ model, inputs, onInfoClick, mobile }) {
                     {v.metrics && !isExpanded && (
                       <div style={{ 
                         display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6,
-                        fontSize: 10, fontFamily: "'Chivo Mono', monospace", color: C.muted,
+                        fontSize: 10, fontFamily: "'JetBrains Mono', monospace", color: C.muted,
                       }}>
                         <span style={{ color: sc.text, fontWeight: 700 }}>{typeof v.metrics.current === "number" ? v.metrics.current.toFixed(1) : v.metrics.current}</span>
                         <span>→</span>
@@ -269,7 +269,7 @@ export default function SpinePage({ model, inputs, onInfoClick, mobile }) {
                         {v.metrics && v.metrics.target && (
                           <div style={{ background: C.bgAlt, padding: "10px 14px" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                              <span style={{ fontSize: 9, fontFamily: "'Chivo Mono', monospace", color: C.dim }}>
+                              <span style={{ fontSize: 9, fontFamily: "'JetBrains Mono', monospace", color: C.dim }}>
                                 {v.metrics.unit}
                               </span>
                             </div>
@@ -290,16 +290,16 @@ export default function SpinePage({ model, inputs, onInfoClick, mobile }) {
                                   width: `${Math.min(100, Math.max(5, (v.metrics.current / (Math.max(v.metrics.target, v.metrics.current) * 1.5)) * 100))}%`,
                                 }} />
                               </div>
-                              <div style={{ fontFamily: "'Chivo Mono', monospace", fontSize: 11, fontWeight: 700, color: sc.text, minWidth: 50, textAlign: "right" }}>
+                              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700, color: sc.text, minWidth: 50, textAlign: "right" }}>
                                 {typeof v.metrics.current === "number" ? v.metrics.current.toFixed(1) : v.metrics.current}
                               </div>
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-                              <span style={{ fontSize: 9, fontFamily: "'Chivo Mono', monospace", color: SEVERITY_COLORS.healthy.text }}>
+                              <span style={{ fontSize: 9, fontFamily: "'JetBrains Mono', monospace", color: SEVERITY_COLORS.healthy.text }}>
                                 Target: {typeof v.metrics.target === "number" ? v.metrics.target.toFixed(1) : v.metrics.target}
                               </span>
                               {v.metrics.threshold && (
-                                <span style={{ fontSize: 9, fontFamily: "'Chivo Mono', monospace", color: sc.text }}>
+                                <span style={{ fontSize: 9, fontFamily: "'JetBrains Mono', monospace", color: sc.text }}>
                                   Threshold: {typeof v.metrics.threshold === "number" ? v.metrics.threshold.toFixed(1) : v.metrics.threshold}
                                 </span>
                               )}
@@ -316,7 +316,7 @@ export default function SpinePage({ model, inputs, onInfoClick, mobile }) {
                             {v.affectedModules.map(m => (
                               <button key={m} onClick={(e) => { e.stopPropagation(); onInfoClick?.(m); }}
                                 style={{
-                                  fontSize: 9, fontFamily: "'Chivo Mono', monospace", 
+                                  fontSize: 9, fontFamily: "'JetBrains Mono', monospace", 
                                   padding: "2px 8px", background: C.bgAlt, border: `1px solid ${C.border}`,
                                   cursor: "pointer", color: C.accent, fontWeight: 600,
                                 }}>
@@ -335,7 +335,7 @@ export default function SpinePage({ model, inputs, onInfoClick, mobile }) {
                             {v.cascadeTo.map(d => (
                               <span key={d} onClick={(e) => { e.stopPropagation(); setDomainFilter(d); setExpandedVerdict(null); }}
                                 style={{
-                                  fontSize: 9, fontFamily: "'Chivo Mono', monospace",
+                                  fontSize: 9, fontFamily: "'JetBrains Mono', monospace",
                                   padding: "2px 8px", background: SEVERITY_COLORS[spine.domainHealth[d] || "healthy"].bg,
                                   border: `1px solid ${SEVERITY_COLORS[spine.domainHealth[d] || "healthy"].border}`,
                                   cursor: "pointer", color: SEVERITY_COLORS[spine.domainHealth[d] || "healthy"].text,
