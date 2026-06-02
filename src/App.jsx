@@ -2577,7 +2577,7 @@ function PEPage({model, inputs, onInfoClick, mobile}){
 //   Q5: Are the assumptions defensible?              → Key assumptions panel
 // ════════════════════════════════════════════════════════════
 function BoardPage({model, inputs, onInfoClick, mobile}){
-  const { summary: s, quarterlyTargets } = model;
+  const { summary: s, phaseShiftedFunnel } = model;
   const att = s.attainmentRequired || 100;
   const attColor = att <= 100 ? C.green : att <= 120 ? C.amber : C.red;
   const sAndMZone = s.totalSAndMPct < 30 ? "underinvest" : s.totalSAndMPct > 60 ? "burn" : s.totalSAndMPct > 55 ? "stretch" : "growth";
@@ -2599,21 +2599,21 @@ function BoardPage({model, inputs, onInfoClick, mobile}){
     {/* Q1 — Quarterly waterfall */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q1 · Where are we vs plan — quarterly waterfall</div>
     <Card style={{marginBottom:24}}>
-      <div style={{display:"grid",gridTemplateColumns:`140px repeat(${Math.min((quarterlyTargets||[]).length,8)},1fr)`,gap:8}}>
+      <div style={{display:"grid",gridTemplateColumns:`140px repeat(${Math.min((phaseShiftedFunnel||[]).length,8)},1fr)`,gap:8}}>
         <div></div>
-        {(quarterlyTargets||[]).slice(0,8).map(q=>(
+        {(phaseShiftedFunnel||[]).slice(0,8).map(q=>(
           <div key={q.quarter} style={{fontSize:9,fontWeight:700,color:q.isCurrentYear?C.text:C.dim,textTransform:"uppercase",letterSpacing:"0.06em",textAlign:"center"}}>{q.quarter}</div>
         ))}
         <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>Closing deals</div>
-        {(quarterlyTargets||[]).slice(0,8).map((q,i)=>(
+        {(phaseShiftedFunnel||[]).slice(0,8).map((q,i)=>(
           <div key={i} style={{fontSize:13,fontWeight:600,color:C.text,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.closingDeals||0}</div>
         ))}
         <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>SQOs needed</div>
-        {(quarterlyTargets||[]).slice(0,8).map((q,i)=>(
+        {(phaseShiftedFunnel||[]).slice(0,8).map((q,i)=>(
           <div key={i} style={{fontSize:13,fontWeight:600,color:C.blue,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.sqosNeeded||0}</div>
         ))}
         <div style={{fontSize:10,color:C.muted,fontFamily:"'Chivo Mono',monospace"}}>MQLs needed</div>
-        {(quarterlyTargets||[]).slice(0,8).map((q,i)=>(
+        {(phaseShiftedFunnel||[]).slice(0,8).map((q,i)=>(
           <div key={i} style={{fontSize:13,fontWeight:600,color:C.violet,fontFamily:"'Chivo Mono',monospace",textAlign:"center"}}>{q.mqlsNeeded||0}</div>
         ))}
       </div>
