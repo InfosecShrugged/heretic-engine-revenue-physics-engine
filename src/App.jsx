@@ -2100,7 +2100,10 @@ function VCPage({model, inputs, onInfoClick, mobile}){
       </div>
     </Card>
     
-    {/* Q4 — Funding need (gap) */}
+    {/* Q4 — Funding need (gap): hidden 2026-06-01 (B5) — was shipping a "Coming soon" stub
+        in production. Restore by flipping the guard to true once the funding-need calc is built
+        (cumulative burn × starting cash × buffer; burn math already lives in CFO View Q2). */}
+    {false && (<>
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q4 · Funding need <span style={{color:C.amber,marginLeft:6}}>↘ on build queue</span></div>
     <Card style={{marginBottom:18,borderLeft:`2px solid ${C.amber}`,opacity:0.92}}>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
@@ -2109,7 +2112,8 @@ function VCPage({model, inputs, onInfoClick, mobile}){
       <h3 style={{fontSize:15,fontWeight:600,color:C.text,marginBottom:8,lineHeight:1.3}}>What funding does the plan require, and over what runway?</h3>
       <p style={{fontSize:12,color:C.muted,lineHeight:1.6}}>The VC's last question. Cumulative burn over the planning horizon × current cash position × buffer = funding need + when. The burn math is in CFO View (Q2); pairing it with starting cash and a buffer assumption is on the build queue.</p>
     </Card>
-    
+    </>)}
+
     {/* Q5 — Mktg-led vs sales-led */}
     <div style={{marginBottom:8,fontSize:10,fontWeight:700,color:C.dim,textTransform:"uppercase",letterSpacing:"0.06em"}}>Q5 · Marketing-led or sales-led business?</div>
     <Card style={{marginBottom:18}}>
