@@ -56,13 +56,13 @@ const Metric=({label,value,sub,color=C.accent,icon:I,delay=0})=>(
   </motion.div>
 );
 
-const Input=({label,value,onChange,prefix="",suffix="",min,max,step=1,compact})=>(
+const Input=({label,value,onChange,prefix="",suffix="",min,max,step=1,compact,format})=>(
   <div style={{marginBottom:compact?8:13}}>
     <label style={{display:"block",fontSize:10,fontWeight:600,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:4}}>{label}</label>
     <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:compact?"5px 9px":"7px 11px",gap:4}}>
       {prefix&&<span style={{color:C.dim,fontSize:13}}>{prefix}</span>}
-      <input type="number" value={value} min={min} max={max} step={step}
-        onChange={e=>onChange(parseFloat(e.target.value)||0)}
+      <input type={format?"text":"number"} inputMode={format?"numeric":undefined} value={format?(value!=null&&value!==""?Number(value).toLocaleString("en-US"):""):value} min={min} max={max} step={step}
+        onChange={e=>onChange(format?(parseInt(e.target.value.replace(/[^0-9]/g,""),10)||0):(parseFloat(e.target.value)||0))}
         style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%"}}/>
       {suffix&&<span style={{color:C.dim,fontSize:11}}>{suffix}</span>}
     </div>
@@ -4716,13 +4716,13 @@ function OnboardingWizard({onComplete}){
     </div>
   );
 
-  const NumberInput=({label,value,onChange,prefix,suffix,step:s=1,desc})=>(
+  const NumberInput=({label,value,onChange,prefix,suffix,step:s=1,desc,format})=>(
     <div style={{marginBottom:14}}>
       <div style={{fontSize:11,fontWeight:600,color:C.text,marginBottom:4}}>{label}</div>
       {desc&&<div style={{fontSize:10,color:C.dim,marginBottom:6}}>{desc}</div>}
       <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 12px",background:C.bg,borderRadius:0,border:`1px solid ${C.borderMid}`}}>
         {prefix&&<span style={{color:C.dim,fontSize:13}}>{prefix}</span>}
-        <input type="number" value={value} step={s} onChange={e=>onChange(parseFloat(e.target.value)||0)}
+        <input type={format?"text":"number"} inputMode={format?"numeric":undefined} value={format?(value!=null&&value!==""?Number(value).toLocaleString("en-US"):""):value} step={s} onChange={e=>onChange(format?(parseInt(e.target.value.replace(/[^0-9]/g,""),10)||0):(parseFloat(e.target.value)||0))}
           style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:14,fontFamily:"'Chivo Mono',monospace"}}/>
         {suffix&&<span style={{color:C.dim,fontSize:11}}>{suffix}</span>}
       </div>
@@ -4788,8 +4788,8 @@ function OnboardingWizard({onComplete}){
       </div>);
       case "scale": return(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
         <div>
-          <NumberInput label="Starting ARR" value={answers.startingARR} onChange={v=>u("startingARR",v)} prefix="$" step={500000} desc="Current annual recurring revenue"/>
-          <NumberInput label="Target ARR" value={answers.targetARR} onChange={v=>u("targetARR",v)} prefix="$" step={500000} desc="Where you need to be at year-end"/>
+          <NumberInput label="Starting ARR" value={answers.startingARR} onChange={v=>u("startingARR",v)} prefix="$" step={500000} desc="Current annual recurring revenue" format/>
+          <NumberInput label="Target ARR" value={answers.targetARR} onChange={v=>u("targetARR",v)} prefix="$" step={500000} desc="Where you need to be at year-end" format/>
         </div>
         <div>
           <div style={{marginBottom:20}}>
@@ -5139,7 +5139,7 @@ export default function App(){
               <input type="date" value={inputs.planStartDate||""} onChange={e=>setInputs(p=>({...p,planStartDate:e.target.value}))}
                 style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%",colorScheme:themeMode==="dark"?"dark":"light"}}/>
             </div>
-            <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Target Date (when targetARR must land)</div>
+            <div style={{fontSize:9,fontWeight:700,color:C.dim,textTransform:"uppercase",marginBottom:6}}>Target Date (when target ARR must land)</div>
             <div style={{display:"flex",alignItems:"center",background:C.bg,border:`1px solid ${C.borderMid}`,borderRadius:0,padding:"7px 11px",marginBottom:13,gap:6}}>
               <input type="date" value={inputs.targetDate||""} onChange={e=>setInputs(p=>({...p,targetDate:e.target.value}))}
                 style={{flex:1,background:"transparent",border:"none",outline:"none",color:C.text,fontSize:13,fontFamily:"'Chivo Mono',monospace",width:"100%",colorScheme:themeMode==="dark"?"dark":"light"}}/>
@@ -5148,11 +5148,11 @@ export default function App(){
             <SegmentToggle options={[{value:"absolute",label:"$ ARR"},{value:"growthRate",label:"% Growth"}]} value={inputs.targetMode} onChange={v=>setInputs(p=>({...p,targetMode:v}))}/>
             <div style={{marginTop:8}}/>
             {inputs.targetMode==="absolute"?(
-              <Input compact label="Target ARR" value={inputs.targetARR} onChange={v=>setInputs(p=>({...p,targetARR:v}))} prefix="$" step={100000}/>
+              <Input compact label="Target ARR" value={inputs.targetARR} onChange={v=>setInputs(p=>({...p,targetARR:v}))} prefix="$" step={100000} format/>
             ):(
               <Input compact label="Growth Rate" value={inputs.targetGrowthRate} onChange={v=>setInputs(p=>({...p,targetGrowthRate:v}))} suffix="%" step={5}/>
             )}
-            <Input compact label="Starting ARR" value={inputs.startingARR} onChange={v=>setInputs(p=>({...p,startingARR:v}))} prefix="$" step={100000}/>
+            <Input compact label="Starting ARR" value={inputs.startingARR} onChange={v=>setInputs(p=>({...p,startingARR:v}))} prefix="$" step={100000} format/>
             {inputs.targetMode==="growthRate"&&<div style={{padding:8,background:C.bg,borderRadius:0,marginBottom:8}}><div style={{fontSize:9,color:C.dim}}>Implied Target</div><div style={{fontSize:14,fontWeight:700,color:C.accent,fontFamily:"'Chivo Mono',monospace"}}>{fmt(model.summary.targetARR)}</div></div>}
             <Input compact label="Avg Deal" value={inputs.avgDealSize} onChange={v=>setInputs(p=>({...p,avgDealSize:v}))} prefix="$" step={5000}/>
             <div style={{height:1,background:C.borderMid,margin:"8px 0"}}/>
