@@ -4896,7 +4896,7 @@ function OnboardingWizard({onComplete}){
       <div style={{width:"100%",maxWidth:720,padding:window.innerWidth<768?"20px 16px":"40px 32px"}}>
         {/* Logo */}
         <div style={{textAlign:"center",marginBottom:32}}>
-          <img src={LOGO_URL} alt="NetherOps" style={{height:36,marginBottom:6,filter:C.bg==='#0F0F0F'?'invert(1)':'none'}} onError={e=>{e.target.style.display='none'}}/>
+          <img src={LOGO_URL} alt="NetherOps" style={{height:36,marginBottom:6,filter:C===darkTheme?'invert(1)':'none'}} onError={e=>{e.target.style.display='none'}}/>
           <div style={{fontSize:9,color:C.dim,letterSpacing:"0.08em",textTransform:"uppercase"}}>OpptyCon</div>
         </div>
 
@@ -4973,8 +4973,14 @@ export default function App(){
   const[themeMode,setThemeMode]=useState(()=>{
     if(typeof window!=='undefined'){const saved=localStorage.getItem('opptycon-theme');if(saved)return saved;return window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}return'dark';
   });
+  // B3: select the active theme synchronously DURING render so every component
+  // reading the module-level `C` repaints on the same render themeMode changes.
+  // (The effect set C post-render, so inline C.xxx styles lagged a paint behind
+  // the data-theme/CSS-var layer — that was the toggle desync.)
+  setC(themeMode);
   useEffect(()=>{
     setC(themeMode);
+    document.documentElement.setAttribute('data-theme', themeMode);
     const ds = document.documentElement.style;
     ds.background = C.bg;
     ds.color = C.text;
