@@ -25,40 +25,22 @@
 /* ---------- 1. FACES ---------- */
 /*
    Fraunces  → Google Fonts (variable, loaded via <head>)
+   Space Grotesk → Google Fonts (loaded via <head>)
    JetBrains Mono → Google Fonts (loaded via <head>)
-   TWK Everett → self-hosted, declared below
+   TWK Everett → RETIRED 2026-06-02 (System A; WELTKERN licensing). No @font-face here.
 
    Bauhaus Quil is NOT a webfont. It lives only inside the SVG lockups
    (wordmark-heretics.svg, wordmark-mis.svg, wordmark-netherops.svg, etc.)
    as outlined paths.
 */
 
-@font-face {
-  font-family: 'TWK Everett';
-  src: url('/fonts/TWKEverett-Light.otf') format('opentype');
-  font-weight: 300;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'TWK Everett';
-  src: url('/fonts/TWKEverett-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'TWK Everett';
-  src: url('/fonts/TWKEverett-Bold.otf') format('opentype');
-  font-weight: 700;
-  font-display: swap;
-}
-
 /* ---------- 2. FONT STACKS (semantic — never bind to face names directly) ---------- */
 :root {
   /* DISPLAY — Fraunces. ALL headings (H1–H4) + hero/display text. */
   --display: 'Fraunces', Georgia, 'Times New Roman', serif;
 
-  /* BODY — TWK Everett. body, UI, lists, captions, lede. */
-  --sans: 'TWK Everett', 'Helvetica Neue', Arial, sans-serif;
+  /* BODY — Space Grotesk (SIL OFL). body, UI, lists, captions, lede. */
+  --sans: 'Space Grotesk', 'Archivo', 'Helvetica Neue', Arial, sans-serif;
 
   /* MONO — JetBrains Mono. ALL numbers, eyebrows, labels, code. */
   --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
@@ -183,7 +165,7 @@ h4 {
 .hero h1,
 .hero .display {
   font-weight: 375;
-  font-variation-settings: "opsz" 144, "wght" 375, "SOFT" 0, "WONK" 0;
+  font-variation-settings: "opsz" 144, "wght" 375, "SOFT" 70, "WONK" 1;
   letter-spacing: -.025em;
   line-height: .98;
 }
