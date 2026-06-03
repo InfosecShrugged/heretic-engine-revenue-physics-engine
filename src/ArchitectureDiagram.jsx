@@ -32,7 +32,7 @@ const T = {
 const LAYERS = [
   { id: "core", label: "OpptyCon", r: 68, color: T.core, type: "core" },
   { id: "governance", label: "Governance Layer", r: 152, color: T.governance, desc: "Constraint & Policy" },
-  { id: "agent", label: "Agent Layer", r: 232, color: T.agent, desc: "Autonomous Decision" },
+  { id: "agent", label: "Agent Layer", r: 232, color: T.agent, desc: "Governance Checks" },
   { id: "execution", label: "Execution Systems", r: 308, color: T.execution, desc: "System of Record & Action" },
   { id: "market", label: "Market Interface", r: 378, color: T.market, desc: "Signal & Response" },
 ];
