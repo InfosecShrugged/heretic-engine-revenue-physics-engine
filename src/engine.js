@@ -1229,7 +1229,7 @@ export function computeModel(inputs) {
       const newARRRequired = Math.max(0, horizonTarget - retainedARR);
       const velocityRequired = newARRRequired / monthsToTarget; // $/month
       // What the current bench CAN produce (independent of target):
-      const realisticAttainment = 0.85; // industry-realistic average AE attainment
+      const realisticAttainment = (realisticAeAttainment || 75) / 100; // single source of truth: user-set realistic attainment (matches aeHiringPlan); 0 falls back to 75
       const aeMonthlyCapacity = (aeCount * aeQuota * realisticAttainment) / 12;
       const horizonAchievable = aeMonthlyCapacity * monthsToTarget;
       const cumulativeGap = newARRRequired - horizonAchievable;
