@@ -4971,7 +4971,7 @@ export default function App(){
   const[inputs,setInputs]=useState(()=>{try{const saved=localStorage.getItem('opptycon-model');if(saved)return{...DEFAULT_INPUTS,...JSON.parse(saved)};}catch(e){}return DEFAULT_INPUTS;});
   const[navOpen,setNavOpen]=useState(false);
   const[themeMode,setThemeMode]=useState(()=>{
-    if(typeof window!=='undefined'){const saved=localStorage.getItem('opptycon-theme');if(saved)return saved;return window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';}return'dark';
+    if(typeof window!=='undefined'){const saved=localStorage.getItem('opptycon-theme');if(saved)return saved;return'dark';}return'dark';
   });
   // B3: select the active theme synchronously DURING render so every component
   // reading the module-level `C` repaints on the same render themeMode changes.
