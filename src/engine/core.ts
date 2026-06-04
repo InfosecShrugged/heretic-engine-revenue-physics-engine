@@ -1,4 +1,7 @@
 // ─── NetherOps OpptyCon ─── Core Calculation Model ───
+// PURE, framework-free. (inputs) => outputs. No React/DOM/window/storage. Math is
+// byte-identical to the pre-extraction engine.js — pinned by the golden tests.
+import type { ResolvedInputs, ModelOutputs } from './contract';
 // Canonical lifecycle (contact-level):
 //   Inquiry → MQL → SQL → Meeting Held → SQO (Stage 2) → Closed Won
 //
@@ -194,7 +197,7 @@ export const DEFAULT_INPUTS = {
   expansionCycleWeeks: 6,  // shorter cycle
 };
 
-export function computeModel(inputs) {
+export function computeModel(inputs: ResolvedInputs): ModelOutputs {
   const {
     targetMode, targetARR: inputTargetARR, startingARR, targetGrowthRate,
     planningYears, y2GrowthRate, y2ConversionLift,
@@ -334,10 +337,11 @@ export function computeModel(inputs) {
   // planStartDate (YYYY-MM-DD) anchors all month/quarter/year labels in calendar time.
   // Quarter NUMBERING stays plan-aligned (Q1 = first 3 months of plan), but the LABEL
   // shows the actual months covered.
-  const planStart = inputs.planStartDate || (() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
-  })();
+  // Determinism: the engine must NOT read the wall clock — same inputs → same
+  // outputs, always (golden tests depend on this). planStartDate is required by the
+  // contract; if a caller omits it we anchor to a fixed epoch rather than `new Date()`.
+  // (UI "default to this month" lives in DEFAULT_INPUTS, outside the pure core.)
+  const planStart = inputs.planStartDate || '2025-01-01';
   const [psYearStr, psMonthStr] = planStart.split('-');
   const startYear = parseInt(psYearStr, 10);
   const startMonthIdx = parseInt(psMonthStr, 10) - 1;
