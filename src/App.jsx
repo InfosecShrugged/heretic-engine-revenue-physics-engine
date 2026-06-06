@@ -176,7 +176,7 @@ function DataConfidenceCallout({inputs, compact=false}) {
     ? "These are inputs most teams either don't track or measure inconsistently — funnel conversion, velocity by stage, motion economics, expansion-as-funnel. Your output is directional. Open Global Drivers to override the ones you can."
     : conf.tier === "partial"
     ? "Some hard-to-measure inputs are set; others still at defaults. Mixed-confidence output — verify before quoting any specific number to a board."
-    : "Most hard-to-measure inputs have been confirmed. Your output is a forecast, not just directional. Standard model caveats still apply.";
+    : "Most hard-to-measure inputs have been confirmed. Your output is a forecast you can take to a board. Standard model caveats still apply.";
   return(<div style={{marginBottom:18}}>
     <div onClick={()=>setExpanded(!expanded)} style={{cursor:"pointer",padding:"12px 14px",background:`${color}10`,border:`1px solid ${color}33`,borderLeft:`3px solid ${color}`,display:"flex",alignItems:"baseline",gap:14,flexWrap:"wrap"}}>
       <div style={{flex:"0 0 auto"}}>
@@ -2836,7 +2836,7 @@ function FunnelHealthPage({model,inputs,setInputs,onInfoClick,mobile}){
     {/* Engine Output — Compression Metrics */}
     <Card style={{marginBottom:20,borderLeft:`3px solid ${C.accent}`}}>
       <h3 style={{fontSize:11,fontWeight:700,color:C.accent,margin:0,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.04em"}}>Engine Output — Compression Metrics</h3>
-      <div style={{fontSize:10,color:C.dim,marginBottom:14}}>True revenue yield of the engine. Compounded from each stage — not averages, not estimates.</div>
+      <div style={{fontSize:10,color:C.dim,marginBottom:14}}>True revenue yield of the engine. Compounded stage by stage from your actual conversion rates.</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10}}>
         <div style={{padding:10,background:C.bg,borderRadius:0}}>
           <div style={{fontSize:9,color:C.dim,marginBottom:4}}>Inquiry → SQO</div>
@@ -3754,7 +3754,7 @@ function MarketingBudgetPage({model,inputs,setInputs,onInfoClick}){
       <div style={{marginTop:10,padding:8,background:`${C.violet}08`,borderRadius:0,border:`1px solid ${C.violet}12`}}>
         <div style={{fontSize:9,color:C.muted,lineHeight:1.6}}>
           <strong style={{color:C.violet}}>Structural Core is dollars, not percentages.</strong> $455K VP = 15% at $3M but 1.1% at $40M.
-          Scalable Programs are elastic — redistribute as strategy shifts. This is a physics simulator, not a compliance check.
+          Scalable Programs are elastic — redistribute as strategy shifts. Treat these as forces to balance, not boxes to check.
         </div>
       </div>
     </Card>
@@ -4653,7 +4653,7 @@ const ONBOARDING_STEPS = [
   { id: "capacity", title: "Capacity Constraints", sub: "Models assume infinite elasticity. Let's kill that fantasy." },
   { id: "finance", title: "Financial Guardrails", sub: "CFO-grade constraints that bound the model." },
   { id: "intent", title: "Growth Intent", sub: "This changes the math. Be honest." },
-  { id: "review", title: "Your Operating Profile", sub: "Here's the contract with reality. Everything downstream is tuning, not debate." },
+  { id: "review", title: "Your Operating Profile", sub: "Here's the contract with reality. Everything downstream is tuning." },
 ];
 
 function OnboardingWizard({onComplete}){
