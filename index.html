@@ -51,6 +51,33 @@
         /* Readable text */
         body { -webkit-text-size-adjust: 100%; }
       }
+
+      /* Phone gate — OpptyCon is a wide control surface; block it below phone width */
+      .mobile-gate { display: none; }
+      @media (max-width: 640px) {
+        .mobile-gate {
+          display: flex; position: fixed; inset: 0; z-index: 99999;
+          align-items: center; justify-content: center; padding: 28px;
+          background: #0F0F13; color: #F5F5F3;
+          font-family: 'Space Grotesk', 'Helvetica Neue', system-ui, sans-serif;
+          -webkit-font-smoothing: antialiased;
+        }
+        .mg-card { max-width: 400px; text-align: center; }
+        .mg-tag {
+          font-family: 'JetBrains Mono', monospace; font-size: 11px;
+          letter-spacing: 0.14em; text-transform: uppercase; color: #8C73FF; margin: 0 0 14px;
+        }
+        .mg-h {
+          font-family: 'Fraunces', Georgia, serif; font-weight: 400;
+          font-size: clamp(30px, 9vw, 40px); line-height: 1.08; letter-spacing: -0.02em;
+          font-variation-settings: normal; color: #F5F5F3; margin: 0 0 16px;
+        }
+        .mg-p { font-size: 15px; line-height: 1.55; color: #AAAAAA; margin: 0 0 14px; }
+        .mg-link {
+          display: inline-block; margin-top: 8px; font-family: 'JetBrains Mono', monospace;
+          font-size: 13px; letter-spacing: 0.03em; color: #8C73FF; text-decoration: none;
+        }
+      }
     </style>
 
     <!-- Google tag (gtag.js) -->
@@ -78,6 +105,15 @@
     <script src="https://marketsinsecurity.com/assets/heretics-house.js" defer></script>
   </head>
   <body>
+    <div class="mobile-gate" role="dialog" aria-modal="true" aria-labelledby="mg-h">
+      <div class="mg-card">
+        <p class="mg-tag">NetherOps · OpptyCon</p>
+        <h1 id="mg-h" class="mg-h">Best on a full-size screen</h1>
+        <p class="mg-p">OpptyCon is a wide control surface — dual-axis cost modeling, phase-shifted funnel physics, coverage governance and multi-year carry-over math, all on one canvas that needs real horizontal room.</p>
+        <p class="mg-p">Open it on a laptop or desktop browser to build and read your model.</p>
+        <a class="mg-link" href="https://netherops.com">netherops.com →</a>
+      </div>
+    </div>
     <form name="alpha-access" netlify netlify-honeypot="bot-field" hidden>
       <input name="email" /><input name="role" /><input name="company" /><input name="bot-field" />
     </form>
